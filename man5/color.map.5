@@ -1,0 +1,209 @@
+.TH "COLOR.MAP" "5" "Jul 2013" "Portage VERSION" "Portage"
+.SH "NAME"
+color.map \- custom color settings for Portage
+.SH "SYNOPSIS"
+.B /etc/portage/color.map
+.SH "DESCRIPTION"
+This file contains variables that define color classes used by Portage.
+Portage will check this file first for color classes settings. If no setting
+of given color class is found in /etc/portage/color.map, Portage uses default
+value defined internally.
+.SH "SYNTAX"
+\fBVARIABLE\fR = \fI[space delimited list of attributes or ansi code
+pattern]\fR
+.TP
+\fBATTRIBUTE\fR = \fI[space delimited list of attributes or ansi code \
+pattern]\fR
+.SH "VARIABLES"
+.TP
+\fBNORMAL\fR = \fI"normal"\fR
+Defines color used for some words occuring in other contexts than those below.
+.TP
+\fBBAD\fR = \fI"red"\fR
+Defines color used for some words occuring in bad context.
+.TP
+\fBBRACKET\fR = \fI"blue"\fR
+Defines color used for brackets.
+.TP
+\fBGOOD\fR = \fI"green"\fR
+Defines color used for some words occuring in good context.
+.TP
+\fBHILITE\fR = \fI"teal"\fR
+Defines color used for highlighted words.
+.TP
+\fBINFORM\fR = \fI"darkgreen"\fR
+Defines color used for informational words.
+.TP
+\fBMERGE_LIST_PROGRESS\fR = \fI"yellow"\fR
+Defines color used for numbers indicating merge progress.
+.TP
+\fBPKG_BLOCKER\fR = \fI"red"\fR
+Defines color used for unsatisfied blockers.
+.TP
+\fBPKG_BLOCKER_SATISFIED\fR = \fI"darkblue"\fR
+Defines color used for satisfied blockers.
+.TP
+\fBPKG_MERGE\fR = \fI"darkgreen"\fR
+Defines color used for packages planned to be merged.
+.TP
+\fBPKG_MERGE_SYSTEM\fR = \fI"darkgreen"\fR
+Defines color used for system packages planned to be merged.
+.TP
+\fBPKG_MERGE_WORLD\fR = \fI"green"\fR
+Defines color used for world packages planned to be merged.
+.TP
+\fBPKG_BINARY_MERGE\fR = \fI"purple"\fR
+Defines color used for packages planned to be merged using a binary package.
+.TP
+\fBPKG_BINARY_MERGE_SYSTEM\fR = \fI"purple"\fR
+Defines color used for system packages planned to be merged using a binary
+package.
+.TP
+\fBPKG_BINARY_MERGE_WORLD\fR = \fI"fuchsia"\fR
+Defines color used for world packages planned to be merged using a binary
+package.
+.TP
+\fBPKG_NOMERGE\fR = \fI"darkblue"\fR
+Defines color used for packages not planned to be merged.
+.TP
+\fBPKG_NOMERGE_SYSTEM\fR = \fI"darkblue"\fR
+Defines color used for system packages not planned to be merged.
+.TP
+\fBPKG_NOMERGE_WORLD\fR = \fI"blue"\fR
+Defines color used for world packages not planned to be merged.
+.TP
+\fBPKG_UNINSTALL\fR = \fI"red"\fR
+Defines color used for packages planned to be uninstalled in order
+to resolve conflicts.
+.TP
+\fBPROMPT_CHOICE_DEFAULT\fR = \fI"green"\fR
+Defines color used for the default choice at a prompt.
+.TP
+\fBPROMPT_CHOICE_OTHER\fR = \fI"red"\fR
+Defines color used for a non\-default choice at a prompt.
+.TP
+\fBSECURITY_WARN\fR = \fI"red"\fR
+Defines color used for security warnings.
+.TP
+\fBUNMERGE_WARN\fR = \fI"red"\fR
+Defines color used for unmerge warnings.
+.TP
+\fBWARN\fR = \fI"yellow"\fR
+Defines color used for warnings.
+.SH "LIST OF VALID ATTRIBUTES"
+.TP
+.B Foreground colors
+.RS
+.TP
+.B black
+.TP
+.B darkgray
+.TP
+.B darkred
+.TP
+.B red
+.TP
+.B darkgreen
+.TP
+.B green
+.TP
+.B brown
+.TP
+.B yellow
+.TP
+.B darkyellow
+.TP
+.B darkblue
+.TP
+.B blue
+.TP
+.B purple
+.TP
+.B fuchsia
+.TP
+.B teal
+.TP
+\fBturquoise\fR = \fBdarkteal\fR
+.TP
+.B lightgray
+.TP
+.B white
+.RE
+.TP
+.B Background colors
+.RS
+.TP
+.B bg_black
+.TP
+.B bg_darkred
+.TP
+.B bg_darkgreen
+.TP
+\fBbg_brown\fR = \fBbg_darkyellow\fR
+.TP
+.B bg_darkblue
+.TP
+.B bg_purple
+.TP
+.B bg_teal
+.TP
+.B bg_lightgray
+.RE
+.TP
+.B Other attributes
+.RS
+.TP
+.B normal
+.TP
+.B no\-attr
+.TP
+.B reset
+.TP
+.B bold
+.TP
+.B faint
+.TP
+.B standout
+.TP
+.B no\-standout
+.TP
+.B underline
+.TP
+.B no\-underline
+.TP
+.B blink
+.TP
+.B no\-blink
+.TP
+.B overline
+.TP
+.B no\-overline
+.TP
+.B reverse
+.TP
+.B no\-reverse
+.TP
+.B invisible
+.RE
+.SH "REPORTING BUGS"
+Please report bugs via https://bugs.gentoo.org/
+.SH "AUTHORS"
+.nf
+Arfrever Frehtes Taifersar Arahesis <arfrever@apache.org>
+.fi
+.SH "FILES"
+.TP
+.B /etc/portage/color.map
+Contains variables customizing colors.
+.TP
+.B /etc/portage/make.conf
+Contains other variables.
+.SH "SEE ALSO"
+.BR console_codes (4),
+.BR make.conf (5),
+.BR portage (5),
+.BR emerge (1),
+.BR ebuild (1),
+.BR ebuild (5)
+.TP
+The \fI/usr/lib/portage/pym/portage/output.py\fR Python module.

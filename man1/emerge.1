@@ -1,0 +1,1364 @@
+.TH "EMERGE" "1" "Jul 2016" "Portage VERSION" "Portage"
+.SH "NAME"
+emerge \- Command\-line interface to the Portage system
+.SH "SYNOPSIS"
+.TP
+.BR emerge
+[\fIoptions\fR] [\fIaction\fR] [\fIebuild\fR | \fItbz2file\fR | \fIfile\fR |
+\fI@set\fR | \fIatom\fR] ...
+.TP
+.BR emerge
+\fB\-\-sync\fR | \fB\-\-version\fR
+.TP
+.BR emerge
+\fB\-\-info\fR [\fIatom\fR]
+.TP
+.BR emerge
+\fB\-\-search\fR \fIsomestring\fR
+.TP
+.BR emerge
+\fB\-\-help\fR
+.SH "DESCRIPTION"
+\fBemerge\fR is the definitive command\-line interface to the Portage
+system.  It is primarily used for installing packages, and \fBemerge\fR
+can automatically handle any dependencies that the desired package has.
+\fBemerge\fR can also update the \fBportage tree\fR, making new and
+updated packages available.  \fBemerge\fR gracefully handles updating
+installed packages to newer releases as well.  It handles both source
+and binary packages, and it can be used to create binary packages for
+distribution.
+.SH "EBUILDS, TBZ2S, SETS AND ATOMS"
+\fBemerge\fR primarily installs packages.  You can specify
+packages to install in five possible ways: an \fIatom\fR,
+a \fIset\fR, an installed \fIfile\fR, an \fIebuild\fR, or
+a \fItbz2file\fR.
+.LP
+.TP
+.BR ebuild
+An \fIebuild\fR must be, at a minimum, a valid Portage
+package directory name without a version or category, such as
+\fBportage\fR or \fBpython\fR.
+Both categories and version numbers may be used in addition, such
+as \fBsys\-apps/portage\fR or \fB=python\-2.2.1\-r2\fR.
+\fBemerge\fR
+ignores a trailing slash so that filename completion can be used.
+The \fIebuild\fR may also be an actual filename, such as
+\fB/usr/portage/app\-admin/python/python\-2.2.1\-r2.ebuild\fR.
+\fBWARNING:\fR The implementation of \fBemerge /path/to/ebuild\fR is broken and
+so this syntax shouldn't be used.
+.TP
+.BR tbz2file
+A \fItbz2file\fR must be a valid .tbz2 created with \fBebuild
+<package>\-<version>.ebuild package\fR or \fBemerge \-\-buildpkg
+[category/]<package>\fR or \fBquickpkg /var/db/pkg/<category>/<package>\fR.
+.TP
+.BR file
+A \fIfile\fR must be a file or directory that has been installed by one or
+more packages. If an absolute path is not used, then it must begin with
+either "./" or "../". For directories that are owned by multiple packages, all
+owning packages will be selected. See the portageq(1) owners command if you
+would like to query the owners of one or more files or directories.
+.TP
+.BR set
+A \fIset\fR is a convenient shorthand for a large group of
+packages. Six sets are currently always available: \fBselected-packages\fR,
+\fBselected-sets\fR, \fBselected\fR, \fBsystem\fR, \fBprofile\fR, and \fBworld\fR.
+\fBselected-packages\fR contains the user-selected "world" packages that
+are listed in \fB/var/lib/portage/world\fR, while \fBselected-sets\fR
+contains the nested sets that may be listed in \fB/var/lib/portage/world_sets\fR.
+\fBsystem\fR and \fBprofile\fR both refer to sets of packages deemed
+necessary for your system to run properly (the differences between these
+two sets are documented in \fBportage\fR(5)).
+\fBselected\fR encompasses both the \fBselected-packages\fR
+and \fBselected-sets\fR sets, while \fBworld\fR encompasses the \fBselected\fR,
+\fBsystem\fR and \fBprofile\fR sets. (See \fBFILES\fR below for more
+information.) Other sets can exist depending
+on the current configuration. The default set configuration is located
+in the \fB/usr/share/portage/config/sets\fR directory.
+User sets may be created by placing files in the \fB/etc/portage/sets/\fR
+directory (see \fBportage\fR(5)). Note that a \fIset\fR
+is generally used in conjunction with \fB\-\-update\fR. When used as
+arguments to \fBemerge\fR sets have to be prefixed with \fB@\fR to be
+recognized. Use the \fB\-\-list\-sets\fR action to display a list of
+available package sets.
+.TP
+.BR atom
+An \fIatom\fR describes bounds on a package that you wish to install.
+\fISee ebuild(5) for the details on atom syntax.\fR  For example,
+\fB>=dev\-lang/python\-2.2.1\-r2\fR matches the latest available version of
+Python greater than or equal to 2.2.1\-r2.  Similarly,
+\fB<dev\-lang/python\-2.0\fR matches the latest available version of Python
+before 2.0.  Note that in many shells you will need to escape characters such
+as '<' and '='; use single\- or double\-quotes around the \fIatom\fR
+to get around escaping problems. You may also constrain an atom to match a
+specific \fBSLOT\fR by appending a colon and a \fBSLOT\fR. Example:
+\fBx11\-libs/qt:3\fR.
+.SH "ACTIONS"
+.TP
+.BR "No action"
+If no action is specified, the action is to merge in the specified
+packages, satisfying any dependencies that they may have.  The
+arguments can be \fIatoms\fR, \fIsets\fR, installed \fIfiles\fR,
+\fIebuilds\fR, or \fItbz2s\fR.
+\fBNote that you need to use the \-\-usepkg
+option if you want to install a tbz2\fR.  The packages are added
+to the \fBworld\fR file at the end, so that they are considered for
+later updating.
+.TP
+.BR \-\-check\-news
+Scan all repositories for relevant unread GLEP 42 news items, and display
+how many are found. See
+\fIhttps://wiki.gentoo.org/wiki/GLEP:42\fR.
+.TP
+.BR \-\-clean
+Cleans up the system by examining the installed packages and removing older
+packages.  This is accomplished by looking at each installed package and
+separating the installed versions by \fBslot\fR.  Clean will \fBremove all but
+the most recently installed version in each \fbslot\fR.  Clean should not
+remove unslotted packages. Note: Most recently installed means most
+\fBrecent\fR, not highest version.
+.TP
+.BR "\-\-config "
+Run package specific actions needed to be executed after the emerge process
+has completed.  This usually entails configuration file setup or other similar
+setups that the user may wish to run.
+.TP
+.BR "\-\-depclean (-c)"
+Cleans the system by removing packages that are not associated
+with explicitly merged packages. Depclean works by creating the
+full dependency tree from the @world set,
+then comparing it to installed packages. Packages installed, but
+not part of the dependency tree, will be uninstalled by depclean.
+See \fB\-\-with\-bdeps\fR for behavior with respect to build time dependencies
+that are not strictly required. Packages that are part of the world set will
+always be kept. They can be manually added to this set with \fIemerge
+\-\-noreplace <atom>\fR. As a safety measure, depclean will not remove any
+packages unless *all* required dependencies have been resolved. As a
+consequence, it is often necessary to run \fIemerge \-\-update \-\-newuse
+\-\-deep @world\fR prior to depclean. Also note that
+depclean may break link level dependencies, especially when the
+\fB\-\-depclean\-lib\-check\fR option is disabled. Thus, it is
+recommended to use a tool such as \fBrevdep-rebuild\fR(1)
+in order to detect such breakage.
+
+\fBWARNING:\fR
+Inexperienced users are advised to use \fB\-\-pretend\fR or \fB\-\-ask\fR
+with this option in order to see a preview of which packages
+will be uninstalled. Always study the list of packages
+to be cleaned for any obvious mistakes. Note that packages listed in
+package.provided (see \fBportage\fR(5)) may be removed by
+depclean, even if they are part of the world set.
+
+Depclean serves as a dependency aware
+version of \fB\-\-unmerge\fR. When given one or more atoms, it will
+unmerge matched packages that have no reverse dependencies. Use
+\fB\-\-depclean\fR together with \fB\-\-verbose\fR to show reverse
+dependencies.
+.TP
+.BR "\-\-deselect [ y | n ]"
+Remove atoms and/or sets from the world file. This action is implied
+by uninstall actions, including \fB-\-depclean\fR,
+\fB-\-prune\fR and \fB-\-unmerge\fR. Use \fB-\-deselect=n\fR
+in order to prevent uninstall actions from removing
+atoms from the world file.
+.TP
+.BR "\-\-help " (\fB\-h\fR)
+Displays help information for emerge.  Adding one of the additional
+arguments listed above will give you more specific help information
+on that subject.  The internal \fBemerge\fR help documentation is
+updated more frequently than this man page; check it out if you
+are having problems that this man page does not help resolve.
+.TP
+.BR \-\-info
+Produces a list of information to include in bug reports which aids the
+developers when fixing the reported problem.  \fBPlease include this
+information when submitting a bug report.\fR  Expanded output can be obtained
+with the \fI\-\-verbose\fR option.
+.TP
+.BR \-\-list\-sets
+Displays a list of available package sets.
+.TP
+.BR \-\-metadata
+Transfers pregenerated metadata cache from ${repository_location}/metadata/md5\-cache/
+to /var/cache/edb/dep/ as is normally done on the tail end of an rsync update using
+\fBemerge \-\-sync\fR. This process populates the cache database that Portage uses
+for pre-parsed lookups of package data. It does not populate cache for repositories
+not distributing pregenerated metadata cache. In order to generate cache for these
+repositories, use \fB\-\-regen\fR.
+In versions of portage >=2.1.5 the \-\-metadata action is totally unnecessary
+unless the user has enabled FEATURES="metadata-transfer" in \fBmake.conf\fR(5).
+.TP
+.BR "\-\-prune " (\fB\-P\fR)
+Removes all but the highest installed version of a package from your
+system. Use \fB\-\-prune\fR together with \fB\-\-verbose\fR to show
+reverse dependencies or with \fB\-\-nodeps\fR to ignore all dependencies.
+\fBWARNING: This action can remove packages from your world file! Check
+the emerge output of the next \-\-depclean run carefully! Use
+\-\-depclean to avoid this issue.\fR
+.TP
+.BR \-\-regen
+Causes portage to check and update the dependency cache of all ebuilds in the
+portage tree.  The cache is used to speed up searches and the building of
+dependency trees.  This command is not recommended for rsync users as rsync
+updates the cache using server\-side caches.  If you do not know the
+differences between a 'rsync user' and some other user, then you are a 'rsync
+user' :).  Rsync users should simply run \fBemerge \-\-sync\fR to regenerate
+the cache.  After a portage update, rsync users may find it convenient to run
+\fBemerge \-\-metadata\fR to rebuild the cache as portage does at the end of
+a sync operation. In order to specify parallel \fB\-\-regen\fR behavior, use
+the \fB\-\-jobs\fR and \fB\-\-load\-average\fR options. If you would like to
+generate and distribute cache for use by others, use \fBegencache\fR(1).
+.TP
+.BR "\-\-resume" (\fB\-r\fR)
+Resumes the most recent merge list that has been aborted due to an error.
+This re\-uses the arguments and options that were given with the original
+command that's being resumed, and the user may also provide
+additional options when calling \fB\-\-resume\fR. It is an error to provide
+atoms or sets as arguments to \fB\-\-resume\fR, since the arguments from the
+resumed command are used instead.
+Please note that this operation will only return an error on failure.  If there
+is nothing for portage to do, then portage will exit with a message and a
+success condition. A resume list will persist until it has been completed in
+entirety or until another aborted merge list replaces it.  The resume history
+is capable of storing two merge lists.  After one resume list completes, it is
+possible to invoke \-\-resume once again in order to resume an older list.
+The resume lists are stored in \fI/var/cache/edb/mtimedb\fR, and may be
+explicitly discarded by running `emaint \-\-fix cleanresume` (see
+\fBemaint\fR(1)).
+.TP
+.BR "\-\-search " (\fB\-s\fR)
+Searches for matches of the supplied string in the portage tree.
+By default emerge uses a case-insensitive simple search, but you can
+enable a regular expression search by prefixing the search string with %.
+For example, \fBemerge \-\-search "%^kde"\fR searches for any package whose
+name starts with "kde"; \fBemerge \-\-search "%gcc$"\fR searches for any
+package that ends with "gcc"; \fBemerge \-\-search "office"\fR searches for
+any package that contains the word "office".  If you want to include the
+category into the search string, prepend an @: \fBemerge \-\-search
+"%@^dev-java.*jdk"\fR. If you want to search the package descriptions as well,
+use the \fB\-\-searchdesc\fR action.
+.TP
+.BR "\-\-searchdesc " (\fB\-S\fR)
+Matches the search string against the description field as well as
+the package name.  \fBTake caution\fR as the descriptions are also
+matched as regular expressions.
+.TP
+.BR \-\-sync
+Updates repositories, for which auto\-sync, sync\-type and sync\-uri attributes are
+set in repos.conf. See \fBportage\fR(5) for more information.
+The \fBPORTAGE_SYNC_STALE\fR variable configures
+warnings that are shown when emerge \-\-sync has not
+been executed recently.
+
+\fBWARNING:\fR
+The emerge \-\-sync action will revert local changes (e.g. modifications or
+additions of files) inside repositories synchronized using rsync.
+
+\fBNOTE:\fR
+The emerge \-\-sync command is a compatibility command.  Sync operations are
+now performed using the the new emaint sync module. This new emaint sync module
+has greater functionality and flexibility.  Please refer to \fBemaint\fR(1) for
+more information about sync operations.
+
+\fBNOTE:\fR
+The \fBemerge\-webrsync\fR program will download the entire
+portage tree as a tarball, which is much faster than emerge
+\-\-sync for first time syncs.
+
+.TP
+.BR "\-\-unmerge " (\fB\-C\fR)
+\fBWARNING: This action can remove important packages!\fR Removes
+all matching packages following a counter governed by \fBCLEAN_DELAY\fR.
+This does no checking of dependencies, so it may remove packages necessary
+for the proper operation of your system.  Its arguments can be \fIatoms\fR
+or \fIebuilds\fR. For a dependency aware version of \fB\-\-unmerge\fR, use
+\fB\-\-depclean\fR or \fB\-\-prune\fR.  For a version with
+\fBCLEAN_DELAY=0\fR, use \fB\-\-rage\-clean\fR.
+.TP
+.BR "\-\-version " (\fB\-V\fR)
+Displays the version number of \fBemerge\fR.
+.SH "OPTIONS"
+.TP
+.BR \-\-accept\-properties=ACCEPT_PROPERTIES
+This option temporarily overrides the \fBACCEPT_PROPERTIES\fR
+variable. The \fBACCEPT_PROPERTIES\fR variable is incremental,
+which means that the specified setting is appended to the
+existing value from your configuration. The special \fB-*\fR
+token can be used to discard the existing configuration
+value and start fresh. See the \fBMASKED PACKAGES\fR section
+and \fBmake.conf\fR(5) for more information about
+ACCEPT_PROPERTIES. A typical usage example for this option
+would be to use \fI\-\-accept\-properties=\-interactive\fR to
+temporarily mask interactive packages. With default
+configuration, this would result in an effective
+\fBACCEPT_PROPERTIES\fR value of "* -interactive".
+.TP
+.BR \-\-accept\-restrict=ACCEPT_RESTRICT
+This option temporarily overrides the \fBACCEPT_RESTRICT\fR
+variable. The \fBACCEPT_RESTRICT\fR variable is incremental,
+which means that the specified setting is appended to the
+existing value from your configuration. The special \fB-*\fR
+token can be used to discard the existing configuration
+value and start fresh. See the \fBMASKED PACKAGES\fR section
+and \fBmake.conf\fR(5) for more information about
+ACCEPT_RESTRICT. A typical usage example for this option
+would be to use \fI\-\-accept\-restrict=\-bindist\fR to
+temporarily mask packages that are not binary
+re\-distributable. With default
+configuration, this would result in an effective
+\fBACCEPT_RESTRICT\fR value of "* -bindist".
+.TP
+.BR "\-\-alert [ y | n ] (\-A short option)"
+Add a terminal bell character ('\\a') to all interactive prompts. This
+is especially useful if dependency resolution is taking a long time, and
+you want emerge to alert you when it is finished. If you use
+\fBemerge -auAD world\fR, emerge will courteously point out when it has
+finished calculating the graph.
+
+\fB--alert\fR may be 'y' or 'n'. 'true' and 'false' mean the same thing.
+Using \fB--alert\fR without an option is the same as using it with 'y'.
+Try it with 'emerge -aA portage'.
+
+If your terminal emulator is set up to make '\\a' into a window manager
+urgency hint, move your cursor to a different window to get the effect.
+.TP
+.BR "\-\-alphabetical "
+When displaying USE and other flag output, combines the enabled and
+disabled lists into one list and sorts the whole list alphabetically.
+.TP
+.BR "\-\-ask [ y | n ] (\-a short option)"
+Before performing the action, display what will take place (server info for
+\fB\-\-sync\fR, \fB\-\-pretend\fR output for merge, and so forth), then ask
+whether to proceed with the action or abort.  Using \fB\-\-ask\fR is more
+efficient than using \fB\-\-pretend\fR and then executing the same command
+without \fB\-\-pretend\fR, as dependencies will only need to be calculated
+once. \fBWARNING: If the "Enter" key is pressed at the prompt (with no other
+input), it is interpreted as acceptance of the first choice.  Note that the
+input
+buffer is not cleared prior to the prompt, so an accidental press of the
+"Enter" key at any time prior to the prompt will be interpreted as a choice!
+Use the \-\-ask\-enter\-invalid option if you want a single "Enter" key
+press to be interpreted as invalid input.\fR
+.TP
+.BR "\-\-ask\-enter\-invalid"
+When used together with the \fB\-\-ask\fR option,
+interpret a single "Enter" key press as
+invalid input. This helps prevent accidental
+acceptance of the first choice. This option is
+intended to be set in the \fBmake.conf\fR(5)
+\fBEMERGE_DEFAULT_OPTS\fR variable.
+.TP
+.BR "\-\-autounmask [ y | n ]"
+Automatically unmask packages and generate package.use
+settings as necessary to satisfy dependencies. This
+option is enabled by default. If any configuration
+changes are required, then they will be displayed
+after the merge list and emerge will immediately
+abort. If the displayed configuration changes are
+satisfactory, you should copy and paste them into
+the specified configuration file(s), or enable the
+\fB\-\-autounmask\-write\fR option. The
+\fBEMERGE_DEFAULT_OPTS\fR variable may be used to
+disable this option by default in \fBmake.conf\fR(5).
+.TP
+.BR "\-\-autounmask\-continue [ y | n ]"
+Automatically apply autounmask changes to configuration
+files, and continue to execute the specified command. If
+the dependency calculation is not entirely successful, then
+emerge will simply abort without modifying any configuration
+files.
+\fBWARNING:\fR
+This option is intended to be used only with great caution,
+since it is possible for it to make nonsensical configuration
+changes which may lead to system breakage. Therefore, it is
+advisable to use \fB\-\-ask\fR together with this option.
+.TP
+.BR "\-\-autounmask\-only [ y | n ]"
+Instead of doing any package building, just unmask
+packages and generate package.use settings as necessary
+to satisfy dependencies. This option is disabled by
+default.
+.TP
+.BR "\-\-autounmask\-unrestricted\-atoms [ y | n ]"
+If \-\-autounmask is enabled, keyword and mask changes
+using the \'=\' operator will be written. With this
+option, \'>=\' operators will be used whenever possible.
+USE and license changes always use the latter behavior.
+.TP
+.BR "\-\-autounmask\-keep\-masks [ y | n ]"
+If \-\-autounmask is enabled, no package.unmask or ** keyword changes
+will be created. This leads to unsatisfied dependencies if
+no other solution exists.
+.TP
+.BR "\-\-autounmask\-write [ y | n ]"
+If \-\-autounmask is enabled, changes are written
+to config files, respecting \fBCONFIG_PROTECT\fR and \fB\-\-ask\fR.
+If the corresponding package.* is a file, the changes are appended to
+it, if it is a directory, changes are written to the lexicographically
+last file. This way it is always ensured that the new changes take
+precedence over existing changes. This option is automatically enabled with
+\-\-ask.
+.TP
+.BR \-\-backtrack=COUNT
+Specifies an integer number of times to backtrack if
+dependency calculation fails due to a conflict or an
+unsatisfied dependency (default: \'3\').
+.TP
+.BR "\-\-binpkg\-changed\-deps [ y | n ]"
+Tells emerge to ignore binary packages for which the corresponding
+ebuild dependencies have changed since the packages were built.
+In order to help avoid issues with resolving inconsistent dependencies,
+this option is automatically enabled unless the \fB\-\-usepkgonly\fR
+option is enabled. Behavior with respect to changed build\-time
+dependencies is controlled by the \fB\-\-with\-bdeps\fR option.
+.TP
+.BR "\-\-binpkg\-respect\-use [ y | n ]"
+Tells emerge to ignore binary packages if their USE flags
+don't match the current configuration. In order to help avoid issues
+with resolving inconsistent USE flag settings, this option is
+automatically enabled unless the \fB\-\-usepkgonly\fR option
+is enabled.
+.TP
+.BR "\-\-buildpkg [ y | n ] (\-b short option)"
+Tells emerge to build binary packages for all ebuilds processed in
+addition to actually merging the packages.  Useful for maintainers
+or if you administrate multiple Gentoo Linux systems (build once,
+emerge tbz2s everywhere) as well as disaster recovery. The package
+will be created in the \fBPKGDIR\fR directory (see \fBmake.conf\fR(5)).
+An alternative for already\-merged
+packages is to use \fBquickpkg\fR(1) which creates a tbz2 from the
+live filesystem.
+.TP
+.BR "\-\-buildpkg\-exclude " ATOMS
+A space separated list of package atoms for which
+no binary packages should be built. This option overrides all
+possible ways to enable building of binary packages except for
+the downgrade\-backup and unmerge\-backup \fBFEATURES\fR settings (see
+\fBmake.conf\fR(5) for more information about \fBFEATURES\fR settings).
+.TP
+.BR "\-\-buildpkgonly " (\fB\-B\fR)
+Creates binary packages for all ebuilds processed without actually
+merging the packages.  This comes with the caveat that all build-time
+dependencies must already be emerged on the system.
+.TP
+.BR "\-\-changed\-deps [ y | n ]"
+Tells emerge to replace installed packages for which the corresponding
+ebuild dependencies have changed since the packages were built. This
+option also implies the \fB\-\-selective\fR option. Behavior with
+respect to changed build\-time dependencies is controlled by the
+\fB\-\-with\-bdeps\fR option.
+.TP
+.BR "\-\-changed\-use " (\fB\-U\fR)
+Tells emerge to include installed packages where USE flags have
+changed since installation. This option also implies the
+\fB\-\-selective\fR option. Unlike \fB\-\-newuse\fR, the
+\fB\-\-changed\-use\fR option does not trigger reinstallation when
+flags that the user has not enabled are added or removed.
+
+NOTE: This option ignores the state of the "test" USE flag, since that flag
+has a special binding to FEATURES="test" (see \fBmake.conf\fR(5) for more
+information about \fBFEATURES\fR settings).
+.TP
+.BR "\-\-changelog " (\fB\-l\fR)
+Use this in conjunction with the \fB\-\-pretend\fR option.  This will
+show the ChangeLog entries for all the packages that will be upgraded.
+.TP
+.BR "\-\-color < y | n >"
+Enable or disable color output.  This option will override \fINOCOLOR\fR
+(see \fBmake.conf\fR(5)) and may also be used to force color output when stdout
+is not a tty (by default, color is disabled unless stdout is a tty).
+.TP
+.BR "\-\-columns"
+Used alongside \fB\-\-pretend\fR to cause the package name, new version,
+and old version to be displayed in an aligned format for easy cut\-n\-paste.
+.TP
+.BR "\-\-complete\-graph [ y | n ]"
+This causes \fBemerge\fR to consider the deep dependencies of all
+packages from the world set. With this option enabled,
+\fBemerge\fR will bail out if it determines that the given operation will
+break any dependencies of the packages that have been added to the
+graph. Like the \fB\-\-deep\fR option, the \fB\-\-complete\-graph\fR
+option will significantly increase the time taken for dependency
+calculations. Note that, unlike the \fB\-\-deep\fR option, the
+\fB\-\-complete\-graph\fR option does not cause any more packages to
+be updated than would have otherwise been updated with the option disabled.
+Using \fB\-\-with\-bdeps=y\fR together with \fB\-\-complete\-graph\fR makes
+the graph as complete as possible.
+.TP
+.BR "\-\-complete\-graph\-if\-new\-use < y | n >"
+Trigger the \fB\-\-complete\-graph\fR behavior if USE or IUSE will
+change for an installed package. This option is enabled by default.
+.TP
+.BR "\-\-complete\-graph\-if\-new\-ver < y | n >"
+Trigger the \fB\-\-complete\-graph\fR behavior if an installed package
+version will change (upgrade or downgrade). This option is enabled by default.
+.TP
+.BR \-\-config\-root=DIR
+Set the \fBPORTAGE_CONFIGROOT\fR environment variable.
+.TP
+.BR "\-\-debug " (\fB\-d\fR)
+Tells emerge to run the emerge command in \fB\-\-debug\fR mode.  In this
+mode the bash build environment will run with the \-x option, causing
+it to output verbose debugging information to stdout.  This also enables
+a plethora of other output (mostly dependency resolution messages).
+.TP
+.BR "\-\-deep [DEPTH] " (\fB\-D\fR)
+This flag forces
+\fBemerge\fR to consider the entire dependency tree of packages,
+instead of checking only the immediate dependencies of the packages.
+As an example, this catches updates in libraries that are not directly
+listed in the dependencies of a package.  Also see \fB\-\-with\-bdeps\fR for
+behavior with respect to build time dependencies that are not strictly
+required.
+.TP
+.BR "\-\-depclean\-lib\-check [ y | n ]"
+Account for library link-level dependencies during
+\fB\-\-depclean\fR and \fB\-\-prune\fR actions.
+This option is enabled by default. If FEATURES="preserve\-libs" is
+enabled in \fBmake.conf\fR(5), and preserve\-libs is not restricted
+for any of the packages selected for removal, then this option is
+ignored because any libraries that have consumers will simply be
+preserved.
+.TP
+.BR \-\-digest
+Prevent corruption from being noticed. The `repoman manifest` command is the
+preferred way to generate manifests and it is capable of doing an entire
+repository or category at once (see \fBrepoman\fR(1)).
+.TP
+.BR "\-\-dynamic\-deps < y | n >"
+In dependency calculations, substitute the dependencies of installed
+packages with the dependencies of corresponding unbuilt ebuilds from
+source repositories. This causes the effective dependencies of
+installed packages to vary dynamically when source ebuild dependencies
+are modified. This option is enabled by default.
+
+\fBWARNING:\fR
+If you want to disable \-\-dynamic\-deps, then it may be necessary to
+first run \fBfixpackages\fR(1) in order to get the best results. The
+\fBfixpackages\fR(1) command performs two different operations that can
+also be performed separately by the `emaint \-\-fix moveinst` and
+`emaint \-\-fix movebin` commands (see \fBemaint\fR(1)).
+.TP
+.BR "\-\-emptytree " (\fB\-e\fR)
+Reinstalls target atoms and their entire deep
+dependency tree, as though no packages are currently
+installed. You should run this with \fB\-\-pretend\fR
+first to make sure the result is what you expect.
+.TP
+.BR "\-\-exclude " ATOMS
+A space separated list of package names or slot atoms.
+Emerge won't  install any ebuild or binary package that
+matches any of the given package atoms.
+.TP
+.BR "\-\-fail\-clean [ y | n ]"
+Clean up temporary files after a build failure. This is
+particularly useful if you have \fBPORTAGE_TMPDIR\fR on
+tmpfs. If this option is enabled, you probably also want
+to enable \fBPORT_LOGDIR\fR (see \fBmake.conf\fR(5)) in
+order to save the build log.
+.TP
+.BR "\-\-fetchonly " (\fB\-f\fR)
+Instead of doing any package building, just perform fetches for all
+packages (fetch things from SRC_URI based upon USE setting).
+.TP
+.BR "\-\-fetch\-all\-uri " (\fB\-F\fR)
+Instead of doing any package building, just perform fetches for all
+packages (fetch everything in SRC_URI regardless of USE setting).
+.TP
+.BR "\-\-fuzzy\-search [ y | n ]"
+Enable or disable fuzzy search for search actions. When fuzzy search
+is enabled, a result is returned if it is sufficiently similar to the
+search string, without requiring an exact match. This option is enabled
+by default. Fuzzy search does not support regular expressions, therefore
+it is automatically disabled for regular expression searches. Fuzzy
+search is slightly slower than non\-fuzzy search.
+.TP
+.BR "\-\-getbinpkg [ y | n ] (\-g short option)"
+Using the server and location defined in \fIPORTAGE_BINHOST\fR (see
+\fBmake.conf\fR(5)), portage will download the information from each binary
+package found and it will use that information to help build the dependency
+list.  This option implies \fB\-k\fR.  (Use \fB\-gK\fR for binary\-only
+merging.)
+.TP
+.BR "\-\-getbinpkgonly [ y | n ] (\-G short option)"
+This option is identical to \fB\-g\fR, as above, except binaries from the
+remote server are preferred over local packages if they are not identical.
+.TP
+.BR "\-\-ignore-default-opts"
+Causes \fIEMERGE_DEFAULT_OPTS\fR (see \fBmake.conf\fR(5)) to be ignored.
+.TP
+.BR "\-\-ignore\-built\-slot\-operator\-deps < y | n >"
+Ignore the slot/sub\-slot := operator parts of dependencies that have
+been recorded when packages where built. This option is intended
+only for debugging purposes, and it only affects built packages
+that specify slot/sub\-slot := operator dependencies which are
+supported beginning with \fBEAPI 5\fR.
+.TP
+.BR "\-\-ignore\-soname\-deps < y | n >"
+Ignore the soname dependencies of binary and installed packages. This
+option is enabled by default, since soname dependencies are relatively
+new, and the required metadata is not guaranteed to exist for binary and
+installed packages built with older versions of portage. Also, soname
+dependencies will be automatically ignored for dependency calculations
+that can pull unbuilt ebuilds into the dependency graph, since unbuilt
+ebuilds do not have any soname dependency metadata, making it impossible
+to determine whether an unresolved soname dependency can be satisfied.
+Therefore, \fB\-\-usepkgonly\fR (or \fB\-\-getbinpkgonly\fR) must be
+used in order to enable soname depedency resolution when installing
+packages.
+.TP
+.BR "-j [JOBS], \-\-jobs[=JOBS]"
+Specifies the number of packages to build simultaneously. If this option is
+given without an argument, emerge will not limit the number of jobs that can
+run simultaneously. Also see the related \fB\-\-load\-average\fR option.
+Similarly to the \-\-quiet\-build option, the \-\-jobs option causes all
+build output to be redirected to logs.
+Note that interactive packages currently force a setting
+of \fI\-\-jobs=1\fR. This issue can be temporarily avoided
+by specifying \fI\-\-accept\-properties=\-interactive\fR.
+.TP
+.BR "\-\-keep\-going [ y | n ]"
+Continue as much as possible after an error. When an error occurs,
+dependencies are recalculated for remaining packages and any with
+unsatisfied dependencies are automatically dropped. Also see
+the related \fB\-\-skipfirst\fR option.
+.TP
+.BR "\-\-load\-average [LOAD]"
+Specifies that no new builds should be started if there are other builds
+running and the load average is at least LOAD (a floating-point number).
+With no argument, removes a previous load limit.
+This option is recommended for use in combination with \fB\-\-jobs\fR in
+order to avoid excess load. See \fBmake\fR(1) for information about
+analogous options that should be configured via \fBMAKEOPTS\fR in
+\fBmake.conf\fR(5).
+.TP
+.BR "\-\-misspell\-suggestions < y | n >"
+Enable or disable misspell suggestions. By default, emerge will show
+a list of packages with similar names when a package doesn't exist.
+The \fIEMERGE_DEFAULT_OPTS\fR variable may be used to disable this
+option by default.
+.TP
+.BR "\-\-newrepo "
+Tells emerge to recompile a package if it is now being pulled from a
+different repository. This option also implies the
+\fB\-\-selective\fR option.
+.TP
+.BR "\-\-newuse " (\fB\-N\fR)
+Tells emerge to include installed packages where USE
+flags have changed since compilation. This option
+also implies the \fB\-\-selective\fR option.
+USE flag changes include:
+
+A USE flag was added to a package.
+A USE flag was removed from a package.
+A USE flag was turned on for a package.
+A USE flag was turned off for a package.
+
+USE flags may be toggled by your profile as well as your USE and package.use
+settings. If you would like to skip rebuilds for which disabled flags have
+been added to or removed from IUSE, see the related
+\fB\-\-changed\-use\fR option. If you would like to skip rebuilds for
+specific packages, see the \fB\-\-exclude\fR option.
+
+NOTE: This option ignores the state of the "test" USE flag, since that flag
+has a special binding to FEATURES="test" (see \fBmake.conf\fR(5) for more
+information about \fBFEATURES\fR settings).
+.TP
+.BR "\-\-noconfmem"
+Causes portage to disregard merge records indicating that a config file
+inside of a \fBCONFIG_PROTECT\fR directory has been merged already.  Portage
+will normally merge those files only once to prevent the user from
+dealing with the same config multiple times.  This flag will cause the
+file to always be merged.
+.TP
+.BR "\-\-nodeps " (\fB\-O\fR)
+Merges specified packages without merging any dependencies.  Note that
+the build may fail if the dependencies aren't satisfied.
+.TP
+.BR "\-\-noreplace " (\fB\-n\fR)
+Skips the packages specified on the command\-line that have already
+been installed.  Without this option, any package atoms or package sets
+you specify on the command\-line \fBwill\fR cause Portage to remerge
+the package, even if it is already installed.  Note that Portage will
+not remerge dependencies by default. This option can be used to update the
+world file without rebuilding the packages.
+.TP
+.BR "\-\-nospinner"
+Disables the spinner for the session.  The spinner is active when the
+terminal device is determined to be a TTY.  This flag disables it regardless.
+.TP
+.BR "\-\-usepkg\-exclude " ATOMS
+A space separated list of package names or slot atoms. Emerge will ignore
+matching binary packages.
+.TP
+.BR "\-\-rebuild\-exclude " ATOMS
+A space separated list of package names or slot atoms. Emerge will not rebuild
+matching packages due to \fB\-\-rebuild\fR.
+.TP
+.BR "\-\-rebuild\-ignore " ATOMS
+A space separated list of package names or slot atoms. Emerge will not rebuild
+packages that depend on matching packages due to \fB\-\-rebuild\fR.
+.TP
+.BR "\-\-oneshot " (\fB\-1\fR)
+Emerge as normal, but do not add the packages to the world file
+for later updating.
+
+\fBWARNING:\fR This option should only be used for packages that are
+reachable from the @world package set (those that would not be removed
+by \fB\-\-depclean\fR), since dependencies of unreachable packages are
+allowed to be broken when satisfying dependencies of other packages.
+Broken dependencies of this sort will invalidate assumptions that make
+it possible for \fB\-\-deep\fR to be disabled by default.
+.TP
+.BR "\-\-onlydeps " (\fB\-o\fR)
+Only merge (or pretend to merge) the dependencies of the packages
+specified, not the packages themselves.
+.TP
+.BR "\-\-package\-moves [ y | n ]"
+Perform package moves when necessary. This option is enabled
+by default. Package moves are typically applied immediately
+after a \fB\-\-sync\fR action. They are applied in an
+incremental fashion, using only the subset of the history of
+package moves which have been added or modified since the
+previous application of package moves.
+
+\fBWARNING:\fR This option
+should remain enabled under normal circumstances.
+Do not disable it unless you know what you are
+doing.
+
+\fBNOTE:\fR The \fBfixpackages\fR(1) command can be used to
+exhaustively apply the entire history of package moves,
+regardless of whether or not any of the package moves have
+been previously applied.
+.TP
+.BR \-\-pkg\-format
+Specify which binary package format will be created as target.
+Possible choices now are tar and rpm or their combinations.
+.TP
+.BR \-\-prefix=DIR
+Set the \fBEPREFIX\fR environment variable.
+.TP
+.BR "\-\-pretend " (\fB\-p\fR)
+Instead of actually performing the merge, simply display what *would*
+have been installed if \fB\-\-pretend\fR weren't used.  Using \fB\-\-pretend\fR
+is strongly recommended before installing an unfamiliar package.  In
+the printout:
+
+.TS
+lI l.
+N	new (not yet installed)
+S	new SLOT installation (side-by-side versions)
+U	updating (to another version)
+D	downgrading (best version seems lower)
+r	reinstall (forced for some reason, possibly due to slot or sub\-slot)
+R	replacing (remerging same version)
+F	fetch restricted (must be manually downloaded)
+f	fetch restricted (already downloaded)
+I	interactive (requires user input)
+B	blocked by another package (unresolved conflict)
+b	blocked by another package (automatically resolved conflict)
+.TE
+.TP
+.BR "\-\-quiet [ y | n ] (\-q short option)"
+Results may vary, but the general outcome is a reduced or condensed
+output from portage's displays.
+.TP
+.BR "\-\-quiet\-build [ y | n ]"
+Redirect all build output to logs alone, and do not display it on
+stdout. If a build failure occurs for a single package, the build
+log will be automatically displayed on stdout (unless the
+\fI\-\-quiet\-fail\fR option is enabled). If there are multiple
+build failures (due to options like \-\-keep\-going or \-\-jobs),
+then the content of the log files will not be displayed, and instead
+the paths of the log files will be displayed together with the
+corresponding die messages.
+Note that interactive packages currently force all build output to
+be displayed on stdout. This issue can be temporarily avoided
+by specifying \fI\-\-accept\-properties=\-interactive\fR.
+Further, note that disabling \fI\-\-quiet\-build\fR has no effect if
+\fI\-\-jobs\fR is set to anything higher than 1.
+.TP
+.BR "\-\-quiet\-fail [ y | n ]"
+Suppresses display of the build log on stdout when build output is hidden
+due to options such as \fI\-\-jobs\fR, \fI\-\-quiet\fR, or
+\fI\-\-quiet\-build\fR. Only the die message and the path of the build log
+will be displayed on stdout.
+.TP
+.BR "\-\-quiet\-repo\-display"
+In the package merge list display, suppress ::repository output, and
+instead use numbers to indicate which repositories package come from.
+.TP
+.BR \-\-quiet\-unmerge\-warn
+Disable the warning message that's shown prior to
+\fB\-\-unmerge\fR actions. This option is intended
+to be set in the \fBmake.conf\fR(5)
+\fBEMERGE_DEFAULT_OPTS\fR variable.
+.TP
+.BR "\-\-rage\-clean"
+\fBWARNING: This action can remove important packages!\fR
+\fB\-\-rage\-clean\fR does \fB\-\-unmerge\fR with \fBCLEAN_DELAY=0\fR.
+.TP
+.BR "\-\-read\-news [ y | n ]"
+Offer to read news via eselect if there are unread news. This option
+has no effect unless \fB\-\-ask\fR is enabled.
+.TP
+.BR "\-\-rebuild\-if\-new\-slot [ y | n ]"
+Automatically rebuild or reinstall packages when slot/sub\-slot :=
+operator dependencies can be satisfied by a newer slot, so that
+older packages slots will become eligible for removal by the
+\-\-depclean action as soon as possible. This option only
+affects packages that specify slot/sub\-slot := dependencies
+which are supported beginning with \fBEAPI 5\fR.
+Since this option requires
+checking of reverse dependencies, it enables \-\-complete\-graph
+mode whenever a new slot is installed. This option is enabled by
+default.
+
+NOTE: If you want to skip all rebuilds involving slot\-operator
+dependecies (including those that involve sub\-slot changes alone),
+then \fI\-\-ignore\-built\-slot\-operator\-deps=y\fR is the option
+that you are looking for, since \fI\-\-rebuild\-if\-new\-slot\fR
+does not affect rebuilds triggered by sub\-slot changes alone.
+.TP
+.BR "\-\-rebuild\-if\-new\-rev [ y | n ]"
+Rebuild packages when build\-time dependencies are built from source, if the
+dependency is not already installed with the same version and revision.
+.TP
+.BR "\-\-rebuild\-if\-new\-ver [ y | n ]"
+Rebuild packages when build\-time dependencies are built from source, if the
+dependency is not already installed with the same version. Revision numbers
+are ignored.
+.TP
+.BR "\-\-rebuild\-if\-unbuilt [ y | n ]"
+Rebuild packages when build\-time dependencies are built from source.
+.TP
+.BR "\-\-rebuilt\-binaries [ y | n ]"
+Replace installed packages with binary packages that have
+been rebuilt. Rebuilds are detected by comparison of
+BUILD_TIME package metadata. This option is enabled
+automatically when using binary packages
+(\fB\-\-usepkgonly\fR or \fB\-\-getbinpkgonly\fR) together with
+\fB\-\-update\fR and \fB\-\-deep\fR.
+.TP
+.BR "\-\-rebuilt\-binaries\-timestamp=TIMESTAMP"
+This option modifies emerge's behaviour only if
+\fB\-\-rebuilt\-binaries\fR is given. Only binaries that
+have a BUILD_TIME that is larger than the given TIMESTAMP
+and that is larger than that of the installed package will
+be considered by the rebuilt\-binaries logic.
+.TP
+.BR "\-\-reinstall changed\-use"
+This is an alias for \fB\-\-changed\-use\fR.
+.TP
+.BR "\-\-reinstall\-atoms " ATOMS
+A space separated list of package names or slot atoms. Emerge will treat
+matching packages as if they are not installed, and reinstall them if
+necessary.
+.TP
+.BR \-\-root=DIR
+Set the \fBROOT\fR environment variable.
+.TP
+.BR "\-\-root\-deps[=rdeps]"
+If no argument is given then build\-time dependencies of packages for
+\fBROOT\fR are installed to \fBROOT\fR instead of /.
+If the \fBrdeps\fR argument is given then discard all build\-time dependencies
+of packages for \fBROOT\fR.
+This option is only meaningful when used together with \fBROOT\fR and it should
+not be enabled under normal circumstances!
+
+Does not affect EAPIs that support \fBHDEPEND\fR.
+Experimental \fBEAPI 5-hdepend\fR provides \fBHDEPEND\fR as a new
+means to adjust installation into "\fI/\fR" and \fBROOT\fR.
+If ebuilds using EAPIs which \fIdo not\fR support \fBHDEPEND\fR are built in
+the same \fBemerge\fR run as those using EAPIs which \fIdo\fR support
+\fBHDEPEND\fR, this option affects only the former.
+.TP
+.BR "\-\-search\-index < y | n >"
+Enable or disable indexed search for search actions. This option is
+enabled by default. The search index needs to be regenerated by
+\fBegencache\fR(1) after changes are made to a repository (see the
+\fB\-\-update\-pkg\-desc\-index\fR action). This setting can be added
+to \fBEMERGE_DEFAULT_OPTS\fR (see \fBmake.conf\fR(5)) and later
+overridden via the command line.
+.TP
+.BR "\-\-search\-similarity PERCENTAGE"
+Set the minimum similarity percentage (a floating-point number between
+0 and 100). Search results with similarity percentages lower than this
+are discarded (default: \'80\'). This option has no effect unless the
+\fB\-\-fuzzy\-search\fR option is enabled.
+.TP
+.BR "\-\-select [ y | n ] (\-w short option)"
+Add specified packages to the world set (inverse of
+\fB\-\-oneshot\fR). This is useful if you want to
+use \fBEMERGE_DEFAULT_OPTS\fR to make
+\fB\-\-oneshot\fR behavior default.
+.TP
+.BR "\-\-selective [ y | n ]"
+This is identical to the \fB\-\-noreplace\fR option.
+Some options, such as \fB\-\-update\fR, imply \fB\-\-selective\fR.
+Use \fB\-\-selective=n\fR if you want to forcefully disable
+\fB\-\-selective\fR, regardless of options like \fB\-\-changed\-use\fR,
+\fB\-\-newuse\fR, \fB\-\-noreplace\fR, or \fB\-\-update\fR.
+.TP
+.BR "\-\-skipfirst"
+This option is only valid when used with \fB\-\-resume\fR.  It removes the
+first package in the resume list. Dependencies are recalculated for
+remaining packages and any that have unsatisfied dependencies or are
+masked will be automatically dropped. Also see the related
+\fB\-\-keep\-going\fR option.
+.TP
+.BR "\-\-sync\-submodule <glsa|news|profiles>"
+Restrict sync to the specified submodule(s). This option may be
+specified multiple times, in order to sync multiple submodules.
+Currently, this option has no effect for sync protocols other
+than rsync.
+(--sync action only)
+.TP
+.BR "\-\-tree " (\fB\-t\fR)
+Shows the dependency tree for the given target by indenting dependencies.
+This is only really useful in combination with \fB\-\-emptytree\fR or
+\fB\-\-update\fR and \fB\-\-deep\fR.
+.TP
+.BR "\-\-unordered\-display"
+By default the displayed merge list is sorted using the
+order in which the packages will be merged. When
+\fB\-\-tree\fR is used together with this option, this
+constraint is removed, hopefully leading to a more
+readable dependency tree.
+.TP
+.BR "\-\-update " (\fB\-u\fR)
+Updates packages to the best version available, which may
+not always be the  highest version number due to masking
+for testing and development. Package atoms specified on
+the command line are greedy, meaning that unspecific
+atoms may match multiple versions of slotted packages.
+.TP
+.BR "\-\-use\-ebuild\-visibility [ y | n ]"
+Use unbuilt ebuild metadata for visibility
+checks on built packages.
+.TP
+.BR "\-\-useoldpkg\-atoms " ATOMS
+A space separated list of package names or slot atoms. Emerge will prefer
+matching binary packages over newer unbuilt packages.
+.TP
+.BR "\-\-usepkg [ y | n ] (\-k short option)"
+Tells emerge to use binary packages (from $PKGDIR) if they are available, thus
+possibly avoiding some time\-consuming compiles.  This option is useful for CD
+installs; you can export PKGDIR=/mnt/cdrom/packages and then use this option to
+have emerge "pull" binary packages from the CD in order to satisfy
+dependencies.
+.TP
+.BR "\-\-usepkgonly [ y | n ] (\-K short option)"
+Tells emerge to only use binary packages (from $PKGDIR).  All the binary
+packages must be available at the time of dependency calculation or emerge
+will simply abort.  Portage does not use ebuild repositories when calculating
+dependency information so all masking information is ignored.
+.TP
+.BR "\-\-verbose [ y | n ] (\-v short option)"
+Tell emerge to run in verbose mode.  Currently this flag causes emerge to print
+out GNU info errors, if any, and to show the USE flags that will be used for
+each package when pretending. The following symbols are affixed to USE flags
+in order to indicate their status:
+
+.TS
+l l l
+___
+l l l.
+Symbol	Location	Meaning
+
+-	prefix	not enabled (either disabled or removed)
+*	suffix	transition to or from the enabled state
+%	suffix	newly added or removed
+()	circumfix	forced, masked, or removed
+{}	circumfix	state is bound to FEATURES settings
+.TE
+.TP
+.BR "\-\-verbose\-conflicts"
+Make slot conflicts more verbose. Note that this may in some cases output
+hundreds of packages for slot conflicts.
+.TP
+.BR "\-\-verbose\-slot\-rebuilds [ y | n ]"
+Turns on/off the extra emerge output to list which packages are causing rebuilds.
+The default is set to "y" (on).
+.TP
+.BR "\-\-with\-bdeps < y | n >"
+In dependency calculations, pull in build time dependencies
+that are not strictly required. This defaults to \'n\' for
+installation actions, meaning they will not be installed, and
+\'y\' for the \fB\-\-depclean\fR action, meaning they will not be removed.
+This setting can be added to
+\fBEMERGE_DEFAULT_OPTS\fR (see make.conf(5)) and later overridden via the
+command line.
+.TP
+.BR "\-\-with\-test\-deps [ y | n ]"
+For packages matched by arguments, this option will pull in dependencies
+that are conditional on the "test" USE flag, even if "test" is not
+enabled in \fBFEATURES\fR for the matched packages. (see \fBmake.conf\fR(5)
+for more information about \fBFEATURES\fR settings).
+.SH "ENVIRONMENT OPTIONS"
+.TP
+\fBEPREFIX\fR = \fI[path]\fR
+Use \fBEPREFIX\fR to specify the target prefix to be used for merging packages
+or ebuilds. This variable can be set via the \fB\-\-prefix\fR
+option or in \fBmake.conf\fR(5) (the command line overrides other settings).
+.br
+Defaults to the prefix where portage is currently installed.
+.TP
+\fBROOT\fR = \fI[path]\fR
+Use \fBROOT\fR to specify the target root filesystem to be used for
+merging packages or ebuilds. This variable can be set via the \fB\-\-root\fR
+option or in \fBmake.conf\fR(5) (the command line overrides other settings).
+.br
+Defaults to /.
+.TP
+\fBPORTAGE_CONFIGROOT\fR = \fI[path]\fR
+Use \fBPORTAGE_CONFIGROOT\fR to specify the location for various portage
+configuration files
+(see \fBFILES\fR for a detailed list of configuration files).  This variable
+can be set via the \fB\-\-config\-root\fR option.
+.br
+Defaults to /.
+.SH "OUTPUT"
+When utilizing \fBemerge\fR with the \fB\-\-pretend\fR and \fB\-\-verbose\fR
+flags, the output may be a little hard to understand at first.  This section
+explains the abbreviations.
+.TP
+.B [blocks B     ] app\-text/dos2unix ("app\-text/dos2unix" is blocking \
+app\-text/hd2u\-0.8.0)
+Dos2unix is Blocking hd2u from being emerged.  Blockers are defined when
+two packages will clobber each others files, or otherwise cause some form
+of breakage in your system.  However, blockers usually do not need to be
+simultaneously emerged because they usually provide the same functionality.
+.TP
+.B [ebuild  N    ] app\-games/qstat\-25c
+Qstat is New to your system, and will be emerged for the first time.
+.TP
+.B [ebuild  NS   ] dev-libs/glib-2.4.7
+You already have a version of glib installed, but a 'new' version in
+a different SLOT is available.
+.TP
+.B [ebuild   R   ] sys\-apps/sed\-4.0.5
+Sed 4.0.5 has already been emerged, but if you run the command, then
+portage will Re\-emerge the specified package (sed in this case).
+.TP
+.B [ebuild    F  ] media\-video/realplayer\-8\-r6
+The realplayer package requires that you Fetch the sources manually.
+When you attempt to emerge the package, if the sources are not found,
+then portage will halt and you will be provided with instructions on how
+to download the required files.
+.TP
+.B [ebuild    f  ] media\-video/realplayer\-8\-r6
+The realplayer package's files are already downloaded.
+.TP
+.B [ebuild     U ] net\-fs/samba\-2.2.8_pre1 [2.2.7a]
+Samba 2.2.7a has already been emerged and can be Updated to version
+2.2.8_pre1.
+.TP
+.B [ebuild     UD] media\-libs/libgd\-1.8.4 [2.0.11]
+Libgd 2.0.11 is already emerged, but if you run the command, then
+portage will Downgrade to version 1.8.4 for you.
+.br
+This may occur if a newer version of a package has been masked because it is
+broken or it creates a security risk on your system and a fix has not been
+released yet.
+.br
+Another reason this may occur is if a package you are trying to emerge requires
+an older version of a package in order to emerge successfully.  In this case,
+libgd 2.x is incompatible with libgd 1.x.  This means that packages that were
+created with libgd 1.x will not compile with 2.x and must downgrade libgd first
+before they can emerge.
+.TP
+.B [ebuild     U ] sys\-devel/distcc\-2.16 [2.13\-r1] USE="ipv6* \-gtk \-qt%"
+Here we see that the make.conf variable \fBUSE\fR affects how this package is
+built.  In this example, ipv6 optional support is enabled and both gtk and qt
+support are disabled.  The asterisk following ipv6 indicates that ipv6 support
+was disabled the last time this package was installed.  The percent sign
+following qt indicates that the qt option has been added to the package since
+it was last installed.  For information about all \fBUSE\fR symbols, see the
+\fB\-\-verbose\fR option documentation above.
+.br
+\fB*Note:\fR Flags that haven't changed since the last install are only
+displayed when you use the \fB\-\-pretend\fR and \fB\-\-verbose\fR options.
+Using the \fB\-\-quiet\fR option will prevent all information from being
+displayed.
+.TP
+.B [ebuild  r  U  ] dev\-libs/icu\-50.1.1:0/50.1.1 [50.1\-r2:0/50.1]
+Icu 50.1\-r2 has already been emerged and can be Updated to version
+50.1.1. The \fBr\fR symbol indicates that a sub\-slot change (from 50.1
+to 50.1.1 in this case) will force packages having slot\-operator
+dependencies on it to be rebuilt (as libxml2 will be rebuilt in the next
+example).
+.TP
+.B [ebuild  rR    ] dev\-libs/libxml2\-2.9.0\-r1:2  USE="icu"
+Libxml2 2.9.0\-r1 has already been emerged, but if you run the command,
+then portage will Re\-emerge it in order to satisfy a slot\-operator
+dependency which forces it to be rebuilt when the icu sub\-slot changes
+(as it changed in the previous example).
+.TP
+.B [ebuild     U *] sys\-apps/portage\-2.2.0_alpha6 [2.1.9.25]
+Portage 2.1.9.25 is installed, but if you run the command, then
+portage will upgrade to version 2.2.0_alpha6. In this case,
+the \fB*\fR symbol is displayed, in order to indicate that version
+2.2.0_alpha6 is masked by missing keyword. This type of masking
+display is disabled by the \fB\-\-quiet\fR option if the
+\fB\-\-verbose\fR option is not enabled simultaneously.
+The following symbols are used to indicate various types
+of masking:
+.TS
+l l
+__
+c l.
+Symbol	Mask Type
+
+#	package.mask
+*	missing keyword
+~	unstable keyword
+.TE
+
+\fBNOTE:\fR The unstable keyword symbol (~) will not be shown in cases
+in which the corresponding unstable keywords have been accepted
+globally via \fBACCEPT_KEYWORDS\fR.
+.TP
+
+
+.SH "NOTES"
+You should almost always precede any package install or update attempt with a
+\fB\-\-pretend\fR install or update.  This lets you see how much will be
+done, and shows you any blocking packages that you will have to rectify.
+This goes doubly so for the \fBsystem\fR and \fBworld\fR sets, which can
+update a large number of packages if the portage tree has been particularly
+active.
+.LP
+You also want to typically use \fB\-\-update\fR, which ignores packages that
+are already fully updated but updates those that are not.
+.LP
+When you install a package with uninstalled dependencies and do
+not explicitly state those dependencies in the list of parameters,
+they will not be added to the world file.  If you want them to be
+detected for world updates, make sure to explicitly list them as
+parameters to \fBemerge\fR.
+.LP
+\fBUSE variables\fR may be specified on the command line to
+override those specified in the default locations, letting you
+avoid using some dependencies you may not want to have.  \fBUSE
+flags specified on the command line are NOT remembered\fR.  For
+example, \fBenv USE="\-X \-gnome" emerge mc\fR will emerge mc with
+those USE settings (on Bourne-compatible shells you may omit the \fBenv\fR
+part).  If you want those USE settings to be more
+permanent, you can put them in /etc/portage/package.use instead.
+.LP
+If \fBemerge \-\-update @system\fR or \fBemerge \-\-update @world\fR
+fails with an error message, it may be that an ebuild uses some
+newer feature not present in this version of \fBemerge\fR.  You
+can use \fBemerge \-\-update portage\fR to upgrade to the lastest
+version, which should support any necessary new features.
+.SH "MASKED PACKAGES"
+\fINOTE: Please use caution when using development packages.  Problems
+and bugs resulting from misusing masked packages drains Gentoo
+developer time.  Please be sure you are capable of handling any problems
+that may ensue.\fR
+.LP
+Masks in \fBportage\fR have many uses: they allow a
+testing period where the packages can be used in live machines; they
+prevent the use of a package when it will fail; and they mask existing
+packages that are broken or could pose a security risk.  Read below
+to find out how to unmask in various cases.  Also note that if you give
+\fBemerge\fR an ebuild, then all forms of masking will be ignored and
+\fBemerge\fR will attempt to emerge the package.
+.TP
+.BR backtracking
+When packages are masked for \fBbacktracking\fR, it means that the dependency
+resolver has temporarily masked them in order to avoid dependency conflicts
+and/or unsatisfied dependencies. This type of mask is typically accompanied
+by a message about a missed package update which has been skipped in order to
+avoid dependency conflicts and/or unsatisfied dependencies.
+.TP
+.BR package.mask
+The \fBpackage.mask\fR file primarily blocks the use of packages that cause
+problems or are known to have issues on different systems.  It resides in
+\fI/usr/portage/profiles\fR.
+.TP
+.BR CHOST
+Use the \fBACCEPT_CHOSTS\fR variable in \fBmake.conf\fR(5) to control
+\fBCHOST\fR acceptance.
+.TP
+.BR EAPI
+The \fBEAPI\fR variable in an \fBebuild\fR(5) file is used to mask packages
+that are not supported by the current version of portage. Packages masked by
+\fBEAPI\fR can only be installed after portage has been upgraded.
+.TP
+.BR KEYWORDS
+The \fBKEYWORDS\fR variable in an \fBebuild\fR file is also used for masking
+a package still in testing.  There are architecture\-specific keywords for
+each package that let \fBportage\fR know which systems are compatible with
+the package.  Packages which compile on an architecture, but have not been
+proven to be "stable", are masked with a tilde (\fB~\fR) in front of the
+architecture name.  \fBemerge\fR examines the \fBACCEPT_KEYWORDS\fR environment
+variable to allow or disallow the emerging of a package masked by
+\fBKEYWORDS\fR.  To inform \fBemerge\fR that it should build these 'testing'
+versions of packages, you should update your
+\fI/etc/portage/package.accept_keywords\fR
+file to list the packages you want the
+\'testing\' version.  See \fBportage\fR(5) for more information.
+.TP
+.BR LICENSE
+The \fBLICENSE\fR variable in an \fBebuild\fR file can be used to mask
+packages based on licensing restrictions. \fBemerge\fR examines the
+\fBACCEPT_LICENSE\fR environment variable to allow or disallow the emerging
+of a package masked by \fBLICENSE\fR. See \fBmake.conf\fR(5) for information
+about \fBACCEPT_LICENSE\fR, and see \fBportage\fR(5) for information about
+\fI/etc/portage/package.license\fR.
+.TP
+.BR PROPERTIES
+The \fBPROPERTIES\fR variable in an \fBebuild\fR file can be used to mask
+packages based on properties restrictions. \fBemerge\fR examines the
+\fBACCEPT_PROPERTIES\fR environment variable to allow or disallow the emerging
+of a package masked by \fBPROPERTIES\fR. See \fBmake.conf\fR(5) for information
+about \fBACCEPT_PROPERTIES\fR, and see \fBportage\fR(5) for information about
+\fI/etc/portage/package.properties\fR. Use the \fB\-\-accept\-properties\fR
+option to temporarily override \fBACCEPT_PROPERTIES\fR.
+.TP
+.BR RESTRICT
+The \fBRESTRICT\fR variable in an \fBebuild\fR file can be used to mask
+packages based on RESTRICT tokens. \fBemerge\fR examines the
+\fBACCEPT_RESTRICT\fR environment variable to allow or disallow the emerging
+of a package masked by \fBRESTRICT\fR. See \fBmake.conf\fR(5) for information
+about \fBACCEPT_RESTRICT\fR, and see \fBportage\fR(5) for information about
+\fI/etc/portage/package.accept_restrict\fR. Use the \fB\-\-accept\-restrict\fR
+option to temporarily override \fBACCEPT_RESTRICT\fR.
+.SH "CONFIGURATION FILES"
+Portage has a special feature called "config file protection". The purpose of
+this feature is to prevent new package installs from clobbering existing
+configuration files. By default, config file protection is turned on for /etc
+and the KDE configuration dirs; more may be added in the future.
+.LP
+When Portage installs a file into a protected directory tree like /etc, any
+existing files will not be overwritten. If a file of the same name already
+exists, Portage will change the name of the to\-be\-installed file from 'foo'
+to \'._cfg0000_foo\'. If \'._cfg0000_foo\' already exists, this name becomes
+\'._cfg0001_foo\', etc. In this way, existing files are not overwritten,
+allowing the administrator to manually merge the new config files and avoid any
+unexpected changes.
+.LP
+In addition to protecting overwritten files, Portage will not delete any files
+from a protected directory when a package is unmerged. While this may be a
+little bit untidy, it does prevent potentially valuable config files from being
+deleted, which is of paramount importance.
+.LP
+Protected directories are set using the \fICONFIG_PROTECT\fR variable, normally
+defined in make.globals. Directory exceptions to the CONFIG_PROTECTed
+directories can be specified using the \fICONFIG_PROTECT_MASK\fR variable.
+To find files that need to be updated in /etc, type \fBfind /etc \-name
+\[aq]._cfg????_*\[aq]\fR.
+.LP
+You can disable this feature by setting \fICONFIG_PROTECT="\-*"\fR in
+\fBmake.conf\fR(5).
+Then, Portage will mercilessly auto\-update your config files. Alternatively,
+you can leave Config File Protection on but tell Portage that it can overwrite
+files in certain specific /etc subdirectories. For example, if you wanted
+Portage to automatically update your rc scripts and your wget configuration,
+but didn't want any other changes made without your explicit approval, you'd
+add this to \fBmake.conf\fR(5):
+.LP
+.I CONFIG_PROTECT_MASK="/etc/wget /etc/rc.d"
+.LP
+.SH "CONFIGURATION FILES UPDATE TOOLS"
+Tools such as dispatch\-conf, cfg\-update, and etc\-update are also available
+to aid in the merging of these files. They provide interactive merging and can
+auto\-merge trivial changes.
+.SH "REPORTING BUGS"
+Please report any bugs you encounter through our website:
+.LP
+\fBhttps://bugs.gentoo.org/\fR
+.LP
+Please include the output of \fBemerge \-\-info\fR when you submit your
+bug report.
+.SH "AUTHORS"
+.nf
+Daniel Robbins <drobbins@gentoo.org>
+Geert Bevin <gbevin@gentoo.org>
+Achim Gottinger <achim@gentoo.org>
+Nicholas Jones <carpaski@gentoo.org>
+Phil Bordelon <phil@thenexusproject.org>
+Mike Frysinger <vapier@gentoo.org>
+Marius Mauch <genone@gentoo.org>
+Jason Stubbs <jstubbs@gentoo.org>
+Brian Harring <ferringb@gmail.com>
+Zac Medico <zmedico@gentoo.org>
+Arfrever Frehtes Taifersar Arahesis <arfrever@apache.org>
+.fi
+.SH "FILES"
+Here is a common list of files you will probably be interested in.  For a
+complete listing, please refer to the \fBportage\fR(5) man page.
+.TP
+.B /usr/share/portage/config/sets/
+Contains the default set configuration.
+.TP
+.B /var/lib/portage/world
+Contains a list of all user\-specified packages.  You can safely edit
+this file, adding packages that you want to be considered in \fBworld\fR
+set updates and removing those that you do not want to be considered.
+.TP
+.B /var/lib/portage/world_sets
+This is like the world file but instead of package atoms it contains
+packages sets which always begin with the \fB@\fR character. Use
+\fB/etc/portage/sets/\fR to define user package sets.
+.TP
+.B /etc/portage/make.conf
+Contains variables for the build process, overriding those in
+\fBmake.globals\fR.
+.TP
+.B /etc/portage/color.map
+Contains variables customizing colors.
+.TP
+.B /etc/portage/sets/
+Contains user package set definitions (see \fBportage\fR(5)).
+.TP
+.B /etc/dispatch\-conf.conf
+Contains settings to handle automatic updates/backups of configuration
+files.
+.TP
+.B /etc/portage/make.profile/make.defaults
+Contains profile\-specific variables for the build process.  \fBDo not
+edit this file\fR.
+.TP
+.B /usr/portage/profiles/use.desc
+Contains the master list of USE flags with descriptions of their
+functions.  \fBDo not edit this file\fR.
+.TP
+.B /etc/portage/make.profile/virtuals
+Contains a list of default packages used to resolve virtual dependencies.
+\fBDo not edit this file\fR.
+.TP
+.B /etc/portage/make.profile/packages
+Contains a list of packages used for the base system.  The \fBsystem\fR
+and \fBworld\fR sets consult this file.  \fBDo not edit this file\fR.
+.TP
+.B /usr/share/portage/config/make.globals
+Contains the default variables for the build process.  \fBDo not edit
+this file\fR.
+.TP
+.B /var/log/emerge.log
+Contains a log of all emerge output. This file is always appended to, so if you
+want to clean it, you need to do so manually.
+.TP
+.B /var/log/emerge-fetch.log
+Contains a log of all the fetches in the previous emerge invocation.
+.TP
+.B
+/var/log/portage/elog/summary.log
+Contains the emerge summaries. Installs \fI/etc/logrotate/elog-save-summary\fR.
+.SH "SEE ALSO"
+.BR "emerge \-\-help",
+.BR quickpkg (1),
+.BR ebuild (1),
+.BR ebuild (5),
+.BR make.conf (5),
+.BR color.map (5),
+.BR portage (5)
+.LP
+A number of helper applications reside in \fI/usr/lib/portage/bin\fR.
+.LP
+The \fBapp\-portage/gentoolkit\fR package contains useful scripts such as
+\fBequery\fR (a package query tool).

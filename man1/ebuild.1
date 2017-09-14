@@ -1,0 +1,233 @@
+.TH "EBUILD" "1" "Mar 2013" "Portage VERSION" "Portage"
+.SH "NAME"
+ebuild \- a low level interface to the Portage system
+.SH "SYNOPSIS"
+.B ebuild
+.I file command [command]\fR...
+.SH "DESCRIPTION"
+The ebuild program is a direct interface to the Portage system. It
+allows for direct action upon an ebuild with specific subcommands or
+groups of commands to perform in a specific ebuild's context and
+functions.  Accepting an ebuild script and one or more commands
+as arguments, the ebuild program parses the ebuild script and
+executes the specified commands.  Commands exist to fetch sources,
+unpack sources, compile sources, install object files into a temporary
+directory "image", merge the image to the local filesystem, create a
+bzipped tarball package out of the image, and more.
+.SH "FILE"
+This must be a valid ebuild script.  For further information read
+\fBebuild\fR(5).
+.SH "COMMANDS"
+By default, portage will execute all the functions in order up to the
+one actually specified, except for the functions that have already been
+executed in a previous invocation of ebuild.  For example, simply issuing the
+command \fBcompile\fR will trigger the functions before it to also be run (such
+as \fBsetup\fR and \fBunpack\fR), unless they were run in a previous invocation
+of ebuild.  If you want to make sure they are all run, you need to use
+the command \fBclean\fR first.  If you wish to only have the specified command
+run, then you should use the \fInoauto\fR option in the \fBFEATURES\fR
+environment variable.  See the \fBmake.conf\fR(5) man page for more
+information.
+
+.TP
+.BR help
+Shows a condensed form of this man page along with a lot of package
+specific information.
+.TP
+.BR setup
+Runs all package-specific setup actions and exotic system checks.
+.TP
+.BR clean
+Cleans the temporary build directory that Portage has created for
+this particular ebuild file.  The temporary build directory normally
+contains the extracted source files as well as a possible
+"install image" (all the files that will be merged to the local
+filesystem or stored in a package).  The location of the build
+directory is set by the PORTAGE_TMPDIR variable.  For information
+on what this variable is, run \fIemerge \-\-info\fR, or to override
+this variable, see \fBmake.conf\fR(5).
+
+Note: Portage cleans up almost everything after a package has been
+successfully merged unless FEATURES contains 'noclean'.  Adding noclean
+to FEATURES will cause a lot of files to remain and will consume large
+amounts of space, very quickly.  It is not recommended to leave this on,
+unless you have use for the sources post\-merge.  Optionally, one may
+manually clean these files with \fIrm \-rf /var/tmp/portage\fR.
+.TP
+.BR fetch
+Checks to see if all the sources specified in SRC_URI are available in
+DISTDIR (see \fBmake.conf\fR(5) for more information) and have a valid
+checksum.  If the sources aren't available, an attempt is made to
+download them from the locations specified in SRC_URI.  If multiple
+download locations are listed for a particular file, Portage pings
+each location to see which location is closer. (May not be true
+presently.)  The Gentoo Linux mirrors defined by GENTOO_MIRRORS is
+always considered first.  If for some reason the current or
+just\-downloaded sources' checksums don't match those recorded
+in files/digest\-[package]\-[version\-rev], a warning is printed
+and ebuild exits with an error code of 1.
+.TP
+.BR digest
+This is now equivalent to the \fImanifest\fR command.
+.TP
+.BR manifest
+Updates the manifest file for the package.  This creates checksums for all
+of the files found in the same directory as the current ebuild as well as
+the recursive contents of the files subdirectory. It also creates checksums
+for all of the files listed in SRC_URI for each ebuild. For further
+information regarding the behavior of this command, see the documentation for
+the \fIassume\-digests\fR value of the \fBFEATURES\fR variable in
+\fBmake.conf\fR(5). See the \fB\-\-force\fR option if you would like to
+prevent digests from being assumed.
+.TP
+.BR unpack
+Extracts the sources to a subdirectory in the \fIbuild directory\fR
+(BUILD_PREFIX) by running the \fIsrc_unpack()\fR function in the ebuild
+file.  If no src_unpack() function has been specified, a default
+src_unpack() function is used that extracts all the files specified in
+SRC_URI.  The sources are normally extracted to
+${BUILD_PREFIX}/[package]\-[version\-rev]/work.  This particular directory
+can be referenced by using the ${WORKDIR} variable.
+
+If you're creating an ebuild, you'll want to make sure that the S
+(source directory) variable defined at the top of your ebuild script
+points to the directory that contains your extracted sources.  This
+directory is defined by default to be ${WORKDIR}/${P}, so it is not
+often required.  The src_unpack() function is also responsible for
+making the appropriate patches to the sources so that they're ready
+for compilation.
+.TP
+.BR prepare
+Prepares the extracted sources by running the \fIsrc_prepare()\fR
+function specified in the ebuild file. When src_prepare() starts, the
+current working directory will be set to ${S}. This function is supported
+beginning with \fBEAPI 2\fR.
+.TP
+.BR configure
+Configures the extracted sources by running the \fIsrc_configure()\fR
+function specified in the ebuild file. When src_configure() starts, the
+current working directory will be set to ${S}. This function is supported
+beginning with \fBEAPI 2\fR.
+.TP
+.BR compile
+Compiles the extracted sources by running the \fIsrc_compile()\fR
+function specified in the ebuild file.  When src_compile() starts, the
+current working directory will be set to ${S}.  When src_compile()
+completes, the sources should be fully compiled.
+.TP
+.BR test
+Runs package-specific test cases to verify that everything was built
+properly.
+.TP
+.BR preinst
+Runs package-specific actions that need to be done before the package
+is installed into the live filesystem.
+.TP
+.BR install
+Installs the package to the temporary \fIinstall directory\fR by running
+the \fIsrc_install()\fR function.  When completed, the
+\fIinstall directory\fR (${BUILD_PREFIX}/[package]\-[version\-rev]/image)
+will contain all the files that should either be merged to the local
+filesystem or included in a binary package.
+.TP
+.BR postinst
+Runs package-specific actions that need to be done after the package
+is installed into the live filesystem.  Usually helpful messages are
+shown here.
+.TP
+.BR qmerge
+This function installs all the files in the \fIinstall directory\fR
+to the live filesystem.  The process works as follows: first, the
+\fIpkg_preinst()\fR function (if specified) is run.  Then, the files
+are merged into the live filesystem, and the installed files'
+checksums are recorded in
+\fI/var/db/pkg/${CATEGORY}/${PN}\-${PVR}/CONTENTS\fR.  After
+all the files have been merged, the \fIpkg_postinst()\fR function
+(if specified) is executed.
+.TP
+.BR merge
+Normally, to merge an ebuild, you need to \fIfetch\fR, \fIunpack\fR,
+\fIcompile\fR, \fIinstall\fR and \fIqmerge\fR.  If you're simply
+interested in merging the ebuild, you can use this command, which
+will perform all these steps for you, stopping along the way if a
+particular step doesn't complete successfully.
+.TP
+.BR unmerge
+This function first executes the \fIpkg_prerm()\fR function (if specified).
+Then it removes all files from the live filesystem that have a valid
+checksum and mtime in the package contents file.  Any empty directories
+are recursively removed.  Finally, it runs \fIpkg_postrm()\fR function (if
+specified).  It is safe to merge a new version of a package first and
+then unmerge the old one.  In fact, this is the recommended package
+upgrade method.
+.TP
+.BR prerm
+Runs package-specific actions that need to be executed before the package is
+removed from the filesystem.  See also \fIunmerge\fR.
+.TP
+.BR postrm
+Runs package-specific actions that need to be executed after the package is
+removed from the filesystem.  See also \fIunmerge\fR.
+.TP
+.BR config
+Runs package-specific actions that need to be executed after the emerge
+process has completed.  This usually entails setup of configuration files
+or other similar setups that the user may wish to run.
+.TP
+.BR package
+This command is a lot like the \fImerge\fR command, except that after
+fetching, unpacking, compiling and installing, a .tbz2 binary package
+tarball is created and stored in \fBPKGDIR\fR (see \fBmake.conf\fR(5)).
+.TP
+.BR rpm
+Builds a RedHat RPM package from the files in the temporary
+\fIinstall directory\fR.  At the moment, the ebuild's dependency
+information is not incorporated into the RPM.
+.SH "OPTIONS"
+.TP
+.BR "\-\-debug"
+Run bash with the \-x option, causing it to output verbose debugging
+information to stdout.
+.TP
+.BR "\-\-color < y | n >"
+Enable or disable color output.  This option will override \fINOCOLOR\fR
+(see \fBmake.conf\fR(5)) and may also be used to force color output when stdout
+is not a tty (by default, color is disabled unless stdout is a tty).
+.TP
+.BR "\-\-force"
+When used together with the digest or manifest command,
+this option forces regeneration of
+digests for all distfiles associated with the current ebuild. Any distfiles
+that do not already exist in ${DISTDIR} will be automatically fetched.
+.TP
+.BR "\-\-ignore\-default\-opts"
+Do not use the \fIEBUILD_DEFAULT_OPTS\fR environment variable.
+.TP
+.BR "\-\-skip\-manifest"
+Skip all manifest checks.
+.SH "REPORTING BUGS"
+Please report bugs via https://bugs.gentoo.org/
+.SH "AUTHORS"
+.nf
+Achim Gottinger <achim@gentoo.org>
+Daniel Robbins <drobbins@gentoo.org>
+Nicholas Jones <carpaski@gentoo.org>
+Mike Frysinger <vapier@gentoo.org>
+.fi
+.SH "FILES"
+.TP
+.B /etc/portage/make.conf
+Contains variables for the build\-process and overwrites those
+in make.globals.
+.TP
+.B /etc/portage/color.map
+Contains variables customizing colors.
+.SH "SEE ALSO"
+.BR emerge (1),
+.BR ebuild (5),
+.BR make.conf (5),
+.BR color.map (5)
+.TP
+The \fI/usr/lib/portage/bin/ebuild.sh\fR script.
+.TP
+The helper apps in \fI/usr/lib/portage/bin\fR.
