@@ -1,0 +1,241 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-image\-ls \- List images
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker image ls [OPTIONS] [REPOSITORY[:TAG]]\fP
+
+
+.SH DESCRIPTION
+.PP
+This command lists the images stored in the local Docker repository.
+
+.PP
+By default, intermediate images, used during builds, are not listed. Some of the
+output, e.g., image ID, is truncated, for space reasons. However the truncated
+image ID, and often the first few characters, are enough to be used in other
+Docker commands that use the image ID. The output includes repository, tag, image
+ID, date created and the virtual size.
+
+.PP
+The title REPOSITORY for the first title may seem confusing. It is essentially
+the image name. However, because you can tag a specific image, and multiple tags
+(image instances) can be associated with a single name, the name is really a
+repository for all tagged images of the same name. For example consider an image
+called fedora. It may be tagged with 18, 19, or 20, etc. to manage different
+versions.
+
+.SH Filters
+.PP
+Filters the output based on these conditions:
+
+.RS
+.IP \(bu 2
+dangling=(true|false) \- find unused images
+.IP \(bu 2
+label=<key> or label=<key>=<value>
+.IP \(bu 2
+before=(<image-name>[:tag]|<image-id>|
+\[la]image@digest\[ra])
+.IP \(bu 2
+since=(<image-name>[:tag]|<image-id>|
+\[la]image@digest\[ra])
+.IP \(bu 2
+reference=(pattern of an image reference)
+
+.RE
+
+.SH Format
+.PP
+Pretty\-print images using a Go template.
+   Valid placeholders:
+      .ID \- Image ID
+      .Repository \- Image repository
+      .Tag \- Image tag
+      .Digest \- Image digest
+      .CreatedSince \- Elapsed time since the image was created
+      .CreatedAt \- Time when the image was created
+      .Size \- Image disk size
+
+
+.SH EXAMPLES
+.SH Listing the images
+.PP
+To list the images in a local repository (not the registry) run:
+
+.PP
+.RS
+
+.nf
+docker image ls
+
+.fi
+.RE
+
+.PP
+The list will contain the image repository name, a tag for the image, and an
+image ID, when it was created and its virtual size. Columns: REPOSITORY, TAG,
+IMAGE ID, CREATED, and SIZE.
+
+.PP
+The \fB\fCdocker image ls\fR command takes an optional \fB\fC[REPOSITORY[:TAG]]\fR argument
+that restricts the list to images that match the argument. If you specify
+\fB\fCREPOSITORY\fR but no \fB\fCTAG\fR, the \fB\fCdocker image ls\fR command lists all images in the
+given repository.
+
+.PP
+.RS
+
+.nf
+docker image ls java
+
+.fi
+.RE
+
+.PP
+The \fB\fC[REPOSITORY[:TAG]]\fR value must be an "exact match". This means that, for example,
+\fB\fCdocker image ls jav\fR does not match the image \fB\fCjava\fR\&.
+
+.PP
+If both \fB\fCREPOSITORY\fR and \fB\fCTAG\fR are provided, only images matching that
+repository and tag are listed.  To find all local images in the "java"
+repository with tag "8" you can use:
+
+.PP
+.RS
+
+.nf
+docker image ls java:8
+
+.fi
+.RE
+
+.PP
+To get a verbose list of images which contains all the intermediate images
+used in builds use \fB\-a\fP:
+
+.PP
+.RS
+
+.nf
+docker image ls \-a
+
+.fi
+.RE
+
+.PP
+Previously, the docker image ls command supported the \-\-tree and \-\-dot arguments,
+which displayed different visualizations of the image data. Docker core removed
+this functionality in the 1.7 version. If you liked this functionality, you can
+still find it in the third\-party dockviz tool: 
+\[la]https://github.com/justone/dockviz\[ra]\&.
+
+.SH Listing images in a desired format
+.PP
+When using the \-\-format option, the image command will either output the data
+exactly as the template declares or, when using the \fB\fCtable\fR directive, will
+include column headers as well. You can use special characters like \fB\fC\\t\fR for
+inserting tab spacing between columns.
+
+.PP
+The following example uses a template without headers and outputs the ID and
+Repository entries separated by a colon for all images:
+
+.PP
+.RS
+
+.nf
+docker images \-\-format "{{.ID}}: {{.Repository}}"
+77af4d6b9913: <none>
+b6fa739cedf5: committ
+78a85c484bad: ipbabble
+30557a29d5ab: docker
+5ed6274db6ce: <none>
+746b819f315e: postgres
+746b819f315e: postgres
+746b819f315e: postgres
+746b819f315e: postgres
+
+.fi
+.RE
+
+.PP
+To list all images with their repository and tag in a table format you can use:
+
+.PP
+.RS
+
+.nf
+docker images \-\-format "table {{.ID}}\\t{{.Repository}}\\t{{.Tag}}"
+IMAGE ID            REPOSITORY                TAG
+77af4d6b9913        <none>                    <none>
+b6fa739cedf5        committ                   latest
+78a85c484bad        ipbabble                  <none>
+30557a29d5ab        docker                    latest
+5ed6274db6ce        <none>                    <none>
+746b819f315e        postgres                  9
+746b819f315e        postgres                  9.3
+746b819f315e        postgres                  9.3.5
+746b819f315e        postgres                  latest
+
+.fi
+.RE
+
+.PP
+Valid template placeholders are listed above.
+
+.SH Listing only the shortened image IDs
+.PP
+Listing just the shortened image IDs. This can be useful for some automated
+tools.
+
+.PP
+.RS
+
+.nf
+docker image ls \-q
+
+.fi
+.RE
+
+
+.SH OPTIONS
+.PP
+\fB\-a\fP, \fB\-\-all\fP[=false]
+    Show all images (default hides intermediate images)
+
+.PP
+\fB\-\-digests\fP[=false]
+    Show digests
+
+.PP
+\fB\-f\fP, \fB\-\-filter\fP=
+    Filter output based on conditions provided
+
+.PP
+\fB\-\-format\fP=""
+    Pretty\-print images using a Go template
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for ls
+
+.PP
+\fB\-\-no\-trunc\fP[=false]
+    Don't truncate output
+
+.PP
+\fB\-q\fP, \fB\-\-quiet\fP[=false]
+    Only show numeric IDs
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-image(1)\fP

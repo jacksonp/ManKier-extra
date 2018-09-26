@@ -1,0 +1,94 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-container\-exec \- Run a command in a running container
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker container exec [OPTIONS] CONTAINER COMMAND [ARG...]\fP
+
+
+.SH DESCRIPTION
+.PP
+Run a process in a running container.
+
+.PP
+The command started using \fB\fCdocker exec\fR will only run while the container's primary
+process (\fB\fCPID 1\fR) is running, and will not be restarted if the container is restarted.
+
+.PP
+If the container is paused, then the \fB\fCdocker exec\fR command will wait until the
+container is unpaused, and then run
+
+
+.SH CAPABILITIES
+.PP
+\fB\fCprivileged\fR gives the process extended
+Linux capabilities
+\[la]http://man7.org/linux/man-pages/man7/capabilities.7.html\[ra]
+when running in a container.
+
+.PP
+Without this flag, the process run by \fB\fCdocker exec\fR in a running container has
+the same capabilities as the container, which may be limited. Set
+\fB\fC\-\-privileged\fR to give all capabilities to the process.
+
+
+.SH USER
+.PP
+\fB\fCuser\fR sets the username or UID used and optionally the groupname or GID for the specified command.
+
+.PP
+The followings examples are all valid:
+   \-\-user [user | user:group | uid | uid:gid | user:gid | uid:group ]
+
+.PP
+Without this argument the command will be run as root in the container.
+
+
+.SH OPTIONS
+.PP
+\fB\-d\fP, \fB\-\-detach\fP[=false]
+    Detached mode: run command in the background
+
+.PP
+\fB\-\-detach\-keys\fP=""
+    Override the key sequence for detaching a container
+
+.PP
+\fB\-e\fP, \fB\-\-env\fP=
+    Set environment variables
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for exec
+
+.PP
+\fB\-i\fP, \fB\-\-interactive\fP[=false]
+    Keep STDIN open even if not attached
+
+.PP
+\fB\-\-privileged\fP[=false]
+    Give extended privileges to the command
+
+.PP
+\fB\-t\fP, \fB\-\-tty\fP[=false]
+    Allocate a pseudo\-TTY
+
+.PP
+\fB\-u\fP, \fB\-\-user\fP=""
+    Username or UID (format: <name|uid>[:<group|gid>])
+
+.PP
+\fB\-w\fP, \fB\-\-workdir\fP=""
+    Working directory inside the container
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-container(1)\fP

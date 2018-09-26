@@ -1,0 +1,41 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-rm \- Remove one or more containers
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker rm [OPTIONS] CONTAINER [CONTAINER...]\fP
+
+
+.SH DESCRIPTION
+.PP
+Alias for \fB\fCdocker container rm\fR\&.
+
+
+.SH OPTIONS
+.PP
+\fB\-f\fP, \fB\-\-force\fP[=false]
+    Force the removal of a running container (uses SIGKILL)
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for rm
+
+.PP
+\fB\-l\fP, \fB\-\-link\fP[=false]
+    Remove the specified link
+
+.PP
+\fB\-v\fP, \fB\-\-volumes\fP[=false]
+    Remove the volumes associated with the container
+
+
+.SH SEE ALSO
+.PP
+\fBdocker(1)\fP

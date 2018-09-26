@@ -1,0 +1,62 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-image\-save \- Save one or more images to a tar archive (streamed to STDOUT by default)
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker image save [OPTIONS] IMAGE [IMAGE...]\fP
+
+
+.SH DESCRIPTION
+.PP
+Produces a tarred repository to the standard output stream. Contains all
+parent layers, and all tags + versions, or specified repo:tag.
+
+.PP
+Stream to a file instead of STDOUT by using \fB\-o\fP\&.
+
+
+.SH EXAMPLES
+.PP
+Save all fedora repository images to a fedora\-all.tar and save the latest
+fedora image to a fedora\-latest.tar:
+
+.PP
+.RS
+
+.nf
+$ docker image save fedora > fedora\-all.tar
+$ docker image save \-\-output=fedora\-latest.tar fedora:latest
+$ ls \-sh fedora\-all.tar
+721M fedora\-all.tar
+$ ls \-sh fedora\-latest.tar
+367M fedora\-latest.tar
+
+.fi
+.RE
+
+
+.SH See also
+.PP
+\fBdocker\-image\-load(1)\fP to load an image from a tar archive on STDIN.
+
+
+.SH OPTIONS
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for save
+
+.PP
+\fB\-o\fP, \fB\-\-output\fP=""
+    Write to a file, instead of STDOUT
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-image(1)\fP

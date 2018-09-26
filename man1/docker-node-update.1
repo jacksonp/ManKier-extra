@@ -1,0 +1,45 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-node\-update \- Update a node
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker node update [OPTIONS] NODE\fP
+
+
+.SH DESCRIPTION
+.PP
+Update a node
+
+
+.SH OPTIONS
+.PP
+\fB\-\-availability\fP=""
+    Availability of the node ("active"|"pause"|"drain")
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for update
+
+.PP
+\fB\-\-label\-add\fP=
+    Add or update a node label (key=value)
+
+.PP
+\fB\-\-label\-rm\fP=
+    Remove a node label if exists
+
+.PP
+\fB\-\-role\fP=""
+    Role of the node ("worker"|"manager")
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-node(1)\fP

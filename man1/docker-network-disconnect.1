@@ -1,0 +1,42 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-network\-disconnect \- Disconnect a container from a network
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker network disconnect [OPTIONS] NETWORK CONTAINER\fP
+
+
+.SH DESCRIPTION
+.PP
+Disconnects a container from a network.
+
+.PP
+.RS
+
+.nf
+$ docker network disconnect multi\-host\-network container1
+
+.fi
+.RE
+
+
+.SH OPTIONS
+.PP
+\fB\-f\fP, \fB\-\-force\fP[=false]
+    Force the container to disconnect from a network
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for disconnect
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-network(1)\fP

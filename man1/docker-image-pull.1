@@ -1,0 +1,332 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-image\-pull \- Pull an image or a repository from a registry
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker image pull [OPTIONS] NAME[:TAG|@DIGEST]\fP
+
+
+.SH DESCRIPTION
+.PP
+This command pulls down an image or a repository from a registry. If
+there is more than one image for a repository (e.g., fedora) then all
+images for that repository name can be pulled down including any tags
+(see the option \fB\-a\fP or \fB\-\-all\-tags\fP).
+
+.PP
+If you do not specify a \fB\fCREGISTRY\_HOST\fR, the command uses Docker's public
+registry located at \fB\fCregistry\-1.docker.io\fR by default.
+
+
+.SH EXAMPLES
+.SS Pull an image from Docker Hub
+.PP
+To download a particular image, or set of images (i.e., a repository), use
+\fB\fCdocker image pull\fR\&. If no tag is provided, Docker Engine uses the \fB\fC:latest\fR tag as a
+default. This command pulls the \fB\fCdebian:latest\fR image:
+
+.PP
+.RS
+
+.nf
+$ docker image pull debian
+
+Using default tag: latest
+latest: Pulling from library/debian
+fdd5d7827f33: Pull complete
+a3ed95caeb02: Pull complete
+Digest: sha256:e7d38b3517548a1c71e41bffe9c8ae6d6d29546ce46bf62159837aad072c90aa
+Status: Downloaded newer image for debian:latest
+
+.fi
+.RE
+
+.PP
+Docker images can consist of multiple layers. In the example above, the image
+consists of two layers; \fB\fCfdd5d7827f33\fR and \fB\fCa3ed95caeb02\fR\&.
+
+.PP
+Layers can be reused by images. For example, the \fB\fCdebian:jessie\fR image shares
+both layers with \fB\fCdebian:latest\fR\&. Pulling the \fB\fCdebian:jessie\fR image therefore
+only pulls its metadata, but not its layers, because all layers are already
+present locally:
+
+.PP
+.RS
+
+.nf
+$ docker image pull debian:jessie
+
+jessie: Pulling from library/debian
+fdd5d7827f33: Already exists
+a3ed95caeb02: Already exists
+Digest: sha256:a9c958be96d7d40df920e7041608f2f017af81800ca5ad23e327bc402626b58e
+Status: Downloaded newer image for debian:jessie
+
+.fi
+.RE
+
+.PP
+To see which images are present locally, use the \fBdocker\-images(1)\fP
+command:
+
+.PP
+.RS
+
+.nf
+$ docker images
+
+REPOSITORY   TAG      IMAGE ID        CREATED      SIZE
+debian       jessie   f50f9524513f    5 days ago   125.1 MB
+debian       latest   f50f9524513f    5 days ago   125.1 MB
+
+.fi
+.RE
+
+.PP
+Docker uses a content\-addressable image store, and the image ID is a SHA256
+digest covering the image's configuration and layers. In the example above,
+\fB\fCdebian:jessie\fR and \fB\fCdebian:latest\fR have the same image ID because they are
+actually the \fIsame\fP image tagged with different names. Because they are the
+same image, their layers are stored only once and do not consume extra disk
+space.
+
+.PP
+For more information about images, layers, and the content\-addressable store,
+refer to about storage drivers
+\[la]https://docs.docker.com/storage/storagedriver/\[ra]
+in the online documentation.
+
+.SH Pull an image by digest (immutable identifier)
+.PP
+So far, you've pulled images by their name (and "tag"). Using names and tags is
+a convenient way to work with images. When using tags, you can \fB\fCdocker image pull\fR an
+image again to make sure you have the most up\-to\-date version of that image.
+For example, \fB\fCdocker image pull ubuntu:14.04\fR pulls the latest version of the Ubuntu
+14.04 image.
+
+.PP
+In some cases you don't want images to be updated to newer versions, but prefer
+to use a fixed version of an image. Docker enables you to pull an image by its
+\fIdigest\fP\&. When pulling an image by digest, you specify \fIexactly\fP which version
+of an image to pull. Doing so, allows you to "pin" an image to that version,
+and guarantee that the image you're using is always the same.
+
+.PP
+To know the digest of an image, pull the image first. Let's pull the latest
+\fB\fCubuntu:14.04\fR image from Docker Hub:
+
+.PP
+.RS
+
+.nf
+$ docker image pull ubuntu:14.04
+
+14.04: Pulling from library/ubuntu
+5a132a7e7af1: Pull complete
+fd2731e4c50c: Pull complete
+28a2f68d1120: Pull complete
+a3ed95caeb02: Pull complete
+Digest: sha256:45b23dee08af5e43a7fea6c4cf9c25ccf269ee113168c19722f87876677c5cb2
+Status: Downloaded newer image for ubuntu:14.04
+
+.fi
+.RE
+
+.PP
+Docker prints the digest of the image after the pull has finished. In the example
+above, the digest of the image is:
+
+.PP
+.RS
+
+.nf
+sha256:45b23dee08af5e43a7fea6c4cf9c25ccf269ee113168c19722f87876677c5cb2
+
+.fi
+.RE
+
+.PP
+Docker also prints the digest of an image when \fIpushing\fP to a registry. This
+may be useful if you want to pin to a version of the image you just pushed.
+
+.PP
+A digest takes the place of the tag when pulling an image, for example, to
+pull the above image by digest, run the following command:
+
+.PP
+.RS
+
+.nf
+$ docker image pull ubuntu@sha256:45b23dee08af5e43a7fea6c4cf9c25ccf269ee113168c19722f87876677c5cb2
+
+sha256:45b23dee08af5e43a7fea6c4cf9c25ccf269ee113168c19722f87876677c5cb2: Pulling from library/ubuntu
+5a132a7e7af1: Already exists
+fd2731e4c50c: Already exists
+28a2f68d1120: Already exists
+a3ed95caeb02: Already exists
+Digest: sha256:45b23dee08af5e43a7fea6c4cf9c25ccf269ee113168c19722f87876677c5cb2
+Status: Downloaded newer image for ubuntu@sha256:45b23dee08af5e43a7fea6c4cf9c25ccf269ee113168c19722f87876677c5cb2
+
+.fi
+.RE
+
+.PP
+Digest can also be used in the \fB\fCFROM\fR of a Dockerfile, for example:
+
+.PP
+.RS
+
+.nf
+FROM ubuntu@sha256:45b23dee08af5e43a7fea6c4cf9c25ccf269ee113168c19722f87876677c5cb2
+MAINTAINER some maintainer <maintainer@example.com>
+
+.fi
+.RE
+
+.PP
+.RS
+
+.PP
+\fBNote\fP: Using this feature "pins" an image to a specific version in time.
+Docker will therefore not pull updated versions of an image, which may include
+security updates. If you want to pull an updated image, you need to change the
+digest accordingly.
+.RE
+
+.SH Pulling from a different registry
+.PP
+By default, \fB\fCdocker image pull\fR pulls images from Docker Hub. It is also possible to
+manually specify the path of a registry to pull from. For example, if you have
+set up a local registry, you can specify its path to pull from it. A registry
+path is similar to a URL, but does not contain a protocol specifier (\fB\fChttps://\fR).
+
+.PP
+The following command pulls the \fB\fCtesting/test\-image\fR image from a local registry
+listening on port 5000 (\fB\fCmyregistry.local:5000\fR):
+
+.PP
+.RS
+
+.nf
+$ docker image pull myregistry.local:5000/testing/test\-image
+
+.fi
+.RE
+
+.PP
+Registry credentials are managed by \fBdocker\-login(1)\fP\&.
+
+.PP
+Docker uses the \fB\fChttps://\fR protocol to communicate with a registry, unless the
+registry is allowed to be accessed over an insecure connection. Refer to the
+insecure registries
+\[la]https://docs.docker.com/engine/reference/commandline/dockerd/#insecure-registries\[ra]
+section in the online documentation for more information.
+
+.SH Pull a repository with multiple images
+.PP
+By default, \fB\fCdocker image pull\fR pulls a \fIsingle\fP image from the registry. A repository
+can contain multiple images. To pull all images from a repository, provide the
+\fB\fC\-a\fR (or \fB\fC\-\-all\-tags\fR) option when using \fB\fCdocker image pull\fR\&.
+
+.PP
+This command pulls all images from the \fB\fCfedora\fR repository:
+
+.PP
+.RS
+
+.nf
+$ docker image pull \-\-all\-tags fedora
+
+Pulling repository fedora
+ad57ef8d78d7: Download complete
+105182bb5e8b: Download complete
+511136ea3c5a: Download complete
+73bd853d2ea5: Download complete
+....
+
+Status: Downloaded newer image for fedora
+
+.fi
+.RE
+
+.PP
+After the pull has completed use the \fB\fCdocker images\fR command to see the
+images that were pulled. The example below shows all the \fB\fCfedora\fR images
+that are present locally:
+
+.PP
+.RS
+
+.nf
+$ docker images fedora
+
+REPOSITORY   TAG         IMAGE ID        CREATED      SIZE
+fedora       rawhide     ad57ef8d78d7    5 days ago   359.3 MB
+fedora       20          105182bb5e8b    5 days ago   372.7 MB
+fedora       heisenbug   105182bb5e8b    5 days ago   372.7 MB
+fedora       latest      105182bb5e8b    5 days ago   372.7 MB
+
+.fi
+.RE
+
+.SH Canceling a pull
+.PP
+Killing the \fB\fCdocker image pull\fR process, for example by pressing \fB\fCCTRL\-c\fR while it is
+running in a terminal, will terminate the pull operation.
+
+.PP
+.RS
+
+.nf
+$ docker image pull fedora
+
+Using default tag: latest
+latest: Pulling from library/fedora
+a3ed95caeb02: Pulling fs layer
+236608c7b546: Pulling fs layer
+^C
+
+.fi
+.RE
+
+.PP
+.RS
+
+.PP
+\fBNote\fP: Technically, the Engine terminates a pull operation when the
+connection between the Docker Engine daemon and the Docker Engine client
+initiating the pull is lost. If the connection with the Engine daemon is
+lost for other reasons than a manual interaction, the pull is also aborted.
+.RE
+
+
+.SH OPTIONS
+.PP
+\fB\-a\fP, \fB\-\-all\-tags\fP[=false]
+    Download all tagged images in the repository
+
+.PP
+\fB\-\-disable\-content\-trust\fP[=true]
+    Skip image verification
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for pull
+
+.PP
+\fB\-\-platform\fP=""
+    Set platform if server is multi\-platform capable
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-image(1)\fP

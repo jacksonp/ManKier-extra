@@ -1,0 +1,38 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-cp \- Copy files/folders between a container and the local filesystem
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker cp [OPTIONS] CONTAINER:SRC\_PATH DEST\_PATH|\-
+    docker cp [OPTIONS] SRC\_PATH|\- CONTAINER:DEST\_PATH\fP
+
+
+.SH DESCRIPTION
+.PP
+Alias for \fB\fCdocker container cp\fR\&.
+
+
+.SH OPTIONS
+.PP
+\fB\-a\fP, \fB\-\-archive\fP[=false]
+    Archive mode (copy all uid/gid information)
+
+.PP
+\fB\-L\fP, \fB\-\-follow\-link\fP[=false]
+    Always follow symbol link in SRC\_PATH
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for cp
+
+
+.SH SEE ALSO
+.PP
+\fBdocker(1)\fP

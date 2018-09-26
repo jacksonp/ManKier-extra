@@ -1,0 +1,49 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-swarm\-join \- Join a swarm as a node and/or manager
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker swarm join [OPTIONS] HOST:PORT\fP
+
+
+.SH DESCRIPTION
+.PP
+Join a swarm as a node and/or manager
+
+
+.SH OPTIONS
+.PP
+\fB\-\-advertise\-addr\fP=""
+    Advertised address (format: <ip|interface>[:port])
+
+.PP
+\fB\-\-availability\fP="active"
+    Availability of the node ("active"|"pause"|"drain")
+
+.PP
+\fB\-\-data\-path\-addr\fP=""
+    Address or interface to use for data path traffic (format: <ip|interface>)
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for join
+
+.PP
+\fB\-\-listen\-addr\fP=0.0.0.0:2377
+    Listen address (format: <ip|interface>[:port])
+
+.PP
+\fB\-\-token\fP=""
+    Token for entry into the swarm
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-swarm(1)\fP

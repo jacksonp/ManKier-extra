@@ -1,0 +1,57 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-swarm\-update \- Update the swarm
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker swarm update [OPTIONS]\fP
+
+
+.SH DESCRIPTION
+.PP
+Update the swarm
+
+
+.SH OPTIONS
+.PP
+\fB\-\-autolock\fP[=false]
+    Change manager autolocking setting (true|false)
+
+.PP
+\fB\-\-cert\-expiry\fP=2160h0m0s
+    Validity period for node certificates (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-dispatcher\-heartbeat\fP=5s
+    Dispatcher heartbeat period (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-external\-ca\fP=
+    Specifications of one or more certificate signing endpoints
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for update
+
+.PP
+\fB\-\-max\-snapshots\fP=0
+    Number of additional Raft snapshots to retain
+
+.PP
+\fB\-\-snapshot\-interval\fP=10000
+    Number of log entries between Raft snapshots
+
+.PP
+\fB\-\-task\-history\-limit\fP=5
+    Task history retention limit
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-swarm(1)\fP

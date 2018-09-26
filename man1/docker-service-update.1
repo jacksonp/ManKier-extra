@@ -1,0 +1,353 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-service\-update \- Update a service
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker service update [OPTIONS] SERVICE\fP
+
+
+.SH DESCRIPTION
+.PP
+Update a service
+
+
+.SH OPTIONS
+.PP
+\fB\-\-args\fP=
+    Service command args
+
+.PP
+\fB\-\-config\-add\fP=
+    Add or update a config file on a service
+
+.PP
+\fB\-\-config\-rm\fP=
+    Remove a configuration file
+
+.PP
+\fB\-\-constraint\-add\fP=
+    Add or update a placement constraint
+
+.PP
+\fB\-\-constraint\-rm\fP=
+    Remove a constraint
+
+.PP
+\fB\-\-container\-label\-add\fP=
+    Add or update a container label
+
+.PP
+\fB\-\-container\-label\-rm\fP=
+    Remove a container label by its key
+
+.PP
+\fB\-\-credential\-spec\fP=
+    Credential spec for managed service account (Windows only)
+
+.PP
+\fB\-d\fP, \fB\-\-detach\fP[=false]
+    Exit immediately instead of waiting for the service to converge
+
+.PP
+\fB\-\-dns\-add\fP=
+    Add or update a custom DNS server
+
+.PP
+\fB\-\-dns\-option\-add\fP=
+    Add or update a DNS option
+
+.PP
+\fB\-\-dns\-option\-rm\fP=
+    Remove a DNS option
+
+.PP
+\fB\-\-dns\-rm\fP=
+    Remove a custom DNS server
+
+.PP
+\fB\-\-dns\-search\-add\fP=
+    Add or update a custom DNS search domain
+
+.PP
+\fB\-\-dns\-search\-rm\fP=
+    Remove a DNS search domain
+
+.PP
+\fB\-\-endpoint\-mode\fP=""
+    Endpoint mode (vip or dnsrr)
+
+.PP
+\fB\-\-entrypoint\fP=
+    Overwrite the default ENTRYPOINT of the image
+
+.PP
+\fB\-\-env\-add\fP=
+    Add or update an environment variable
+
+.PP
+\fB\-\-env\-rm\fP=
+    Remove an environment variable
+
+.PP
+\fB\-\-force\fP[=false]
+    Force update even if no changes require it
+
+.PP
+\fB\-\-generic\-resource\-add\fP=
+    Add a Generic resource
+
+.PP
+\fB\-\-generic\-resource\-rm\fP=
+    Remove a Generic resource
+
+.PP
+\fB\-\-group\-add\fP=
+    Add an additional supplementary user group to the container
+
+.PP
+\fB\-\-group\-rm\fP=
+    Remove a previously added supplementary user group from the container
+
+.PP
+\fB\-\-health\-cmd\fP=""
+    Command to run to check health
+
+.PP
+\fB\-\-health\-interval\fP=
+    Time between running the check (ms|s|m|h)
+
+.PP
+\fB\-\-health\-retries\fP=0
+    Consecutive failures needed to report unhealthy
+
+.PP
+\fB\-\-health\-start\-period\fP=
+    Start period for the container to initialize before counting retries towards unstable (ms|s|m|h)
+
+.PP
+\fB\-\-health\-timeout\fP=
+    Maximum time to allow one check to run (ms|s|m|h)
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for update
+
+.PP
+\fB\-\-host\-add\fP=
+    Add a custom host\-to\-IP mapping (host:ip)
+
+.PP
+\fB\-\-host\-rm\fP=
+    Remove a custom host\-to\-IP mapping (host:ip)
+
+.PP
+\fB\-\-hostname\fP=""
+    Container hostname
+
+.PP
+\fB\-\-image\fP=""
+    Service image tag
+
+.PP
+\fB\-\-init\fP[=false]
+    Use an init inside each service container to forward signals and reap processes
+
+.PP
+\fB\-\-isolation\fP=""
+    Service container isolation mode
+
+.PP
+\fB\-\-label\-add\fP=
+    Add or update a service label
+
+.PP
+\fB\-\-label\-rm\fP=
+    Remove a label by its key
+
+.PP
+\fB\-\-limit\-cpu\fP=
+    Limit CPUs
+
+.PP
+\fB\-\-limit\-memory\fP=0
+    Limit Memory
+
+.PP
+\fB\-\-log\-driver\fP=""
+    Logging driver for service
+
+.PP
+\fB\-\-log\-opt\fP=
+    Logging driver options
+
+.PP
+\fB\-\-mount\-add\fP=
+    Add or update a mount on a service
+
+.PP
+\fB\-\-mount\-rm\fP=
+    Remove a mount by its target path
+
+.PP
+\fB\-\-network\-add\fP=
+    Add a network
+
+.PP
+\fB\-\-network\-rm\fP=
+    Remove a network
+
+.PP
+\fB\-\-no\-healthcheck\fP[=false]
+    Disable any container\-specified HEALTHCHECK
+
+.PP
+\fB\-\-no\-resolve\-image\fP[=false]
+    Do not query the registry to resolve image digest and supported platforms
+
+.PP
+\fB\-\-placement\-pref\-add\fP=
+    Add a placement preference
+
+.PP
+\fB\-\-placement\-pref\-rm\fP=
+    Remove a placement preference
+
+.PP
+\fB\-\-publish\-add\fP=
+    Add or update a published port
+
+.PP
+\fB\-\-publish\-rm\fP=
+    Remove a published port by its target port
+
+.PP
+\fB\-q\fP, \fB\-\-quiet\fP[=false]
+    Suppress progress output
+
+.PP
+\fB\-\-read\-only\fP[=false]
+    Mount the container's root filesystem as read only
+
+.PP
+\fB\-\-replicas\fP=
+    Number of tasks
+
+.PP
+\fB\-\-reserve\-cpu\fP=
+    Reserve CPUs
+
+.PP
+\fB\-\-reserve\-memory\fP=0
+    Reserve Memory
+
+.PP
+\fB\-\-restart\-condition\fP=""
+    Restart when condition is met ("none"|"on\-failure"|"any")
+
+.PP
+\fB\-\-restart\-delay\fP=
+    Delay between restart attempts (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-restart\-max\-attempts\fP=
+    Maximum number of restarts before giving up
+
+.PP
+\fB\-\-restart\-window\fP=
+    Window used to evaluate the restart policy (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-rollback\fP[=false]
+    Rollback to previous specification
+
+.PP
+\fB\-\-rollback\-delay\fP=0s
+    Delay between task rollbacks (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-rollback\-failure\-action\fP=""
+    Action on rollback failure ("pause"|"continue")
+
+.PP
+\fB\-\-rollback\-max\-failure\-ratio\fP=0
+    Failure rate to tolerate during a rollback
+
+.PP
+\fB\-\-rollback\-monitor\fP=0s
+    Duration after each task rollback to monitor for failure (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-rollback\-order\fP=""
+    Rollback order ("start\-first"|"stop\-first")
+
+.PP
+\fB\-\-rollback\-parallelism\fP=0
+    Maximum number of tasks rolled back simultaneously (0 to roll back all at once)
+
+.PP
+\fB\-\-secret\-add\fP=
+    Add or update a secret on a service
+
+.PP
+\fB\-\-secret\-rm\fP=
+    Remove a secret
+
+.PP
+\fB\-\-stop\-grace\-period\fP=
+    Time to wait before force killing a container (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-stop\-signal\fP=""
+    Signal to stop the container
+
+.PP
+\fB\-t\fP, \fB\-\-tty\fP[=false]
+    Allocate a pseudo\-TTY
+
+.PP
+\fB\-\-update\-delay\fP=0s
+    Delay between updates (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-update\-failure\-action\fP=""
+    Action on update failure ("pause"|"continue"|"rollback")
+
+.PP
+\fB\-\-update\-max\-failure\-ratio\fP=0
+    Failure rate to tolerate during an update
+
+.PP
+\fB\-\-update\-monitor\fP=0s
+    Duration after each task update to monitor for failure (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-update\-order\fP=""
+    Update order ("start\-first"|"stop\-first")
+
+.PP
+\fB\-\-update\-parallelism\fP=0
+    Maximum number of tasks updated simultaneously (0 to update all at once)
+
+.PP
+\fB\-u\fP, \fB\-\-user\fP=""
+    Username or UID (format: <name|uid>[:<group|gid>])
+
+.PP
+\fB\-\-with\-registry\-auth\fP[=false]
+    Send registry authentication details to swarm agents
+
+.PP
+\fB\-w\fP, \fB\-\-workdir\fP=""
+    Working directory inside the container
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-service(1)\fP

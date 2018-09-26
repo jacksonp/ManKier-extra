@@ -1,0 +1,114 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-image\-tag \- Create a tag TARGET\_IMAGE that refers to SOURCE\_IMAGE
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker image tag SOURCE\_IMAGE[:TAG] TARGET\_IMAGE[:TAG]\fP
+
+
+.SH DESCRIPTION
+.PP
+Assigns a new alias to an image in a registry. An alias refers to the
+entire image name including the optional \fB\fCTAG\fR after the ':'.
+
+
+.SH OPTIONS
+.PP
+\fBNAME\fP
+   The image name which is made up of slash\-separated name components,
+   optionally prefixed by a registry hostname. The hostname must comply with
+   standard DNS rules, but may not contain underscores. If a hostname is
+   present, it may optionally be followed by a port number in the format
+   \fB\fC:8080\fR\&. If not present, the command uses Docker's public registry located at
+   \fB\fCregistry\-1.docker.io\fR by default. Name components may contain lowercase
+   letters, digits and separators. A separator is defined as a period, one or
+   two underscores, or one or more dashes. A name component may not start or end
+   with a separator.
+
+.PP
+\fBTAG\fP
+   The tag assigned to the image to version and distinguish images with the same
+   name. The tag name must be valid ASCII and may contain lowercase and
+   uppercase letters, digits, underscores, periods and hyphens. A tag name
+   may not start with a period or a hyphen and may contain a maximum of 128
+   characters.
+
+
+.SH EXAMPLES
+.SH Tagging an image referenced by ID
+.PP
+To tag a local image with ID "0e5574283393" into the "fedora" repository with
+"version1.0":
+
+.PP
+.RS
+
+.nf
+docker image tag 0e5574283393 fedora/httpd:version1.0
+
+.fi
+.RE
+
+.SH Tagging an image referenced by Name
+.PP
+To tag a local image with name "httpd" into the "fedora" repository with
+"version1.0":
+
+.PP
+.RS
+
+.nf
+docker image tag httpd fedora/httpd:version1.0
+
+.fi
+.RE
+
+.PP
+Note that since the tag name is not specified, the alias is created for an
+existing local version \fB\fChttpd:latest\fR\&.
+
+.SH Tagging an image referenced by Name and Tag
+.PP
+To tag a local image with name "httpd" and tag "test" into the "fedora"
+repository with "version1.0.test":
+
+.PP
+.RS
+
+.nf
+docker image tag httpd:test fedora/httpd:version1.0.test
+
+.fi
+.RE
+
+.SH Tagging an image for a private repository
+.PP
+To push an image to a private registry and not the central Docker
+registry you must tag it with the registry hostname and port (if needed).
+
+.PP
+.RS
+
+.nf
+docker image tag 0e5574283393 myregistryhost:5000/fedora/httpd:version1.0
+
+.fi
+.RE
+
+
+.SH OPTIONS
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for tag
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-image(1)\fP

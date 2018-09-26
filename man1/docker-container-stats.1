@@ -1,0 +1,113 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-container\-stats \- Display a live stream of container(s) resource usage statistics
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker container stats [OPTIONS] [CONTAINER...]\fP
+
+
+.SH DESCRIPTION
+.PP
+Display a live stream of one or more containers' resource usage statistics
+
+
+.SH Format
+.PP
+Pretty\-print containers statistics using a Go template.
+   Valid placeholders:
+      .Container \- Container name or ID.
+      .Name \- Container name.
+      .ID \- Container ID.
+      .CPUPerc \- CPU percentage.
+      .MemUsage \- Memory usage.
+      .NetIO \- Network IO.
+      .BlockIO \- Block IO.
+      .MemPerc \- Memory percentage (Not available on Windows).
+      .PIDs \- Number of PIDs (Not available on Windows).
+
+
+.SH EXAMPLES
+.PP
+Running \fB\fCdocker container stats\fR on all running containers.
+
+.PP
+.RS
+
+.nf
+$ docker container stats
+CONTAINER           CPU %               MEM USAGE / LIMIT     MEM %               NET I/O             BLOCK I/O
+1285939c1fd3        0.07%               796 KiB / 64 MiB        1.21%               788 B / 648 B       3.568 MB / 512 KB
+9c76f7834ae2        0.07%               2.746 MiB / 64 MiB      4.29%               1.266 KB / 648 B    12.4 MB / 0 B
+d1ea048f04e4        0.03%               4.583 MiB / 64 MiB      6.30%               2.854 KB / 648 B    27.7 MB / 0 B
+
+.fi
+.RE
+
+.PP
+Running \fB\fCdocker container stats\fR on multiple containers by name and id.
+
+.PP
+.RS
+
+.nf
+$ docker container stats fervent\_panini 5acfcb1b4fd1
+CONTAINER           CPU %               MEM USAGE/LIMIT     MEM %               NET I/O
+5acfcb1b4fd1        0.00%               115.2 MiB/1.045 GiB   11.03%              1.422 kB/648 B
+fervent\_panini      0.02%               11.08 MiB/1.045 GiB   1.06%               648 B/648 B
+
+.fi
+.RE
+
+.PP
+Running \fB\fCdocker container stats\fR with customized format on all (Running and Stopped) containers.
+
+.PP
+.RS
+
+.nf
+$ docker container stats \-\-all \-\-format "table {{.ID}}\\t{{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}"
+CONTAINER ID                                                       NAME                     CPU %               MEM USAGE / LIMIT
+c9dfa83f0317f87637d5b7e67aa4223337d947215c5a9947e697e4f7d3e0f834   ecstatic\_noether         0.00%               56KiB / 15.57GiB
+8f92d01cf3b29b4f5fca4cd33d907e05def7af5a3684711b20a2369d211ec67f   stoic\_goodall            0.07%               32.86MiB / 15.57GiB
+38dd23dba00f307d53d040c1d18a91361bbdcccbf592315927d56cf13d8b7343   drunk\_visvesvaraya       0.00%               0B / 0B
+5a8b07ec4cc52823f3cbfdb964018623c1ba307bce2c057ccdbde5f4f6990833   big\_heisenberg           0.00%               0B / 0B
+
+.fi
+.RE
+
+.PP
+\fB\fCdrunk\_visvesvaraya\fR and \fB\fCbig\_heisenberg\fR are stopped containers in the above example.
+
+
+.SH OPTIONS
+.PP
+\fB\-a\fP, \fB\-\-all\fP[=false]
+    Show all containers (default shows just running)
+
+.PP
+\fB\-\-format\fP=""
+    Pretty\-print images using a Go template
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for stats
+
+.PP
+\fB\-\-no\-stream\fP[=false]
+    Disable streaming stats and only pull the first result
+
+.PP
+\fB\-\-no\-trunc\fP[=false]
+    Do not truncate output
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-container(1)\fP

@@ -1,0 +1,45 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-system\-prune \- Remove unused data
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker system prune [OPTIONS]\fP
+
+
+.SH DESCRIPTION
+.PP
+Remove unused data
+
+
+.SH OPTIONS
+.PP
+\fB\-a\fP, \fB\-\-all\fP[=false]
+    Remove all unused images not just dangling ones
+
+.PP
+\fB\-\-filter\fP=
+    Provide filter values (e.g. 'label=<key>=<value>\&')
+
+.PP
+\fB\-f\fP, \fB\-\-force\fP[=false]
+    Do not prompt for confirmation
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for prune
+
+.PP
+\fB\-\-volumes\fP[=false]
+    Prune volumes
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-system(1)\fP

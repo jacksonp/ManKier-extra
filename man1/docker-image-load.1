@@ -1,0 +1,70 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-image\-load \- Load an image from a tar archive or STDIN
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker image load [OPTIONS]\fP
+
+
+.SH DESCRIPTION
+.PP
+Loads a tarred repository from a file or the standard input stream.
+Restores both images and tags. Write image names or IDs imported it
+standard output stream.
+
+
+.SH EXAMPLES
+.PP
+.RS
+
+.nf
+$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+busybox             latest              769b9341d937        7 weeks ago         2.489 MB
+$ docker load \-\-input fedora.tar
+# […]
+Loaded image: fedora:rawhide
+# […]
+Loaded image: fedora:20
+# […]
+$ docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+busybox             latest              769b9341d937        7 weeks ago         2.489 MB
+fedora              rawhide             0d20aec6529d        7 weeks ago         387 MB
+fedora              20                  58394af37342        7 weeks ago         385.5 MB
+fedora              heisenbug           58394af37342        7 weeks ago         385.5 MB
+fedora              latest              58394af37342        7 weeks ago         385.5 MB
+
+.fi
+.RE
+
+
+.SH See also
+.PP
+\fBdocker\-image\-save(1)\fP to save one or more images to a tar archive (streamed to STDOUT by default).
+
+
+.SH OPTIONS
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for load
+
+.PP
+\fB\-i\fP, \fB\-\-input\fP=""
+    Read from tar archive file, instead of STDIN
+
+.PP
+\fB\-q\fP, \fB\-\-quiet\fP[=false]
+    Suppress the load output
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-image(1)\fP

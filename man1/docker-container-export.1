@@ -1,0 +1,64 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-container\-export \- Export a container's filesystem as a tar archive
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker container export [OPTIONS] CONTAINER\fP
+
+
+.SH DESCRIPTION
+.PP
+Export the contents of a container's filesystem using the full or shortened
+container ID or container name. The output is exported to STDOUT and can be
+redirected to a tar file.
+
+.PP
+Stream to a file instead of STDOUT by using \fB\-o\fP\&.
+
+
+.SH EXAMPLES
+.PP
+Export the contents of the container called angry\_bell to a tar file
+called angry\_bell.tar:
+
+.PP
+.RS
+
+.nf
+$ docker export angry\_bell > angry\_bell.tar
+$ docker export \-\-output=angry\_bell\-latest.tar angry\_bell
+$ ls \-sh angry\_bell.tar
+321M angry\_bell.tar
+$ ls \-sh angry\_bell\-latest.tar
+321M angry\_bell\-latest.tar
+
+.fi
+.RE
+
+
+.SH See also
+.PP
+\fBdocker\-import(1)\fP to create an empty filesystem image
+and import the contents of the tarball into it, then optionally tag it.
+
+
+.SH OPTIONS
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for export
+
+.PP
+\fB\-o\fP, \fB\-\-output\fP=""
+    Write to a file, instead of STDOUT
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-container(1)\fP

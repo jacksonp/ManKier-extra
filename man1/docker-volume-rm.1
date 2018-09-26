@@ -1,0 +1,47 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-volume\-rm \- Remove one or more volumes
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker volume rm [OPTIONS] VOLUME [VOLUME...]\fP
+
+
+.SH DESCRIPTION
+.PP
+Remove one or more volumes. You cannot remove a volume that is in use by a container.
+
+
+.SH OPTIONS
+.PP
+\fB\-f\fP, \fB\-\-force\fP[=false]
+    Force the removal of one or more volumes
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for rm
+
+
+.SH EXAMPLE
+.PP
+.RS
+
+.nf
+
+$ docker volume rm hello
+hello
+
+
+.fi
+.RE
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-volume(1)\fP

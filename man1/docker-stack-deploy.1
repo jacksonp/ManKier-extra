@@ -1,0 +1,63 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-stack\-deploy \- Deploy a new stack or update an existing stack
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker stack deploy [OPTIONS] STACK\fP
+
+
+.SH DESCRIPTION
+.PP
+Deploy a new stack or update an existing stack
+
+
+.SH OPTIONS
+.PP
+\fB\-\-bundle\-file\fP=""
+    Path to a Distributed Application Bundle file
+
+.PP
+\fB\-c\fP, \fB\-\-compose\-file\fP=[]
+    Path to a Compose file, or "\-" to read from stdin
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for deploy
+
+.PP
+\fB\-\-namespace\fP=""
+    Kubernetes namespace to use
+
+.PP
+\fB\-\-prune\fP[=false]
+    Prune services that are no longer referenced
+
+.PP
+\fB\-\-resolve\-image\fP="always"
+    Query the registry to resolve image digest and supported platforms ("always"|"changed"|"never")
+
+.PP
+\fB\-\-with\-registry\-auth\fP[=false]
+    Send registry authentication details to Swarm agents
+
+
+.SH OPTIONS INHERITED FROM PARENT COMMANDS
+.PP
+\fB\-\-kubeconfig\fP=""
+    Kubernetes config file
+
+.PP
+\fB\-\-orchestrator\fP=""
+    Orchestrator to use (swarm|kubernetes|all)
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-stack(1)\fP

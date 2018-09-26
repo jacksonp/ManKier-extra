@@ -1,0 +1,78 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-login \- Log in to a Docker registry
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker login [OPTIONS] [SERVER]\fP
+
+
+.SH DESCRIPTION
+.PP
+Log in to a Docker Registry located on the specified
+\fB\fCSERVER\fR\&.  You can specify a URL or a \fB\fChostname\fR for the \fB\fCSERVER\fR value. If you
+do not specify a \fB\fCSERVER\fR, the command uses Docker's public registry located at
+\fB\fChttps://registry\-1.docker.io/\fR by default.  To get a username/password for Docker's public registry, create an account on Docker Hub.
+
+.PP
+\fB\fCdocker login\fR requires user to use \fB\fCsudo\fR or be \fB\fCroot\fR, except when:
+
+.RS
+.IP "  1." 5
+connecting to  a remote daemon, such as a \fB\fCdocker\-machine\fR provisioned \fB\fCdocker engine\fR\&.
+.IP "  2." 5
+user is added to the \fB\fCdocker\fR group.  This will impact the security of your system; the \fB\fCdocker\fR group is \fB\fCroot\fR equivalent.  See Docker Daemon Attack Surface
+\[la]https://docs.docker.com/engine/security/security/#/docker-daemon-attack-surface\[ra] for details.
+
+.RE
+
+.PP
+You can log into any public or private repository for which you have
+credentials.  When you log in, the command stores encoded credentials in
+\fB\fC$HOME/.docker/config.json\fR on Linux or \fB\fC%USERPROFILE%/.docker/config.json\fR on Windows.
+
+
+.SH EXAMPLES
+.SH Login to a registry on your localhost
+.PP
+.RS
+
+.nf
+# docker login localhost:8080
+
+.fi
+.RE
+
+
+.SH See also
+.PP
+\fBdocker\-logout(1)\fP to log out from a Docker registry.
+
+
+.SH OPTIONS
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for login
+
+.PP
+\fB\-p\fP, \fB\-\-password\fP=""
+    Password
+
+.PP
+\fB\-\-password\-stdin\fP[=false]
+    Take the password from stdin
+
+.PP
+\fB\-u\fP, \fB\-\-username\fP=""
+    Username
+
+
+.SH SEE ALSO
+.PP
+\fBdocker(1)\fP

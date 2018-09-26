@@ -1,0 +1,285 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-service\-create \- Create a new service
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker service create [OPTIONS] IMAGE [COMMAND] [ARG...]\fP
+
+
+.SH DESCRIPTION
+.PP
+Create a new service
+
+
+.SH OPTIONS
+.PP
+\fB\-\-config\fP=
+    Specify configurations to expose to the service
+
+.PP
+\fB\-\-constraint\fP=
+    Placement constraints
+
+.PP
+\fB\-\-container\-label\fP=
+    Container labels
+
+.PP
+\fB\-\-credential\-spec\fP=
+    Credential spec for managed service account (Windows only)
+
+.PP
+\fB\-d\fP, \fB\-\-detach\fP[=false]
+    Exit immediately instead of waiting for the service to converge
+
+.PP
+\fB\-\-dns\fP=
+    Set custom DNS servers
+
+.PP
+\fB\-\-dns\-option\fP=
+    Set DNS options
+
+.PP
+\fB\-\-dns\-search\fP=
+    Set custom DNS search domains
+
+.PP
+\fB\-\-endpoint\-mode\fP="vip"
+    Endpoint mode (vip or dnsrr)
+
+.PP
+\fB\-\-entrypoint\fP=
+    Overwrite the default ENTRYPOINT of the image
+
+.PP
+\fB\-e\fP, \fB\-\-env\fP=
+    Set environment variables
+
+.PP
+\fB\-\-env\-file\fP=
+    Read in a file of environment variables
+
+.PP
+\fB\-\-generic\-resource\fP=
+    User defined resources
+
+.PP
+\fB\-\-group\fP=
+    Set one or more supplementary user groups for the container
+
+.PP
+\fB\-\-health\-cmd\fP=""
+    Command to run to check health
+
+.PP
+\fB\-\-health\-interval\fP=
+    Time between running the check (ms|s|m|h)
+
+.PP
+\fB\-\-health\-retries\fP=0
+    Consecutive failures needed to report unhealthy
+
+.PP
+\fB\-\-health\-start\-period\fP=
+    Start period for the container to initialize before counting retries towards unstable (ms|s|m|h)
+
+.PP
+\fB\-\-health\-timeout\fP=
+    Maximum time to allow one check to run (ms|s|m|h)
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for create
+
+.PP
+\fB\-\-host\fP=
+    Set one or more custom host\-to\-IP mappings (host:ip)
+
+.PP
+\fB\-\-hostname\fP=""
+    Container hostname
+
+.PP
+\fB\-\-init\fP[=false]
+    Use an init inside each service container to forward signals and reap processes
+
+.PP
+\fB\-\-isolation\fP=""
+    Service container isolation mode
+
+.PP
+\fB\-l\fP, \fB\-\-label\fP=
+    Service labels
+
+.PP
+\fB\-\-limit\-cpu\fP=
+    Limit CPUs
+
+.PP
+\fB\-\-limit\-memory\fP=0
+    Limit Memory
+
+.PP
+\fB\-\-log\-driver\fP=""
+    Logging driver for service
+
+.PP
+\fB\-\-log\-opt\fP=
+    Logging driver options
+
+.PP
+\fB\-\-mode\fP="replicated"
+    Service mode (replicated or global)
+
+.PP
+\fB\-\-mount\fP=
+    Attach a filesystem mount to the service
+
+.PP
+\fB\-\-name\fP=""
+    Service name
+
+.PP
+\fB\-\-network\fP=
+    Network attachments
+
+.PP
+\fB\-\-no\-healthcheck\fP[=false]
+    Disable any container\-specified HEALTHCHECK
+
+.PP
+\fB\-\-no\-resolve\-image\fP[=false]
+    Do not query the registry to resolve image digest and supported platforms
+
+.PP
+\fB\-\-placement\-pref\fP=
+    Add a placement preference
+
+.PP
+\fB\-p\fP, \fB\-\-publish\fP=
+    Publish a port as a node port
+
+.PP
+\fB\-q\fP, \fB\-\-quiet\fP[=false]
+    Suppress progress output
+
+.PP
+\fB\-\-read\-only\fP[=false]
+    Mount the container's root filesystem as read only
+
+.PP
+\fB\-\-replicas\fP=
+    Number of tasks
+
+.PP
+\fB\-\-reserve\-cpu\fP=
+    Reserve CPUs
+
+.PP
+\fB\-\-reserve\-memory\fP=0
+    Reserve Memory
+
+.PP
+\fB\-\-restart\-condition\fP=""
+    Restart when condition is met ("none"|"on\-failure"|"any") (default "any")
+
+.PP
+\fB\-\-restart\-delay\fP=
+    Delay between restart attempts (ns|us|ms|s|m|h) (default 5s)
+
+.PP
+\fB\-\-restart\-max\-attempts\fP=
+    Maximum number of restarts before giving up
+
+.PP
+\fB\-\-restart\-window\fP=
+    Window used to evaluate the restart policy (ns|us|ms|s|m|h)
+
+.PP
+\fB\-\-rollback\-delay\fP=0s
+    Delay between task rollbacks (ns|us|ms|s|m|h) (default 0s)
+
+.PP
+\fB\-\-rollback\-failure\-action\fP=""
+    Action on rollback failure ("pause"|"continue") (default "pause")
+
+.PP
+\fB\-\-rollback\-max\-failure\-ratio\fP=0
+    Failure rate to tolerate during a rollback (default 0)
+
+.PP
+\fB\-\-rollback\-monitor\fP=0s
+    Duration after each task rollback to monitor for failure (ns|us|ms|s|m|h) (default 5s)
+
+.PP
+\fB\-\-rollback\-order\fP=""
+    Rollback order ("start\-first"|"stop\-first") (default "stop\-first")
+
+.PP
+\fB\-\-rollback\-parallelism\fP=1
+    Maximum number of tasks rolled back simultaneously (0 to roll back all at once)
+
+.PP
+\fB\-\-secret\fP=
+    Specify secrets to expose to the service
+
+.PP
+\fB\-\-stop\-grace\-period\fP=
+    Time to wait before force killing a container (ns|us|ms|s|m|h) (default 10s)
+
+.PP
+\fB\-\-stop\-signal\fP=""
+    Signal to stop the container
+
+.PP
+\fB\-t\fP, \fB\-\-tty\fP[=false]
+    Allocate a pseudo\-TTY
+
+.PP
+\fB\-\-update\-delay\fP=0s
+    Delay between updates (ns|us|ms|s|m|h) (default 0s)
+
+.PP
+\fB\-\-update\-failure\-action\fP=""
+    Action on update failure ("pause"|"continue"|"rollback") (default "pause")
+
+.PP
+\fB\-\-update\-max\-failure\-ratio\fP=0
+    Failure rate to tolerate during an update (default 0)
+
+.PP
+\fB\-\-update\-monitor\fP=0s
+    Duration after each task update to monitor for failure (ns|us|ms|s|m|h) (default 5s)
+
+.PP
+\fB\-\-update\-order\fP=""
+    Update order ("start\-first"|"stop\-first") (default "stop\-first")
+
+.PP
+\fB\-\-update\-parallelism\fP=1
+    Maximum number of tasks updated simultaneously (0 to update all at once)
+
+.PP
+\fB\-u\fP, \fB\-\-user\fP=""
+    Username or UID (format: <name|uid>[:<group|gid>])
+
+.PP
+\fB\-\-with\-registry\-auth\fP[=false]
+    Send registry authentication details to swarm agents
+
+.PP
+\fB\-w\fP, \fB\-\-workdir\fP=""
+    Working directory inside the container
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-service(1)\fP

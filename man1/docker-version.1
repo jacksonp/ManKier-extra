@@ -1,0 +1,97 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-version \- Show the Docker version information
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker version [OPTIONS]\fP
+
+
+.SH DESCRIPTION
+.PP
+This command displays version information for both the Docker client and
+daemon.
+
+
+.SH EXAMPLES
+.SH Display Docker version information
+.PP
+The default output:
+
+.PP
+.RS
+
+.nf
+$ docker version
+Client:
+ Version:      1.8.0
+ API version:  1.20
+ Go version:   go1.4.2
+ Git commit:   f5bae0a
+ Built:        Tue Jun 23 17:56:00 UTC 2015
+ OS/Arch:      linux/amd64
+
+Server:
+ Version:      1.8.0
+ API version:  1.20
+ Go version:   go1.4.2
+ Git commit:   f5bae0a
+ Built:        Tue Jun 23 17:56:00 UTC 2015
+ OS/Arch:      linux/amd64
+
+.fi
+.RE
+
+.PP
+Get server version:
+
+.PP
+.RS
+
+.nf
+$ docker version \-\-format '{{.Server.Version}}'
+1.8.0
+
+.fi
+.RE
+
+.PP
+Dump raw data:
+
+.PP
+To view all available fields, you can use the format \fB\fC{{json .}}\fR\&.
+
+.PP
+.RS
+
+.nf
+$ docker version \-\-format '{{json .}}'
+{"Client":{"Version":"1.8.0","ApiVersion":"1.20","GitCommit":"f5bae0a","GoVersion":"go1.4.2","Os":"linux","Arch":"amd64","BuildTime":"Tue Jun 23 17:56:00 UTC 2015"},"ServerOK":true,"Server":{"Version":"1.8.0","ApiVersion":"1.20","GitCommit":"f5bae0a","GoVersion":"go1.4.2","Os":"linux","Arch":"amd64","KernelVersion":"3.13.2\-gentoo","BuildTime":"Tue Jun 23 17:56:00 UTC 2015"}}
+
+.fi
+.RE
+
+
+.SH OPTIONS
+.PP
+\fB\-f\fP, \fB\-\-format\fP=""
+    Format the output using the given Go template
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for version
+
+.PP
+\fB\-\-kubeconfig\fP=""
+    Kubernetes config file
+
+
+.SH SEE ALSO
+.PP
+\fBdocker(1)\fP

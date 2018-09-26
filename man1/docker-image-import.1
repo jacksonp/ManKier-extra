@@ -1,0 +1,128 @@
+.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-image\-import \- Import the contents from a tarball to create a filesystem image
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker image import [OPTIONS] file|URL|\- [REPOSITORY[:TAG]]\fP
+
+
+.SH DESCRIPTION
+.PP
+Create a new filesystem image from the contents of a tarball (\fB\fC\&.tar\fR,
+\fB\fC\&.tar.gz\fR, \fB\fC\&.tgz\fR, \fB\fC\&.bzip\fR, \fB\fC\&.tar.xz\fR, \fB\fC\&.txz\fR) into it, then optionally tag it.
+
+
+.SH EXAMPLES
+.SH Import from a remote location
+.PP
+.RS
+
+.nf
+# docker image import http://example.com/exampleimage.tgz example/imagerepo
+
+.fi
+.RE
+
+.SH Import from a local file
+.PP
+Import to docker via pipe and stdin:
+
+.PP
+.RS
+
+.nf
+# cat exampleimage.tgz | docker image import \- example/imagelocal
+
+.fi
+.RE
+
+.PP
+Import with a commit message.
+
+.PP
+.RS
+
+.nf
+# cat exampleimage.tgz | docker image import \-\-message "New image imported from tarball" \- exampleimagelocal:new
+
+.fi
+.RE
+
+.PP
+Import to a Docker image from a local file.
+
+.PP
+.RS
+
+.nf
+# docker image import /path/to/exampleimage.tgz 
+
+.fi
+.RE
+
+.SH Import from a local file and tag
+.PP
+Import to docker via pipe and stdin:
+
+.PP
+.RS
+
+.nf
+# cat exampleimageV2.tgz | docker image import \- example/imagelocal:V\-2.0
+
+.fi
+.RE
+
+.SH Import from a local directory
+.PP
+.RS
+
+.nf
+# tar \-c . | docker image import \- exampleimagedir
+
+.fi
+.RE
+
+.SH Apply specified Dockerfile instructions while importing the image
+.PP
+This example sets the docker image ENV variable DEBUG to true by default.
+
+.PP
+.RS
+
+.nf
+# tar \-c . | docker image import \-c="ENV DEBUG true" \- exampleimagedir
+
+.fi
+.RE
+
+
+.SH See also
+.PP
+\fBdocker\-export(1)\fP to export the contents of a filesystem as a tar archive to STDOUT.
+
+
+.SH OPTIONS
+.PP
+\fB\-c\fP, \fB\-\-change\fP=
+    Apply Dockerfile instruction to the created image
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for import
+
+.PP
+\fB\-m\fP, \fB\-\-message\fP=""
+    Set commit message for imported image
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-image(1)\fP
