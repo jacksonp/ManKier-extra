@@ -1,0 +1,293 @@
+.TH NITROCLI 1 2019-01-10
+.SH NAME
+nitrocli \- access Nitrokey devices
+.SH SYNOPSIS
+.B nitrocli
+[\fB\-m\fR|\fB\-\-model pro\fR|\fBstorage\fR] \fR[\fB\-v\fR|\fB\-\-verbose\fR]
+\fIcommand\fR
+[\fIarguments\fR]
+.SH DESCRIPTION
+\fBnitrocli\fR provides access to Nitrokey devices.
+It supports the Nitrokey Pro and the Nitrokey Storage.
+It can be used to access the encrypted volume, the one-time password generator,
+and the password safe.
+.SH OPTIONS
+.TP
+\fB\-m\fR, \fB\-\-model pro\fR|\fBstorage\fR
+Restrict connections to the given device model.
+If this option is not set, nitrocli will connect to any connected Nitrokey Pro
+or Nitrokey Storage device.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Enable additional logging and control its verbosity. Logging enabled through
+this option will appear on the standard error stream. This option can be
+supplied multiple times. A single occurrence will show additional warnings.
+Commands sent to the device will be shown when supplied three times and full
+device communication is available with four occurrences. Supplying this option
+five times enables the highest verbosity.
+.SH COMMANDS
+.SS General
+.TP
+.B nitrocli status
+Print the status of the connected Nitrokey device, including the stick serial
+number, the firmware version, and the PIN retry count.
+.TP
+.B nitrocli lock
+Lock the Nitrokey.
+This command locks the password safe (see the Password safe section). On the
+Nitrokey Storage, it will also close the encrypted volume (see the Storage
+section).
+
+.SS Storage
+.TP
+\fBnitrocli storage open
+Open the encrypted volume on the Nitrokey Storage.
+The user PIN that is required to open the volume is queried using
+\fBpinentry\fR(1) and cached by \fBgpg\-agent\fR(1).
+.TP
+\fBnitrocli storage close
+Close the encrypted volume on the Nitrokey Storage.
+.TP
+\fBnitrocli storage status
+Print the status of the connected Nitrokey Storage device's storage. The
+printed information includes the SD card serial number, the encryption
+status, and the status of the volumes.
+
+.SS One-time passwords
+The Nitrokey Pro and the Nitrokey Store support the generation of one-time
+passwords using the HOTP algorithm according to RFC 4226 or the TOTP algorithm
+according to RFC 6238.
+The required data \(en a name and the secret \(en is stored in slots.
+Currently, the Nitrokey devices provide three HOTP slots and 15 TOTP slots.
+The slots are numbered per algorithm starting at zero.
+.P
+The TOTP algorithm is a modified version of the HOTP algorithm that also uses
+the current time.
+Therefore, the Nitrokey clock must be synchronized with the clock of the
+application that requests the one-time password.
+.TP
+\fBnitrocli otp get \fIslot \fR[\fB\-a\fR|\fB\-\-algorithm \fIalgorithm\fR] \
+\fB[\-t\fR|\fB\-\-time \fItime\fR]
+Generate a one-time password.
+\fIslot\fR is the number of the slot to generate the password from.
+\fIalgorithm\fR is the OTP algorithm to use.
+Possible values are \fBhotp\fR for the HOTP algorithm according to RFC 4226 and
+\fBtotp\fR for the TOTP algorithm according to RFC 6238 (default).
+Per default, this commands sets the Nitrokey's time to the system time if the
+TOTP algorithm is selected.
+If \fB\-\-time\fR is set, it is set to \fItime\fR instead, which must be a Unix
+timestamp (i.e., the number of seconds since 1970-01-01 00:00:00 UTC).
+This command might require the user PIN (see the Configuration section).
+.TP
+\fBnitrocli otp set \fIslot name secret \
+\fR[\fB\-a\fR|\fB\-\-algorithm \fIalgorithm\fR] \
+[\fB\-d\fR|\fB\-\-digits \fIdigits\fR] [\fB\-c\fR|\fB\-\-counter \fIcounter\fR] \
+[\fB\-t\fR|\fB\-\-time-window \fItime-window\fR] \
+[\fB-f\fR|\fB\-\-format ascii\fR|\fBbase32\fR|\fBhex\fR]
+Configure a one-time password slot.
+\fIslot\fR is the number of the slot to configure.
+\fIname\fR is the name of the slot (may not be empty).
+\fIsecret\fR is the secret value to store in that slot.
+
+The \fB\-\-format\fR option specifies the format of the secret.
+If it is set to \fBascii\fR, each character of the given secret is interpreted
+as the ASCII code of one byte.
+If it is set to \fBbase32\fR, the secret is interpreted as a base32 string
+according to RFC 4648.
+If it is set to \fBhex\fR, every two characters are interpreted as the
+hexadecimal value of one byte.
+The default value is \fBhex\fR.
+
+\fIalgorithm\fR is the OTP algorithm to use.
+Possible values are \fBhotp\fR for the HOTP algorithm according to RFC 4226 and
+\fBtotp\fR for the TOTP algorithm according to RFC 6238 (default).
+\fIdigits\fR is the number of digits the one-time password should have.
+Allowed values are 6 and 8 (default: 6).
+\fIcounter\fR is the initial counter if the HOTP algorithm is used (default: 0).
+\fItime window\fR is the time window used with TOTP in seconds (default: 30).
+.TP
+\fBnitrocli otp clear \fIslot \fR[\fB\-a\fR|\fB\-\-algorithm \fIalgorithm\fR]
+Delete the name and the secret stored in a one-time password slot.
+\fIslot\fR is the number of the slot to clear.
+\fIalgorithm\fR is the OTP algorithm to use.
+Possible values are \fBhotp\fR for the HOTP algorithm according to RFC 4226 and
+\fBtotp\fR for the TOTP algorithm according to RFC 6238 (default).
+.TP
+\fBnitrocli otp status \fR[\fB\-a\fR|\fB\-\-all\fR]
+List all OTP slots.
+If \fB\-\-all\fR is not set, empty slots are ignored.
+
+.SS Configuration
+Nitrokey devices have four configuration settings:  the numlock, capslock and
+scrollock keys can be mapped to an HOTP slot, and OTP generation can be set to
+require the user PIN.
+.TP
+\fBnitrocli config get\fR
+Print the current configuration.
+.TP
+\fBnitrocli config set \fR\
+[[\fB\-n\fR|\fB\-\-numlock \fIslot\fR] | [\fB\-N\fR|\fB\-\-no\-numlock\fR]] \
+[[\fB\-c\fR|\fB\-\-capslock \fIslot\fR] | [\fB\-C\fR|\fB\-\-no\-capslock\fR]] \
+[[\fB\-s\fR|\fB\-\-scrollock \fIslot\fR] | [\fB\-S\fR|\fB\-\-no\-scrollock\fR]] \
+[[\fB\-o\fR|\fB\-\-otp\-pin\fR] | [\fB\-O\fR|\fB\-\-no\-otp\-pin\fR]]
+Update the Nitrokey configuration.
+This command requires the admin PIN.
+
+With the \fB\-\-numlock\fR, \fB\-\-capslock\fR and \fB\-\-scrollock\fR options,
+the respective bindings can be set.
+\fIslot\fR is the number of the HOTP slot to bind the key to.
+If \fB\-\-no\-numlock\fR, \fB\-\-no\-capslock\fR or \fB\-\-no\-scrollock\fR is
+set, the respective binding is disabled.
+The two corresponding options are mutually exclusive.
+
+If \fB\-\-otp\-pin\fR is set, the user PIN will be required to generate one-time
+passwords using the \fBotp get\fR command.
+If \fB\-\-no\-otp\-pin\fR is set, OTP generation can be performed without PIN.
+These two options are mutually exclusive.
+
+.SS Password safe
+The Nitrokey Pro and the Nitrokey Storage provide a password safe (PWS) with 20
+slots.
+In each of these slots you can store a name, a login, and a password.
+The PWS is not encrypted, but it is protected with the user PIN by the firmware.
+Once the PWS is unlocked by one of the commands listed below, it can be
+accessed without authentication.
+You can use the \fBlock\fR command to lock the password safe.
+.TP
+\fBnitrocli pws get \fIslot \fR[\fB\-n\fR|\fB\-\-name\fR] \
+[\fB\-l\fR|\fB\-\-login\fR] \
+[\fB\-p\fR|\fB\-\-password\fR] \
+[\fB\-q\fR|\fB\-\-quiet\fR]
+Print the content of one PWS slot.
+\fIslot\fR is the number of the slot.
+Per default, this command prints the name, the login and the password (in that
+order).
+If one or more of the options \fB\-\-name\fR, \fB\-\-login\fR, and
+\fB\-\-password\fR are set, only the selected fields are printed.
+The order of the fields never changes.
+
+The fields are printed together with a label.
+Use the \fB\-\-quiet\fR option to suppress the labels and to only output the
+values stored in the PWS slot.
+.TP
+\fBnitrocli pws set \fIslot name login password\fR
+Set the content of a PWS slot.
+\fIslot\fR is the number of the slot to write.
+\fIname\fR, \fIlogin\fR, and \fIpassword\fR represent the data to write to the
+slot.
+.TP
+\fBnitrocli pws clear \fIslot\fR
+Delete the data stored in a PWS slot.
+\fIslot\fR is the number of the slot clear.
+.TP
+\fBnitrocli pws status \fR[\fB\-a\fR|\fB\-\-all\fR]
+List all PWS slots.
+If \fB\-\-all\fR is not set, empty slots are ignored.
+
+.SS PINs
+Nitrokey devices have two PINs: the user PIN and the admin PIN. The user
+PIN must have at least six, the admin PIN at least eight characters. The
+user PIN is required for commands such as \fBotp get\fR (depending on
+the configuration) and for all \fBpws\fR commands.
+The admin PIN is usually required to change the device configuration.
+.P
+Each PIN has a retry counter that is decreased with every wrong PIN entry and
+reset if the PIN was entered correctly.
+The initial retry counter is three.
+If the retry counter for the user PIN is zero, you can use the
+\fBpin unblock\fR command to unblock and reset the user PIN.
+If the retry counter for the admin PIN is zero, you have to perform a factory
+reset using \fBgpg\fR(1).
+Use the \fBstatus\fR command to check the retry counters.
+.TP
+.B nitrocli pin clear
+Clear the PINs cached by the other commands.
+.TP
+\fBnitrocli pin set \fItype\fR
+Change a PIN.
+\fItype\fR is the type of the PIN that will be changed:  \fBadmin\fR to change
+the admin PIN or \fBuser\fR to change the user PIN.
+This command only works if the retry counter for the PIN type is at least one.
+(Use the \fBstatus\fR command to check the retry counters.)
+.TP
+.B nitrocli pin unblock
+Unblock and reset the user PIN.
+This command requires the admin PIN.
+The admin PIN cannot be unblocked.
+This operation is equivalent to the unblock PIN option provided by \fBgpg\fR(1)
+(using the \fB\-\-change\-pin\fR option).
+
+.SH ENVIRONMENT
+The program honors a set of environment variables that can be used to
+suppress interactive PIN entry through \fBpinentry\fR(1). The following
+variables are recognized:
+.TP
+.B NITROCLI_ADMIN_PIN
+The admin PIN to use.
+.TP
+.B NITROCLI_USER_PIN
+The user PIN to use.
+.TP
+.B NITROCLI_NEW_ADMIN_PIN
+The new admin PIN to set. This variable is only used by the \fBnitrocli
+pin set\fR command for the \fBadmin\fR type.
+.TP
+.B NITROCLI_NEW_USER_PIN
+The new user PIN to set. This variable is only used by the \fBnitrocli
+pin set\fR command for the \fBuser\fR type.
+
+.SH EXAMPLES
+.SS One-time passwords
+Configure a one-time password slot with a hexadecimal secret representation:
+    $ \fBnitrocli otp set 0 test\-rfc4226 3132333435363738393031323334353637383930 \-\-algorithm hotp\fR
+    $ \fBnitrocli otp set 1 test\-foobar 666F6F626172 \-\-algorithm hotp\fR
+    $ \fBnitrocli otp set 0 test\-rfc6238 3132333435363738393031323334353637383930 \-\-algorithm totp \-\-digits 8\fR
+.P
+Configure a one-time password slot with an ASCII secret representation:
+    $ \fBnitrocli otp set 0 test\-rfc4226 12345678901234567890 \-\-format ascii \-\-algorithm hotp\fR
+    $ \fBnitrocli otp set 1 test\-foobar foobar \-\-format ascii \-\-algorithm hotp\fR
+    $ \fBnitrocli otp set 0 test\-rfc6238 12345678901234567890 \-\-format ascii \-\-algorithm totp \-\-digits 8\fR
+.P
+Configure a one-time password slot with a base32 secret representation:
+    $ \fBnitrocli otp set 0 test\-rfc4226 gezdgnbvgy3tqojqgezdgnbvgy3tqojq \-\-format base32 \-\-algorithm hotp\fR
+    $ \fBnitrocli otp set 1 test\-foobar mzxw6ytboi====== \-\-format base32 \-\-algorithm hotp\fR
+    $ \fBnitrocli otp set 0 test\-rfc6238 gezdgnbvgy3tqojqgezdgnbvgy3tqojq \-\-format base32 \-\-algorithm totp \-\-digits 8\fR
+.P
+Generate a one-time password:
+    $ \fBnitrocli otp get 0 \-\-algorithm hotp\fR
+    755224
+    $ \fBnitrocli otp get 0 \-\-algorithm totp \-\-time 1234567890\fR
+    89005924
+.P
+Clear a one-time password slot:
+    $ \fBnitrocli otp clear 0 \-\-algorithm hotp\fR
+
+.SS Configuration
+Query the configuration:
+    $ \fBnitrocli config get\fR
+    Config:
+      numlock binding:          not set
+      capslock binding:         not set
+      scrollock binding:        not set
+      require user PIN for OTP: true
+.P
+Change the configuration:
+    $ \fBnitrocli config set \-\-otp\-pin\fR
+
+.SS Password safe
+Configure a PWS slot:
+    $ \fBnitrocli pws set 0 example.org john.doe passw0rd\fR
+
+Get the data from a slot:
+    $ \fBnitrocli pws get 0\fR
+    name:     example.org
+    login:    john.doe
+    password: passw0rd
+
+Copy the password to the clipboard (requires \fBxclip\fR(1)).
+    $ \fBnitrocli pws get 0 \-\-password \-\-quiet | xclip \-in\fR
+
+Query the PWS slots:
+    $ \fB nitrocli pws status\fR
+    slot	name
+    0	example.org
