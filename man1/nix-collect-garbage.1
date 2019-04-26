@@ -1,0 +1,75 @@
+'\" t
+.\"     Title: nix-collect-garbage
+.\"    Author: Eelco Dolstra
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/01/1970
+.\"    Manual: Command Reference
+.\"    Source: Nix 2.2.2
+.\"  Language: English
+.\"
+.TH "NIX\-COLLECT\-GARBAG" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nix-collect-garbage \- delete unreachable store paths
+.SH "SYNOPSIS"
+.HP \w'\fBnix\-collect\-garbage\fR\ 'u
+\fBnix\-collect\-garbage\fR [\fB\-\-delete\-old\fR] [\fB\-d\fR] [\fB\-\-delete\-older\-than\fR\ \fIperiod\fR] [\fB\-\-max\-freed\fR\ \fIbytes\fR] [\fB\-\-dry\-run\fR]
+.SH "DESCRIPTION"
+.PP
+The command
+\fBnix\-collect\-garbage\fR
+is mostly an alias of
+\fBnix\-store \-\-gc\fR, that is, it deletes all unreachable paths in the Nix store to clean up your system\&. However, it provides two additional options:
+\fB\-d\fR
+(\fB\-\-delete\-old\fR), which deletes all old generations of all profiles in
+/nix/var/nix/profiles
+by invoking
+nix\-env \-\-delete\-generations old
+on all profiles (of course, this makes rollbacks to previous configurations impossible); and
+\fB\-\-delete\-older\-than\fR
+\fIperiod\fR, where period is a value such as
+30d, which deletes all generations older than the specified number of days in all profiles in
+/nix/var/nix/profiles
+(except for the generations that were active at that point in time)\&.
+.SH "EXAMPLE"
+.PP
+To delete from the Nix store everything that is not used by the current generations of each profile, do
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-collect\-garbage \-d
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "AUTHOR"
+.PP
+\fBEelco Dolstra\fR
+.RS 4
+Author
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2004-2018 Eelco Dolstra
+.br

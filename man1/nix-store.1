@@ -1,0 +1,1450 @@
+'\" t
+.\"     Title: nix-store
+.\"    Author: Eelco Dolstra
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/01/1970
+.\"    Manual: Command Reference
+.\"    Source: Nix 2.2.2
+.\"  Language: English
+.\"
+.TH "NIX\-STORE" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nix-store \- manipulate or query the Nix store
+.SH "SYNOPSIS"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR [\fB\-\-help\fR] [\fB\-\-version\fR] [{\fB\-\-verbose\fR\ |\ \fB\-v\fR}...] [\fB\-\-quiet\fR] [\fB\-\-no\-build\-output\fR\ |\ \fB\-Q\fR] [{\fB\-\-max\-jobs\fR\ |\ \fB\-j\fR}\ \fInumber\fR] [\fB\-\-cores\fR\ \fInumber\fR] [\fB\-\-max\-silent\-time\fR\ \fInumber\fR] [\fB\-\-timeout\fR\ \fInumber\fR] [\fB\-\-keep\-going\fR\ |\ \fB\-k\fR] [\fB\-\-keep\-failed\fR\ |\ \fB\-K\fR] [\fB\-\-fallback\fR] [\fB\-\-readonly\-mode\fR] [\fB\-I\fR\ \fIpath\fR] [\fB\-\-option\fR\ \fIname\fR\ \fIvalue\fR]
+.br
+[\fB\-\-add\-root\fR\ \fIpath\fR] [\fB\-\-indirect\fR] \fIoperation\fR [\fIoptions\fR...] [\fIarguments\fR...]
+.SH "DESCRIPTION"
+.PP
+The command
+\fBnix\-store\fR
+performs primitive operations on the Nix store\&. You generally do not need to run this command manually\&.
+.PP
+\fBnix\-store\fR
+takes exactly one
+\fIoperation\fR
+flag which indicates the subcommand to be performed\&. These are documented below\&.
+.SH "COMMON OPTIONS"
+.PP
+This section lists the options that are common to all operations\&. These options are allowed for every subcommand, though they may not always have an effect\&.
+.PP
+\fB\-\-add\-root\fR \fIpath\fR
+.RS 4
+Causes the result of a realisation (\fB\-\-realise\fR
+and
+\fB\-\-force\-realise\fR) to be registered as a root of the garbage collector\&. The root is stored in
+\fIpath\fR, which must be inside a directory that is scanned for roots by the garbage collector (i\&.e\&., typically in a subdirectory of
+/nix/var/nix/gcroots/)
+\fIunless\fR
+the
+\fB\-\-indirect\fR
+flag is used\&.
+.sp
+If there are multiple results, then multiple symlinks will be created by sequentially numbering symlinks beyond the first one (e\&.g\&.,
+foo,
+foo\-2,
+foo\-3, and so on)\&.
+.RE
+.PP
+\fB\-\-indirect\fR
+.RS 4
+In conjunction with
+\fB\-\-add\-root\fR, this option allows roots to be stored
+\fIoutside\fR
+of the GC roots directory\&. This is useful for commands such as
+\fBnix\-build\fR
+that place a symlink to the build result in the current directory; such a build result should not be garbage\-collected unless the symlink is removed\&.
+.sp
+The
+\fB\-\-indirect\fR
+flag causes a uniquely named symlink to
+\fIpath\fR
+to be stored in
+/nix/var/nix/gcroots/auto/\&. For instance,
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-add\-root /home/eelco/bla/result \-\-indirect \-r \fI\&.\&.\&.\fR
+
+$ ls \-l /nix/var/nix/gcroots/auto
+lrwxrwxrwx    1 \&.\&.\&. 2005\-03\-13 21:10 dn54lcypm8f8\&.\&.\&. \-> /home/eelco/bla/result
+
+$ ls \-l /home/eelco/bla/result
+lrwxrwxrwx    1 \&.\&.\&. 2005\-03\-13 21:10 /home/eelco/bla/result \-> /nix/store/1r11343n6qd4\&.\&.\&.\-f\-spot\-0\&.0\&.10
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Thus, when
+/home/eelco/bla/result
+is removed, the GC root in the
+auto
+directory becomes a dangling symlink and will be ignored by the collector\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBWarning\fR
+.ps -1
+.br
+Note that it is not possible to move or rename indirect GC roots, since the symlink in the
+auto
+directory will still point to the old location\&.
+.sp .5v
+.RE
+.RE
+.PP
+\fB\-\-help\fR
+.RS 4
+Prints out a summary of the command syntax and exits\&.
+.RE
+.PP
+\fB\-\-version\fR
+.RS 4
+Prints out the Nix version number on standard output and exits\&.
+.RE
+.PP
+\fB\-\-verbose\fR / \fB\-v\fR
+.RS 4
+Increases the level of verbosity of diagnostic messages printed on standard error\&. For each Nix operation, the information printed on standard output is well\-defined; any diagnostic information is printed on standard error, never on standard output\&.
+.sp
+This option may be specified repeatedly\&. Currently, the following verbosity levels exist:
+.PP
+0
+.RS 4
+\(lqErrors only\(rq: only print messages explaining why the Nix invocation failed\&.
+.RE
+.PP
+1
+.RS 4
+\(lqInformational\(rq: print
+\fIuseful\fR
+messages about what Nix is doing\&. This is the default\&.
+.RE
+.PP
+2
+.RS 4
+\(lqTalkative\(rq: print more informational messages\&.
+.RE
+.PP
+3
+.RS 4
+\(lqChatty\(rq: print even more informational messages\&.
+.RE
+.PP
+4
+.RS 4
+\(lqDebug\(rq: print debug information\&.
+.RE
+.PP
+5
+.RS 4
+\(lqVomit\(rq: print vast amounts of debug information\&.
+.RE
+.RE
+.PP
+\fB\-\-quiet\fR
+.RS 4
+Decreases the level of verbosity of diagnostic messages printed on standard error\&. This is the inverse option to
+\fB\-v\fR
+/
+\fB\-\-verbose\fR\&.
+.sp
+This option may be specified repeatedly\&. See the previous verbosity levels list\&.
+.RE
+.PP
+\fB\-\-no\-build\-output\fR / \fB\-Q\fR
+.RS 4
+By default, output written by builders to standard output and standard error is echoed to the Nix command\*(Aqs standard error\&. This option suppresses this behaviour\&. Note that the builder\*(Aqs standard output and error are always written to a log file in
+\fIprefix\fR/nix/var/log/nix\&.
+.RE
+.PP
+\fB\-\-max\-jobs\fR / \fB\-j\fR \fInumber\fR
+.RS 4
+Sets the maximum number of build jobs that Nix will perform in parallel to the specified number\&. Specify
+auto
+to use the number of CPUs in the system\&. The default is specified by the
+max\-jobs
+configuration setting, which itself defaults to
+1\&. A higher value is useful on SMP systems or to exploit I/O latency\&.
+.RE
+.PP
+\fB\-\-cores\fR
+.RS 4
+Sets the value of the
+\fBNIX_BUILD_CORES\fR
+environment variable in the invocation of builders\&. Builders can use this variable at their discretion to control the maximum amount of parallelism\&. For instance, in Nixpkgs, if the derivation attribute
+\fIenableParallelBuilding\fR
+is set to
+true, the builder passes the
+\fB\-j\fR\fB\fIN\fR\fR
+flag to GNU Make\&. It defaults to the value of the
+cores
+configuration setting, if set, or
+1
+otherwise\&. The value
+0
+means that the builder should use all available CPU cores in the system\&.
+.RE
+.PP
+\fB\-\-max\-silent\-time\fR
+.RS 4
+Sets the maximum number of seconds that a builder can go without producing any data on standard output or standard error\&. The default is specified by the
+max\-silent\-time
+configuration setting\&.
+0
+means no time\-out\&.
+.RE
+.PP
+\fB\-\-timeout\fR
+.RS 4
+Sets the maximum number of seconds that a builder can run\&. The default is specified by the
+timeout
+configuration setting\&.
+0
+means no timeout\&.
+.RE
+.PP
+\fB\-\-keep\-going\fR / \fB\-k\fR
+.RS 4
+Keep going in case of failed builds, to the greatest extent possible\&. That is, if building an input of some derivation fails, Nix will still build the other inputs, but not the derivation itself\&. Without this option, Nix stops if any build fails (except for builds of substitutes), possibly killing builds in progress (in case of parallel or distributed builds)\&.
+.RE
+.PP
+\fB\-\-keep\-failed\fR / \fB\-K\fR
+.RS 4
+Specifies that in case of a build failure, the temporary directory (usually in
+/tmp) in which the build takes place should not be deleted\&. The path of the build directory is printed as an informational message\&.
+.RE
+.PP
+\fB\-\-fallback\fR
+.RS 4
+Whenever Nix attempts to build a derivation for which substitutes are known for each output path, but realising the output paths through the substitutes fails, fall back on building the derivation\&.
+.sp
+The most common scenario in which this is useful is when we have registered substitutes in order to perform binary distribution from, say, a network repository\&. If the repository is down, the realisation of the derivation will fail\&. When this option is specified, Nix will build the derivation instead\&. Thus, installation from binaries falls back on installation from source\&. This option is not the default since it is generally not desirable for a transient failure in obtaining the substitutes to lead to a full build from source (with the related consumption of resources)\&.
+.RE
+.PP
+\fB\-\-no\-build\-hook\fR
+.RS 4
+Disables the build hook mechanism\&. This allows to ignore remote builders if they are setup on the machine\&.
+.sp
+It\*(Aqs useful in cases where the bandwidth between the client and the remote builder is too low\&. In that case it can take more time to upload the sources to the remote builder and fetch back the result than to do the computation locally\&.
+.RE
+.PP
+\fB\-\-readonly\-mode\fR
+.RS 4
+When this option is used, no attempt is made to open the Nix database\&. Most Nix operations do need database access, so those operations will fail\&.
+.RE
+.PP
+\fB\-\-arg\fR \fIname\fR \fIvalue\fR
+.RS 4
+This option is accepted by
+\fBnix\-env\fR,
+\fBnix\-instantiate\fR
+and
+\fBnix\-build\fR\&. When evaluating Nix expressions, the expression evaluator will automatically try to call functions that it encounters\&. It can automatically call functions for which every argument has a
+default value
+(e\&.g\&.,
+{ \fIargName\fR ? \fIdefaultValue\fR }: \fI\&.\&.\&.\fR)\&. With
+\fB\-\-arg\fR, you can also call functions that have arguments without a default value (or override a default value)\&. That is, if the evaluator encounters a function with an argument named
+\fIname\fR, it will call it with value
+\fIvalue\fR\&.
+.sp
+For instance, the top\-level
+default\&.nix
+in Nixpkgs is actually a function:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{ # The system (e\&.g\&., `i686\-linux\*(Aq) for which to build the packages\&.
+  system ? builtins\&.currentSystem
+  \fI\&.\&.\&.\fR
+}: \fI\&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+So if you call this Nix expression (e\&.g\&., when you do
+nix\-env \-i \fIpkgname\fR), the function will be called automatically using the value
+builtins\&.currentSystem
+for the
+system
+argument\&. You can override this using
+\fB\-\-arg\fR, e\&.g\&.,
+nix\-env \-i \fIpkgname\fR \-\-arg system \e"i686\-freebsd\e"\&. (Note that since the argument is a Nix string literal, you have to escape the quotes\&.)
+.RE
+.PP
+\fB\-\-argstr\fR \fIname\fR \fIvalue\fR
+.RS 4
+This option is like
+\fB\-\-arg\fR, only the value is not a Nix expression but a string\&. So instead of
+\-\-arg system \e"i686\-linux\e"
+(the outer quotes are to keep the shell happy) you can say
+\-\-argstr system i686\-linux\&.
+.RE
+.PP
+\fB\-\-attr\fR / \fB\-A\fR \fIattrPath\fR
+.RS 4
+Select an attribute from the top\-level Nix expression being evaluated\&. (\fBnix\-env\fR,
+\fBnix\-instantiate\fR,
+\fBnix\-build\fR
+and
+\fBnix\-shell\fR
+only\&.) The
+\fIattribute path\fR
+\fIattrPath\fR
+is a sequence of attribute names separated by dots\&. For instance, given a top\-level Nix expression
+\fIe\fR, the attribute path
+xorg\&.xorgserver
+would cause the expression
+\fIe\fR\&.xorg\&.xorgserver
+to be used\&. See
+\fBnix\-env \-\-install\fR
+for some concrete examples\&.
+.sp
+In addition to attribute names, you can also specify array indices\&. For instance, the attribute path
+foo\&.3\&.bar
+selects the
+bar
+attribute of the fourth element of the array in the
+foo
+attribute of the top\-level expression\&.
+.RE
+.PP
+\fB\-\-expr\fR / \fB\-E\fR
+.RS 4
+Interpret the command line arguments as a list of Nix expressions to be parsed and evaluated, rather than as a list of file names of Nix expressions\&. (\fBnix\-instantiate\fR,
+\fBnix\-build\fR
+and
+\fBnix\-shell\fR
+only\&.)
+.RE
+.PP
+\fB\-I\fR \fIpath\fR
+.RS 4
+Add a path to the Nix expression search path\&. This option may be given multiple times\&. See the
+\fBNIX_PATH\fR
+environment variable for information on the semantics of the Nix search path\&. Paths added through
+\fB\-I\fR
+take precedence over
+\fBNIX_PATH\fR\&.
+.RE
+.PP
+\fB\-\-option\fR \fIname\fR \fIvalue\fR
+.RS 4
+Set the Nix configuration option
+\fIname\fR
+to
+\fIvalue\fR\&. This overrides settings in the Nix configuration file (see
+\fBnix.conf\fR(5))\&.
+.RE
+.PP
+\fB\-\-repair\fR
+.RS 4
+Fix corrupted or missing store paths by redownloading or rebuilding them\&. Note that this is slow because it requires computing a cryptographic hash of the contents of every path in the closure of the build\&. Also note the warning under
+\fBnix\-store \-\-repair\-path\fR\&.
+.RE
+.SH "OPERATION \-\-REALISE"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR {\fB\-\-realise\fR | \fB\-r\fR} \fIpaths\fR... [\fB\-\-dry\-run\fR]
+.SS "Description"
+.PP
+The operation
+\fB\-\-realise\fR
+essentially \(lqbuilds\(rq the specified store paths\&. Realisation is a somewhat overloaded term:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If the store path is a
+\fIderivation\fR, realisation ensures that the output paths of the derivation are
+valid
+(i\&.e\&., the output path and its closure exist in the file system)\&. This can be done in several ways\&. First, it is possible that the outputs are already valid, in which case we are done immediately\&. Otherwise, there may be
+substitutes
+that produce the outputs (e\&.g\&., by downloading them)\&. Finally, the outputs can be produced by performing the build action described by the derivation\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If the store path is not a derivation, realisation ensures that the specified path is valid (i\&.e\&., it and its closure exist in the file system)\&. If the path is already valid, we are done immediately\&. Otherwise, the path and any missing paths in its closure may be produced through substitutes\&. If there are no (successful) subsitutes, realisation fails\&.
+.RE
+.PP
+The output path of each derivation is printed on standard output\&. (For non\-derivations argument, the argument itself is printed\&.)
+.PP
+The following flags are available:
+.PP
+\fB\-\-dry\-run\fR
+.RS 4
+Print on standard error a description of what packages would be built or downloaded, without actually performing the operation\&.
+.RE
+.PP
+\fB\-\-ignore\-unknown\fR
+.RS 4
+If a non\-derivation path does not have a substitute, then silently ignore it\&.
+.RE
+.PP
+\fB\-\-check\fR
+.RS 4
+This option allows you to check whether a derivation is deterministic\&. It rebuilds the specified derivation and checks whether the result is bitwise\-identical with the existing outputs, printing an error if that\(cqs not the case\&. The outputs of the specified derivation must already exist\&. When used with
+\fB\-K\fR, if an output path is not identical to the corresponding output from the previous build, the new output path is left in
+/nix/store/\fIname\fR\&.check\&.
+.sp
+See also the
+\fBbuild\-repeat\fR
+configuration option, which repeats a derivation a number of times and prevents its outputs from being registered as \(lqvalid\(rq in the Nix store unless they are identical\&.
+.RE
+.SS "Examples"
+.PP
+This operation is typically used to build store derivations produced by
+\fBnix\-instantiate\fR:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-r $(nix\-instantiate \&./test\&.nix)
+/nix/store/31axcgrlbfsxzmfff1gyj1bf62hvkby2\-aterm\-2\&.3\&.1
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+This is essentially what
+\fBnix\-build\fR
+does\&.
+.PP
+To test whether a previously\-built derivation is deterministic:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-build \*(Aq<nixpkgs>\*(Aq \-A hello \-\-check \-K
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-SERVE"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-serve\fR [\fB\-\-write\fR]
+.SS "Description"
+.PP
+The operation
+\fB\-\-serve\fR
+provides access to the Nix store over stdin and stdout, and is intended to be used as a means of providing Nix store access to a restricted ssh user\&.
+.PP
+The following flags are available:
+.PP
+\fB\-\-write\fR
+.RS 4
+Allow the connected client to request the realization of derivations\&. In effect, this can be used to make the host act as a remote builder\&.
+.RE
+.SS "Examples"
+.PP
+To turn a host into a build server, the
+authorized_keys
+file can be used to provide build access to a given SSH public key:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ cat <<EOF >>/root/\&.ssh/authorized_keys
+command="nice \-n20 nix\-store \-\-serve \-\-write" ssh\-rsa AAAAB3NzaC1yc2EAAAA\&.\&.\&.
+EOF
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-GC"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-gc\fR [\fB\-\-print\-roots\fR | \fB\-\-print\-live\fR | \fB\-\-print\-dead\fR | \fB\-\-delete\fR] [\fB\-\-max\-freed\fR\ \fIbytes\fR]
+.SS "Description"
+.PP
+Without additional flags, the operation
+\fB\-\-gc\fR
+performs a garbage collection on the Nix store\&. That is, all paths in the Nix store not reachable via file system references from a set of \(lqroots\(rq, are deleted\&.
+.PP
+The following suboperations may be specified:
+.PP
+\fB\-\-print\-roots\fR
+.RS 4
+This operation prints on standard output the set of roots used by the garbage collector\&. What constitutes a root is described in
+Section\ \&11.1, \(lqGarbage Collector Roots\(rq\&.
+.RE
+.PP
+\fB\-\-print\-live\fR
+.RS 4
+This operation prints on standard output the set of \(lqlive\(rq store paths, which are all the store paths reachable from the roots\&. Live paths should never be deleted, since that would break consistency \(em it would become possible that applications are installed that reference things that are no longer present in the store\&.
+.RE
+.PP
+\fB\-\-print\-dead\fR
+.RS 4
+This operation prints out on standard output the set of \(lqdead\(rq store paths, which is just the opposite of the set of live paths: any path in the store that is not live (with respect to the roots) is dead\&.
+.RE
+.PP
+\fB\-\-delete\fR
+.RS 4
+This operation performs an actual garbage collection\&. All dead paths are removed from the store\&. This is the default\&.
+.RE
+.PP
+By default, all unreachable paths are deleted\&. The following options control what gets deleted and in what order:
+.PP
+\fB\-\-max\-freed\fR \fIbytes\fR
+.RS 4
+Keep deleting paths until at least
+\fIbytes\fR
+bytes have been deleted, then stop\&. The argument
+\fIbytes\fR
+can be followed by the multiplicative suffix
+K,
+M,
+G
+or
+T, denoting KiB, MiB, GiB or TiB units\&.
+.RE
+.PP
+The behaviour of the collector is also influenced by the
+keep\-outputs
+and
+keep\-derivations
+variables in the Nix configuration file\&.
+.PP
+With
+\fB\-\-delete\fR, the collector prints the total number of freed bytes when it finishes (or when it is interrupted)\&. With
+\fB\-\-print\-dead\fR, it prints the number of bytes that would be freed\&.
+.SS "Examples"
+.PP
+To delete all unreachable paths, just do:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-gc
+deleting `/nix/store/kq82idx6g0nyzsp2s14gfsc38npai7lf\-cairo\-1\&.0\&.4\&.tar\&.gz\&.drv\*(Aq
+\fI\&.\&.\&.\fR
+8825586 bytes freed (8\&.42 MiB)
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To delete at least 100 MiBs of unreachable paths:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-gc \-\-max\-freed $((100 * 1024 * 1024))
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-DELETE"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-delete\fR [\fB\-\-ignore\-liveness\fR] \fIpaths\fR...
+.SS "Description"
+.PP
+The operation
+\fB\-\-delete\fR
+deletes the store paths
+\fIpaths\fR
+from the Nix store, but only if it is safe to do so; that is, when the path is not reachable from a root of the garbage collector\&. This means that you can only delete paths that would also be deleted by
+nix\-store \-\-gc\&. Thus,
+\-\-delete
+is a more targeted version of
+\-\-gc\&.
+.PP
+With the option
+\fB\-\-ignore\-liveness\fR, reachability from the roots is ignored\&. However, the path still won\(cqt be deleted if there are other paths in the store that refer to it (i\&.e\&., depend on it)\&.
+.SS "Example"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-delete /nix/store/zq0h41l75vlb4z45kzgjjmsjxvcv1qk7\-mesa\-6\&.4
+0 bytes freed (0\&.00 MiB)
+error: cannot delete path `/nix/store/zq0h41l75vlb4z45kzgjjmsjxvcv1qk7\-mesa\-6\&.4\*(Aq since it is still alive
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-QUERY"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR {\fB\-\-query\fR | \fB\-q\fR} {\fB\-\-outputs\fR | \fB\-\-requisites\fR | \fB\-R\fR | \fB\-\-references\fR | \fB\-\-referrers\fR | \fB\-\-referrers\-closure\fR | \fB\-\-deriver\fR | \fB\-d\fR | \fB\-\-graph\fR | \fB\-\-tree\fR | \fB\-\-binding\fR\ \fIname\fR | \fB\-b\fR\ \fIname\fR | \fB\-\-hash\fR | \fB\-\-size\fR | \fB\-\-roots\fR} [\fB\-\-use\-output\fR] [\fB\-u\fR] [\fB\-\-force\-realise\fR] [\fB\-f\fR] \fIpaths\fR...
+.SS "Description"
+.PP
+The operation
+\fB\-\-query\fR
+displays various bits of information about the store paths \&. The queries are described below\&. At most one query can be specified\&. The default query is
+\fB\-\-outputs\fR\&.
+.PP
+The paths
+\fIpaths\fR
+may also be symlinks from outside of the Nix store, to the Nix store\&. In that case, the query is applied to the target of the symlink\&.
+.SS "Common query options"
+.PP
+\fB\-\-use\-output\fR, \fB\-u\fR
+.RS 4
+For each argument to the query that is a store derivation, apply the query to the output path of the derivation instead\&.
+.RE
+.PP
+\fB\-\-force\-realise\fR, \fB\-f\fR
+.RS 4
+Realise each argument to the query first (see
+\fBnix\-store \-\-realise\fR)\&.
+.RE
+.SS "Queries"
+.PP
+\fB\-\-outputs\fR
+.RS 4
+Prints out the
+output paths
+of the store derivations
+\fIpaths\fR\&. These are the paths that will be produced when the derivation is built\&.
+.RE
+.PP
+\fB\-\-requisites\fR, \fB\-R\fR
+.RS 4
+Prints out the
+closure
+of the store path
+\fIpaths\fR\&.
+.sp
+This query has one option:
+.PP
+\fB\-\-include\-outputs\fR
+.RS 4
+Also include the output path of store derivations, and their closures\&.
+.RE
+.sp
+This query can be used to implement various kinds of deployment\&. A
+\fIsource deployment\fR
+is obtained by distributing the closure of a store derivation\&. A
+\fIbinary deployment\fR
+is obtained by distributing the closure of an output path\&. A
+\fIcache deployment\fR
+(combined source/binary deployment, including binaries of build\-time\-only dependencies) is obtained by distributing the closure of a store derivation and specifying the option
+\fB\-\-include\-outputs\fR\&.
+.RE
+.PP
+\fB\-\-references\fR
+.RS 4
+Prints the set of
+references
+of the store paths
+\fIpaths\fR, that is, their immediate dependencies\&. (For
+\fIall\fR
+dependencies, use
+\fB\-\-requisites\fR\&.)
+.RE
+.PP
+\fB\-\-referrers\fR
+.RS 4
+Prints the set of
+\fIreferrers\fR
+of the store paths
+\fIpaths\fR, that is, the store paths currently existing in the Nix store that refer to one of
+\fIpaths\fR\&. Note that contrary to the references, the set of referrers is not constant; it can change as store paths are added or removed\&.
+.RE
+.PP
+\fB\-\-referrers\-closure\fR
+.RS 4
+Prints the closure of the set of store paths
+\fIpaths\fR
+under the referrers relation; that is, all store paths that directly or indirectly refer to one of
+\fIpaths\fR\&. These are all the path currently in the Nix store that are dependent on
+\fIpaths\fR\&.
+.RE
+.PP
+\fB\-\-deriver\fR, \fB\-d\fR
+.RS 4
+Prints the
+deriver
+of the store paths
+\fIpaths\fR\&. If the path has no deriver (e\&.g\&., if it is a source file), or if the deriver is not known (e\&.g\&., in the case of a binary\-only deployment), the string
+unknown\-deriver
+is printed\&.
+.RE
+.PP
+\fB\-\-graph\fR
+.RS 4
+Prints the references graph of the store paths
+\fIpaths\fR
+in the format of the
+\fBdot\fR
+tool of AT&T\*(Aqs
+\m[blue]\fBGraphviz package\fR\m[]\&\s-2\u[1]\d\s+2\&. This can be used to visualise dependency graphs\&. To obtain a build\-time dependency graph, apply this to a store derivation\&. To obtain a runtime dependency graph, apply it to an output path\&.
+.RE
+.PP
+\fB\-\-tree\fR
+.RS 4
+Prints the references graph of the store paths
+\fIpaths\fR
+as a nested ASCII tree\&. References are ordered by descending closure size; this tends to flatten the tree, making it more readable\&. The query only recurses into a store path when it is first encountered; this prevents a blowup of the tree representation of the graph\&.
+.RE
+.PP
+\fB\-\-graphml\fR
+.RS 4
+Prints the references graph of the store paths
+\fIpaths\fR
+in the
+\m[blue]\fBGraphML\fR\m[]\&\s-2\u[2]\d\s+2
+file format\&. This can be used to visualise dependency graphs\&. To obtain a build\-time dependency graph, apply this to a store derivation\&. To obtain a runtime dependency graph, apply it to an output path\&.
+.RE
+.PP
+\fB\-\-binding\fR \fIname\fR, \fB\-b\fR \fIname\fR
+.RS 4
+Prints the value of the attribute
+\fIname\fR
+(i\&.e\&., environment variable) of the store derivations
+\fIpaths\fR\&. It is an error for a derivation to not have the specified attribute\&.
+.RE
+.PP
+\fB\-\-hash\fR
+.RS 4
+Prints the SHA\-256 hash of the contents of the store paths
+\fIpaths\fR
+(that is, the hash of the output of
+\fBnix\-store \-\-dump\fR
+on the given paths)\&. Since the hash is stored in the Nix database, this is a fast operation\&.
+.RE
+.PP
+\fB\-\-size\fR
+.RS 4
+Prints the size in bytes of the contents of the store paths
+\fIpaths\fR
+\(em to be precise, the size of the output of
+\fBnix\-store \-\-dump\fR
+on the given paths\&. Note that the actual disk space required by the store paths may be higher, especially on filesystems with large cluster sizes\&.
+.RE
+.PP
+\fB\-\-roots\fR
+.RS 4
+Prints the garbage collector roots that point, directly or indirectly, at the store paths
+\fIpaths\fR\&.
+.RE
+.SS "Examples"
+.PP
+Print the closure (runtime dependencies) of the
+\fBsvn\fR
+program in the current user environment:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-qR $(which svn)
+/nix/store/5mbglq5ldqld8sj57273aljwkfvj22mc\-subversion\-1\&.1\&.4
+/nix/store/9lz9yc6zgmc0vlqmn2ipcpkjlmbi51vv\-glibc\-2\&.3\&.4
+\fI\&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Print the build\-time dependencies of
+\fBsvn\fR:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-qR $(nix\-store \-qd $(which svn))
+/nix/store/02iizgn86m42q905rddvg4ja975bk2i4\-grep\-2\&.5\&.1\&.tar\&.bz2\&.drv
+/nix/store/07a2bzxmzwz5hp58nf03pahrv2ygwgs3\-gcc\-wrapper\&.sh
+/nix/store/0ma7c9wsbaxahwwl04gbw3fcd806ski4\-glibc\-2\&.3\&.4\&.drv
+\fI\&.\&.\&. lots of other paths \&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The difference with the previous example is that we ask the closure of the derivation (\fB\-qd\fR), not the closure of the output path that contains
+\fBsvn\fR\&.
+.PP
+Show the build\-time dependencies as a tree:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-q \-\-tree $(nix\-store \-qd $(which svn))
+/nix/store/7i5082kfb6yjbqdbiwdhhza0am2xvh6c\-subversion\-1\&.1\&.4\&.drv
++\-\-\-/nix/store/d8afh10z72n8l1cr5w42366abiblgn54\-builder\&.sh
++\-\-\-/nix/store/fmzxmpjx2lh849ph0l36snfj9zdibw67\-bash\-3\&.0\&.drv
+|   +\-\-\-/nix/store/570hmhmx3v57605cqg9yfvvyh0nnb8k8\-bash
+|   +\-\-\-/nix/store/p3srsbd8dx44v2pg6nbnszab5mcwx03v\-builder\&.sh
+\fI\&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Show all paths that depend on the same OpenSSL library as
+\fBsvn\fR:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-q \-\-referrers $(nix\-store \-q \-\-binding openssl $(nix\-store \-qd $(which svn)))
+/nix/store/23ny9l9wixx21632y2wi4p585qhva1q8\-sylpheed\-1\&.0\&.0
+/nix/store/5mbglq5ldqld8sj57273aljwkfvj22mc\-subversion\-1\&.1\&.4
+/nix/store/dpmvp969yhdqs7lm2r1a3gng7pyq6vy4\-subversion\-1\&.1\&.3
+/nix/store/l51240xqsgg8a7yrbqdx1rfzyv6l26fx\-lynx\-2\&.8\&.5
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Show all paths that directly or indirectly depend on the Glibc (C library) used by
+\fBsvn\fR:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-q \-\-referrers\-closure $(ldd $(which svn) | grep /libc\&.so | awk \*(Aq{print $3}\*(Aq)
+/nix/store/034a6h4vpz9kds5r6kzb9lhh81mscw43\-libgnomeprintui\-2\&.8\&.2
+/nix/store/15l3yi0d45prm7a82pcrknxdh6nzmxza\-gawk\-3\&.1\&.4
+\fI\&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Note that
+\fBldd\fR
+is a command that prints out the dynamic libraries used by an ELF executable\&.
+.PP
+Make a picture of the runtime dependency graph of the current user environment:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-q \-\-graph ~/\&.nix\-profile | dot \-Tps > graph\&.ps
+$ gv graph\&.ps
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Show every garbage collector root that points to a store path that depends on
+\fBsvn\fR:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-q \-\-roots $(which svn)
+/nix/var/nix/profiles/default\-81\-link
+/nix/var/nix/profiles/default\-82\-link
+/nix/var/nix/profiles/per\-user/eelco/profile\-97\-link
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-ADD"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-add\fR \fIpaths\fR...
+.SS "Description"
+.PP
+The operation
+\fB\-\-add\fR
+adds the specified paths to the Nix store\&. It prints the resulting paths in the Nix store on standard output\&.
+.SS "Example"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-add \&./foo\&.c
+/nix/store/m7lrha58ph6rcnv109yzx1nk1cj7k7zf\-foo\&.c
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-VERIFY"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-verify\fR [\fB\-\-check\-contents\fR] [\fB\-\-repair\fR]
+.SS "Description"
+.PP
+The operation
+\fB\-\-verify\fR
+verifies the internal consistency of the Nix database, and the consistency between the Nix database and the Nix store\&. Any inconsistencies encountered are automatically repaired\&. Inconsistencies are generally the result of the Nix store or database being modified by non\-Nix tools, or of bugs in Nix itself\&.
+.PP
+This operation has the following options:
+.PP
+\fB\-\-check\-contents\fR
+.RS 4
+Checks that the contents of every valid store path has not been altered by computing a SHA\-256 hash of the contents and comparing it with the hash stored in the Nix database at build time\&. Paths that have been modified are printed out\&. For large stores,
+\fB\-\-check\-contents\fR
+is obviously quite slow\&.
+.RE
+.PP
+\fB\-\-repair\fR
+.RS 4
+If any valid path is missing from the store, or (if
+\fB\-\-check\-contents\fR
+is given) the contents of a valid path has been modified, then try to repair the path by redownloading it\&. See
+\fBnix\-store \-\-repair\-path\fR
+for details\&.
+.RE
+.SH "OPERATION \-\-VERIFY\-PATH"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-verify\-path\fR \fIpaths\fR...
+.SS "Description"
+.PP
+The operation
+\fB\-\-verify\-path\fR
+compares the contents of the given store paths to their cryptographic hashes stored in Nix\(cqs database\&. For every changed path, it prints a warning message\&. The exit status is 0 if no path has changed, and 1 otherwise\&.
+.SS "Example"
+.PP
+To verify the integrity of the
+\fBsvn\fR
+command and all its dependencies:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-verify\-path $(nix\-store \-qR $(which svn))
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-REPAIR\-PATH"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-repair\-path\fR \fIpaths\fR...
+.SS "Description"
+.PP
+The operation
+\fB\-\-repair\-path\fR
+attempts to \(lqrepair\(rq the specified paths by redownloading them using the available substituters\&. If no substitutes are available, then repair is not possible\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBWarning\fR
+.ps -1
+.br
+.PP
+During repair, there is a very small time window during which the old path (if it exists) is moved out of the way and replaced with the new path\&. If repair is interrupted in between, then the system may be left in a broken state (e\&.g\&., if the path contains a critical system component like the GNU C Library)\&.
+.sp .5v
+.RE
+.SS "Example"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-verify\-path /nix/store/dj7a81wsm1ijwwpkks3725661h3263p5\-glibc\-2\&.13
+path `/nix/store/dj7a81wsm1ijwwpkks3725661h3263p5\-glibc\-2\&.13\*(Aq was modified!
+  expected hash `2db57715ae90b7e31ff1f2ecb8c12ec1cc43da920efcbe3b22763f36a1861588\*(Aq,
+  got `481c5aa5483ebc97c20457bb8bca24deea56550d3985cda0027f67fe54b808e4\*(Aq
+
+$ nix\-store \-\-repair\-path /nix/store/dj7a81wsm1ijwwpkks3725661h3263p5\-glibc\-2\&.13
+fetching path `/nix/store/d7a81wsm1ijwwpkks3725661h3263p5\-glibc\-2\&.13\*(Aq\&.\&.\&.
+\&...
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-DUMP"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-dump\fR \fIpath\fR
+.SS "Description"
+.PP
+The operation
+\fB\-\-dump\fR
+produces a NAR (Nix ARchive) file containing the contents of the file system tree rooted at
+\fIpath\fR\&. The archive is written to standard output\&.
+.PP
+A NAR archive is like a TAR or Zip archive, but it contains only the information that Nix considers important\&. For instance, timestamps are elided because all files in the Nix store have their timestamp set to 0 anyway\&. Likewise, all permissions are left out except for the execute bit, because all files in the Nix store have 644 or 755 permission\&.
+.PP
+Also, a NAR archive is
+\fIcanonical\fR, meaning that \(lqequal\(rq paths always produce the same NAR archive\&. For instance, directory entries are always sorted so that the actual on\-disk order doesn\(cqt influence the result\&. This means that the cryptographic hash of a NAR dump of a path is usable as a fingerprint of the contents of the path\&. Indeed, the hashes of store paths stored in Nix\(cqs database (see
+nix\-store \-q \-\-hash) are SHA\-256 hashes of the NAR dump of each store path\&.
+.PP
+NAR archives support filenames of unlimited length and 64\-bit file sizes\&. They can contain regular files, directories, and symbolic links, but not other types of files (such as device nodes)\&.
+.PP
+A Nix archive can be unpacked using
+nix\-store \-\-restore\&.
+.SH "OPERATION \-\-RESTORE"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-restore\fR \fIpath\fR
+.SS "Description"
+.PP
+The operation
+\fB\-\-restore\fR
+unpacks a NAR archive to
+\fIpath\fR, which must not already exist\&. The archive is read from standard input\&.
+.SH "OPERATION \-\-EXPORT"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-export\fR \fIpaths\fR...
+.SS "Description"
+.PP
+The operation
+\fB\-\-export\fR
+writes a serialisation of the specified store paths to standard output in a format that can be imported into another Nix store with
+\fBnix\-store \-\-import\fR\&. This is like
+\fBnix\-store \-\-dump\fR, except that the NAR archive produced by that command doesn\(cqt contain the necessary meta\-information to allow it to be imported into another Nix store (namely, the set of references of the path)\&.
+.PP
+This command does not produce a
+\fIclosure\fR
+of the specified paths, so if a store path references other store paths that are missing in the target Nix store, the import will fail\&. To copy a whole closure, do something like:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-export $(nix\-store \-qR \fIpaths\fR) > out
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+To import the whole closure again, run:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-import < out
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-IMPORT"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-import\fR
+.SS "Description"
+.PP
+The operation
+\fB\-\-import\fR
+reads a serialisation of a set of store paths produced by
+\fBnix\-store \-\-export\fR
+from standard input and adds those store paths to the Nix store\&. Paths that already exist in the Nix store are ignored\&. If a path refers to another path that doesn\(cqt exist in the Nix store, the import fails\&.
+.SH "OPERATION \-\-OPTIMISE"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-optimise\fR
+.SS "Description"
+.PP
+The operation
+\fB\-\-optimise\fR
+reduces Nix store disk space usage by finding identical files in the store and hard\-linking them to each other\&. It typically reduces the size of the store by something like 25\-35%\&. Only regular files and symlinks are hard\-linked in this manner\&. Files are considered identical when they have the same NAR archive serialisation: that is, regular files must have the same contents and permission (executable or non\-executable), and symlinks must have the same contents\&.
+.PP
+After completion, or when the command is interrupted, a report on the achieved savings is printed on standard error\&.
+.PP
+Use
+\fB\-vv\fR
+or
+\fB\-vvv\fR
+to get some progress indication\&.
+.SS "Example"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-optimise
+hashing files in `/nix/store/qhqx7l2f1kmwihc9bnxs7rc159hsxnf3\-gcc\-4\&.1\&.1\*(Aq
+\fI\&.\&.\&.\fR
+541838819 bytes (516\&.74 MiB) freed by hard\-linking 54143 files;
+there are 114486 files with equal contents out of 215894 files in total
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-READ\-LOG"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR {\fB\-\-read\-log\fR | \fB\-l\fR} \fIpaths\fR...
+.SS "Description"
+.PP
+The operation
+\fB\-\-read\-log\fR
+prints the build log of the specified store paths on standard output\&. The build log is whatever the builder of a derivation wrote to standard output and standard error\&. If a store path is not a derivation, the deriver of the store path is used\&.
+.PP
+Build logs are kept in
+/nix/var/log/nix/drvs\&. However, there is no guarantee that a build log is available for any particular store path\&. For instance, if the path was downloaded as a pre\-built binary through a substitute, then the log is unavailable\&.
+.SS "Example"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-l $(which ktorrent)
+building /nix/store/dhc73pvzpnzxhdgpimsd9sw39di66ph1\-ktorrent\-2\&.2\&.1
+unpacking sources
+unpacking source archive /nix/store/p8n1jpqs27mgkjw07pb5269717nzf5f8\-ktorrent\-2\&.2\&.1\&.tar\&.gz
+ktorrent\-2\&.2\&.1/
+ktorrent\-2\&.2\&.1/NEWS
+\fI\&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-DUMP\-DB"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-dump\-db\fR
+.SS "Description"
+.PP
+The operation
+\fB\-\-dump\-db\fR
+writes a dump of the Nix database to standard output\&. It can be loaded into an empty Nix store using
+\fB\-\-load\-db\fR\&. This is useful for making backups and when migrating to different database schemas\&.
+.SH "OPERATION \-\-LOAD\-DB"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-load\-db\fR
+.SS "Description"
+.PP
+The operation
+\fB\-\-load\-db\fR
+reads a dump of the Nix database created by
+\fB\-\-dump\-db\fR
+from standard input and loads it into the Nix database\&.
+.SH "OPERATION \-\-PRINT\-ENV"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-print\-env\fR \fIdrvpath\fR
+.SS "Description"
+.PP
+The operation
+\fB\-\-print\-env\fR
+prints out the environment of a derivation in a format that can be evaluated by a shell\&. The command line arguments of the builder are placed in the variable
+\fB_args\fR\&.
+.SS "Example"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-print\-env $(nix\-instantiate \*(Aq<nixpkgs>\*(Aq \-A firefox)
+\fI\&...\fR
+export src; src=\*(Aq/nix/store/plpj7qrwcz94z2psh6fchsi7s8yihc7k\-firefox\-12\&.0\&.source\&.tar\&.bz2\*(Aq
+export stdenv; stdenv=\*(Aq/nix/store/7c8asx3yfrg5dg1gzhzyq2236zfgibnn\-stdenv\*(Aq
+export system; system=\*(Aqx86_64\-linux\*(Aq
+export _args; _args=\*(Aq\-e /nix/store/9krlzvny65gdc8s7kpb6lkx8cd02c25c\-default\-builder\&.sh\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-GENERATE\-BINARY\-CACHE\-KEY"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR \fB\-\-generate\-binary\-cache\-key\fR\ \fBkey\-name\fR\ \fBsecret\-key\-file\fR\ \fBpublic\-key\-file\fR
+.SS "Description"
+.PP
+This command generates an
+\m[blue]\fBEd25519 key pair\fR\m[]\&\s-2\u[3]\d\s+2
+that can be used to create a signed binary cache\&. It takes three mandatory parameters:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  1." 4.2
+.\}
+A key name, such as
+cache\&.example\&.org\-1, that is used to look up keys on the client when it verifies signatures\&. It can be anything, but it\(cqs suggested to use the host name of your cache (e\&.g\&.
+cache\&.example\&.org) with a suffix denoting the number of the key (to be incremented every time you need to revoke a key)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  2." 4.2
+.\}
+The file name where the secret key is to be stored\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  3." 4.2
+.\}
+The file name where the public key is to be stored\&.
+.RE
+.sp
+.SH "ENVIRONMENT VARIABLES"
+.PP
+\fBIN_NIX_SHELL\fR
+.RS 4
+Indicator that tells if the current environment was set up by
+\fBnix\-shell\fR\&.
+.RE
+.PP
+\fBNIX_PATH\fR
+.RS 4
+A colon\-separated list of directories used to look up Nix expressions enclosed in angle brackets (i\&.e\&.,
+<\fIpath\fR>)\&. For instance, the value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+/home/eelco/Dev:/etc/nixos
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+will cause Nix to look for paths relative to
+/home/eelco/Dev
+and
+/etc/nixos, in that order\&. It is also possible to match paths against a prefix\&. For example, the value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+nixpkgs=/home/eelco/Dev/nixpkgs\-branch:/etc/nixos
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+will cause Nix to search for
+<nixpkgs/\fIpath\fR>
+in
+/home/eelco/Dev/nixpkgs\-branch/\fIpath\fR
+and
+/etc/nixos/nixpkgs/\fIpath\fR\&.
+.sp
+If a path in the Nix search path starts with
+http://
+or
+https://, it is interpreted as the URL of a tarball that will be downloaded and unpacked to a temporary location\&. The tarball must consist of a single top\-level directory\&. For example, setting
+\fBNIX_PATH\fR
+to
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+nixpkgs=https://github\&.com/NixOS/nixpkgs\-channels/archive/nixos\-15\&.09\&.tar\&.gz
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+tells Nix to download the latest revision in the Nixpkgs/NixOS 15\&.09 channel\&.
+.sp
+A following shorthand can be used to refer to the official channels:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+nixpkgs=channel:nixos\-15\&.09
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The search path can be extended using the
+\fB\-I\fR
+option, which takes precedence over
+\fBNIX_PATH\fR\&.
+.RE
+.PP
+\fBNIX_IGNORE_SYMLINK_STORE\fR
+.RS 4
+Normally, the Nix store directory (typically
+/nix/store) is not allowed to contain any symlink components\&. This is to prevent \(lqimpure\(rq builds\&. Builders sometimes \(lqcanonicalise\(rq paths by resolving all symlink components\&. Thus, builds on different machines (with
+/nix/store
+resolving to different locations) could yield different results\&. This is generally not a problem, except when builds are deployed to machines where
+/nix/store
+resolves differently\&. If you are sure that you\(cqre not going to do that, you can set
+\fBNIX_IGNORE_SYMLINK_STORE\fR
+to
+\fB1\fR\&.
+.sp
+Note that if you\(cqre symlinking the Nix store so that you can put it on another file system than the root file system, on Linux you\(cqre better off using
+bind
+mount points, e\&.g\&.,
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ mkdir /nix
+$ mount \-o bind /mnt/otherdisk/nix /nix
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Consult the
+\fBmount\fR(8)
+manual page for details\&.
+.RE
+.PP
+\fBNIX_STORE_DIR\fR
+.RS 4
+Overrides the location of the Nix store (default
+\fIprefix\fR/store)\&.
+.RE
+.PP
+\fBNIX_DATA_DIR\fR
+.RS 4
+Overrides the location of the Nix static data directory (default
+\fIprefix\fR/share)\&.
+.RE
+.PP
+\fBNIX_LOG_DIR\fR
+.RS 4
+Overrides the location of the Nix log directory (default
+\fIprefix\fR/log/nix)\&.
+.RE
+.PP
+\fBNIX_STATE_DIR\fR
+.RS 4
+Overrides the location of the Nix state directory (default
+\fIprefix\fR/var/nix)\&.
+.RE
+.PP
+\fBNIX_CONF_DIR\fR
+.RS 4
+Overrides the location of the Nix configuration directory (default
+\fIprefix\fR/etc/nix)\&.
+.RE
+.PP
+\fBTMPDIR\fR
+.RS 4
+Use the specified directory to store temporary files\&. In particular, this includes temporary build directories; these can take up substantial amounts of disk space\&. The default is
+/tmp\&.
+.RE
+.PP
+\fBNIX_REMOTE\fR
+.RS 4
+This variable should be set to
+daemon
+if you want to use the Nix daemon to execute Nix operations\&. This is necessary in
+multi\-user Nix installations\&. If the Nix daemon\*(Aqs Unix socket is at some non\-standard path, this variable should be set to
+unix://path/to/socket\&. Otherwise, it should be left unset\&.
+.RE
+.PP
+\fBNIX_SHOW_STATS\fR
+.RS 4
+If set to
+1, Nix will print some evaluation statistics, such as the number of values allocated\&.
+.RE
+.PP
+\fBNIX_COUNT_CALLS\fR
+.RS 4
+If set to
+1, Nix will print how often functions were called during Nix expression evaluation\&. This is useful for profiling your Nix expressions\&.
+.RE
+.PP
+\fBGC_INITIAL_HEAP_SIZE\fR
+.RS 4
+If Nix has been configured to use the Boehm garbage collector, this variable sets the initial size of the heap in bytes\&. It defaults to 384 MiB\&. Setting it to a low value reduces memory consumption, but will increase runtime due to the overhead of garbage collection\&.
+.RE
+.SH "AUTHOR"
+.PP
+\fBEelco Dolstra\fR
+.RS 4
+Author
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2004-2018 Eelco Dolstra
+.br
+.SH "NOTES"
+.IP " 1." 4
+Graphviz package
+.RS 4
+\%http://www.graphviz.org/
+.RE
+.IP " 2." 4
+GraphML
+.RS 4
+\%http://graphml.graphdrawing.org/
+.RE
+.IP " 3." 4
+Ed25519 key pair
+.RS 4
+\%http://ed25519.cr.yp.to/
+.RE

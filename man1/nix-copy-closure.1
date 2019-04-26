@@ -1,0 +1,145 @@
+'\" t
+.\"     Title: nix-copy-closure
+.\"    Author: Eelco Dolstra
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/01/1970
+.\"    Manual: Command Reference
+.\"    Source: Nix 2.2.2
+.\"  Language: English
+.\"
+.TH "NIX\-COPY\-CLOSURE" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nix-copy-closure \- copy a closure to or from a remote machine via SSH
+.SH "SYNOPSIS"
+.HP \w'\fBnix\-copy\-closure\fR\ 'u
+\fBnix\-copy\-closure\fR [\fB\-\-to\fR | \fB\-\-from\fR] [\fB\-\-gzip\fR] [\fB\-\-include\-outputs\fR] [\fB\-\-use\-substitutes\fR | \fB\-s\fR] [\fB\-v\fR] \fIuser@\fR\fImachine\fR \fIpaths\fR
+.SH "DESCRIPTION"
+.PP
+\fBnix\-copy\-closure\fR
+gives you an easy and efficient way to exchange software between machines\&. Given one or more Nix store
+\fIpaths\fR
+on the local machine,
+\fBnix\-copy\-closure\fR
+computes the closure of those paths (i\&.e\&. all their dependencies in the Nix store), and copies all paths in the closure to the remote machine via the
+\fBssh\fR
+(Secure Shell) command\&. With the
+\fB\-\-from\fR, the direction is reversed: the closure of
+\fIpaths\fR
+on a remote machine is copied to the Nix store on the local machine\&.
+.PP
+This command is efficient because it only sends the store paths that are missing on the target machine\&.
+.PP
+Since
+\fBnix\-copy\-closure\fR
+calls
+\fBssh\fR, you may be asked to type in the appropriate password or passphrase\&. In fact, you may be asked
+\fItwice\fR
+because
+\fBnix\-copy\-closure\fR
+currently connects twice to the remote machine, first to get the set of paths missing on the target machine, and second to send the dump of those paths\&. If this bothers you, use
+\fBssh\-agent\fR\&.
+.SS "Options"
+.PP
+\fB\-\-to\fR
+.RS 4
+Copy the closure of
+\fIpaths\fR
+from the local Nix store to the Nix store on
+\fImachine\fR\&. This is the default\&.
+.RE
+.PP
+\fB\-\-from\fR
+.RS 4
+Copy the closure of
+\fIpaths\fR
+from the Nix store on
+\fImachine\fR
+to the local Nix store\&.
+.RE
+.PP
+\fB\-\-gzip\fR
+.RS 4
+Enable compression of the SSH connection\&.
+.RE
+.PP
+\fB\-\-include\-outputs\fR
+.RS 4
+Also copy the outputs of store derivations included in the closure\&.
+.RE
+.PP
+\fB\-\-use\-substitutes\fR / \fB\-s\fR
+.RS 4
+Attempt to download missing paths on the target machine using Nix\(cqs substitute mechanism\&. Any paths that cannot be substituted on the target are still copied normally from the source\&. This is useful, for instance, if the connection between the source and target machine is slow, but the connection between the target machine and
+nixos\&.org
+(the default binary cache server) is fast\&.
+.RE
+.PP
+\fB\-v\fR
+.RS 4
+Show verbose output\&.
+.RE
+.SS "Environment variables"
+.PP
+\fBNIX_SSHOPTS\fR
+.RS 4
+Additional options to be passed to
+\fBssh\fR
+on the command line\&.
+.RE
+.SS "Examples"
+.PP
+Copy Firefox with all its dependencies to a remote machine:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-copy\-closure \-\-to alice@itchy\&.labs $(type \-tP firefox)
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Copy Subversion from a remote machine and then install it into a user environment:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-copy\-closure \-\-from alice@itchy\&.labs \e
+    /nix/store/0dj0503hjxy5mbwlafv1rsbdiyx1gkdy\-subversion\-1\&.4\&.4
+$ nix\-env \-i /nix/store/0dj0503hjxy5mbwlafv1rsbdiyx1gkdy\-subversion\-1\&.4\&.4
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "AUTHOR"
+.PP
+\fBEelco Dolstra\fR
+.RS 4
+Author
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2004-2018 Eelco Dolstra
+.br
