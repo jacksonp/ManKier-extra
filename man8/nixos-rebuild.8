@@ -1,0 +1,331 @@
+'\" t
+.\"     Title: \fBnixos-rebuild\fR
+  
+.\"    Author: Eelco Dolstra
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/01/1970
+.\"    Manual: NixOS Reference Pages
+.\"    Source: NixOS
+.\"  Language: English
+.\"
+.TH "\FBNIXOS\-REBUILD\FR" "8" "01/01/1970" "NixOS" "NixOS Reference Pages"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" enable line breaks after slashes
+.cflags 4 /
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nixos-rebuild
+__ \- reconfigure a NixOS machine
+.SH "SYNOPSIS"
+.HP \w'\fBnixos\-rebuild\fR\ 'u
+\fBnixos\-rebuild\fR {\fBswitch\fR | \fBboot\fR | \fBtest\fR | \fBbuild\fR | \fBdry\-build\fR | \fBdry\-activate\fR | \fBedit\fR | \fBbuild\-vm\fR | \fBbuild\-vm\-with\-bootloader\fR}
+.br
+[\fB\-\-upgrade\fR] [\fB\-\-install\-bootloader\fR] [\fB\-\-no\-build\-nix\fR] [\fB\-\-fast\fR] [\fB\-\-rollback\fR] [\fB\-\-builders\fR\ \fIbuilder\-spec\fR]
+.br
+[{\ \fB\-\-profile\-name\fR\ |\ \fB\-p\fR\ }\ \fIname\fR]
+.br
+[\fB\-\-show\-trace\fR]
+.SH "DESCRIPTION"
+.PP
+This command updates the system so that it corresponds to the configuration specified in
+/etc/nixos/configuration\&.nix\&. Thus, every time you modify
+/etc/nixos/configuration\&.nix
+or any NixOS module, you must run
+\fBnixos\-rebuild\fR
+to make the changes take effect\&. It builds the new system in
+/nix/store, runs its activation script, and stop and (re)starts any system services if needed\&.
+.PP
+This command has one required argument, which specifies the desired operation\&. It must be one of the following:
+.PP
+\fBswitch\fR
+.RS 4
+Build and activate the new configuration, and make it the boot default\&. That is, the configuration is added to the GRUB boot menu as the default menu entry, so that subsequent reboots will boot the system into the new configuration\&. Previous configurations activated with
+\fBnixos\-rebuild switch\fR
+or
+\fBnixos\-rebuild boot\fR
+remain available in the GRUB menu\&.
+.RE
+.PP
+\fBboot\fR
+.RS 4
+Build the new configuration and make it the boot default (as with
+\fBnixos\-rebuild switch\fR), but do not activate it\&. That is, the system continues to run the previous configuration until the next reboot\&.
+.RE
+.PP
+\fBtest\fR
+.RS 4
+Build and activate the new configuration, but do not add it to the GRUB boot menu\&. Thus, if you reboot the system (or if it crashes), you will automatically revert to the default configuration (i\&.e\&. the configuration resulting from the last call to
+\fBnixos\-rebuild switch\fR
+or
+\fBnixos\-rebuild boot\fR)\&.
+.RE
+.PP
+\fBbuild\fR
+.RS 4
+Build the new configuration, but neither activate it nor add it to the GRUB boot menu\&. It leaves a symlink named
+result
+in the current directory, which points to the output of the top\-level \(lqsystem\(rq derivation\&. This is essentially the same as doing
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-build /path/to/nixpkgs/nixos \-A system
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Note that you do not need to be
+root
+to run
+\fBnixos\-rebuild build\fR\&.
+.RE
+.PP
+\fBdry\-build\fR
+.RS 4
+Show what store paths would be built or downloaded by any of the operations above, but otherwise do nothing\&.
+.RE
+.PP
+\fBdry\-activate\fR
+.RS 4
+Build the new configuration, but instead of activating it, show what changes would be performed by the activation (i\&.e\&. by
+\fBnixos\-rebuild test\fR)\&. For instance, this command will print which systemd units would be restarted\&. The list of changes is not guaranteed to be complete\&.
+.RE
+.PP
+\fBedit\fR
+.RS 4
+Opens
+configuration\&.nix
+in the default editor\&.
+.RE
+.PP
+\fBbuild\-vm\fR
+.RS 4
+Build a script that starts a NixOS virtual machine with the desired configuration\&. It leaves a symlink
+result
+in the current directory that points (under
+result/bin/run\-\fIhostname\fR\-vm) at the script that starts the VM\&. Thus, to test a NixOS configuration in a virtual machine, you should do the following:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nixos\-rebuild build\-vm
+$ \&./result/bin/run\-*\-vm
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The VM is implemented using the
+qemu
+package\&. For best performance, you should load the
+kvm\-intel
+or
+kvm\-amd
+kernel modules to get hardware virtualisation\&.
+.sp
+The VM mounts the Nix store of the host through the 9P file system\&. The host Nix store is read\-only, so Nix commands that modify the Nix store will not work in the VM\&. This includes commands such as
+\fBnixos\-rebuild\fR; to change the VM\(cqs configuration, you must halt the VM and re\-run the commands above\&.
+.sp
+The VM has its own
+ext3
+root file system, which is automatically created when the VM is first started, and is persistent across reboots of the VM\&. It is stored in
+\&./\fIhostname\fR\&.qcow2\&.
+.RE
+.PP
+\fBbuild\-vm\-with\-bootloader\fR
+.RS 4
+Like
+\fBbuild\-vm\fR, but boots using the regular boot loader of your configuration (e\&.g\&., GRUB 1 or 2), rather than booting directly into the kernel and initial ramdisk of the system\&. This allows you to test whether the boot loader works correctly\&. However, it does not guarantee that your NixOS configuration will boot successfully on the host hardware (i\&.e\&., after running
+\fBnixos\-rebuild switch\fR), because the hardware and boot loader configuration in the VM are different\&. The boot loader is installed on an automatically generated virtual disk containing a
+/boot
+partition, which is mounted read\-only in the VM\&.
+.RE
+.SH "OPTIONS"
+.PP
+This command accepts the following options:
+.PP
+\fB\-\-upgrade\fR
+.RS 4
+Fetch the latest version of NixOS from the NixOS channel\&.
+.RE
+.PP
+\fB\-\-install\-bootloader\fR
+.RS 4
+Causes the boot loader to be (re)installed on the device specified by the relevant configuration options\&.
+.RE
+.PP
+\fB\-\-no\-build\-nix\fR
+.RS 4
+Normally,
+\fBnixos\-rebuild\fR
+first builds the
+\fInixUnstable\fR
+attribute in Nixpkgs, and uses the resulting instance of the Nix package manager to build the new system configuration\&. This is necessary if the NixOS modules use features not provided by the currently installed version of Nix\&. This option disables building a new Nix\&.
+.RE
+.PP
+\fB\-\-fast\fR
+.RS 4
+Equivalent to
+\fB\-\-no\-build\-nix\fR
+\fB\-\-show\-trace\fR\&. This option is useful if you call
+\fBnixos\-rebuild\fR
+frequently (e\&.g\&. if you\(cqre hacking on a NixOS module)\&.
+.RE
+.PP
+\fB\-\-rollback\fR
+.RS 4
+Instead of building a new configuration as specified by
+/etc/nixos/configuration\&.nix, roll back to the previous configuration\&. (The previous configuration is defined as the one before the \(lqcurrent\(rq generation of the Nix profile
+/nix/var/nix/profiles/system\&.)
+.RE
+.PP
+\fB\-\-builders\fR \fIbuilder\-spec\fR
+.RS 4
+Allow ad\-hoc remote builders for building the new system\&. This requires the user executing
+\fBnixos\-rebuild\fR
+(usually root) to be configured as a trusted user in the Nix daemon\&. This can be achieved by using the
+nix\&.trustedUsers
+NixOS option\&. Examples values for that option are described in the
+Remote builds chapter
+in the Nix manual, (i\&.e\&.
+\fB\-\-builders "ssh://bigbrother x86_64\-linux"\fR)\&. By specifying an empty string existing builders specified in
+/etc/nix/machines
+can be ignored:
+\fB\-\-builders ""\fR
+for example when they are not reachable due to network connectivity\&.
+.RE
+.PP
+\fB\-\-profile\-name\fR, \fB\-p\fR
+.RS 4
+Instead of using the Nix profile
+/nix/var/nix/profiles/system
+to keep track of the current and previous system configurations, use
+/nix/var/nix/profiles/system\-profiles/\fIname\fR\&. When you use GRUB 2, for every system profile created with this flag, NixOS will create a submenu named \(lqNixOS \- Profile \*(Aq\fIname\fR\*(Aq\(rq in GRUB\(cqs boot menu, containing the current and previous configurations of this profile\&.
+.sp
+For instance, if you want to test a configuration file named
+test\&.nix
+without affecting the default system profile, you would do:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nixos\-rebuild switch \-p test \-I nixos\-config=\&./test\&.nix
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The new configuration will appear in the GRUB 2 submenu \(lqNixOS \- Profile \*(Aqtest\*(Aq\(rq\&.
+.RE
+.PP
+\fB\-\-build\-host\fR
+.RS 4
+Instead of building the new configuration locally, use the specified host to perform the build\&. The host needs to be accessible with ssh, and must be able to perform Nix builds\&. If the option
+\fB\-\-target\-host\fR
+is not set, the build will be copied back to the local machine when done\&.
+.sp
+Note that, if
+\fB\-\-no\-build\-nix\fR
+is not specified, Nix will be built both locally and remotely\&. This is because the configuration will always be evaluated locally even though the building might be performed remotely\&.
+.sp
+You can include a remote user name in the host name (\fIuser@host\fR)\&. You can also set ssh options by defining the
+\fBNIX_SSHOPTS\fR
+environment variable\&.
+.RE
+.PP
+\fB\-\-target\-host\fR
+.RS 4
+Specifies the NixOS target host\&. By setting this to something other than
+\fIlocalhost\fR, the system activation will happen on the remote host instead of the local machine\&. The remote host needs to be accessible over ssh, and for the commands
+\fBswitch\fR,
+\fBboot\fR
+and
+\fBtest\fR
+you need root access\&.
+.sp
+If
+\fB\-\-build\-host\fR
+is not explicitly specified,
+\fB\-\-build\-host\fR
+will implicitly be set to the same value as
+\fB\-\-target\-host\fR\&. So, if you only specify
+\fB\-\-target\-host\fR
+both building and activation will take place remotely (and no build artifacts will be copied to the local machine)\&.
+.sp
+You can include a remote user name in the host name (\fIuser@host\fR)\&. You can also set ssh options by defining the
+\fBNIX_SSHOPTS\fR
+environment variable\&.
+.RE
+.PP
+In addition,
+\fBnixos\-rebuild\fR
+accepts various Nix\-related flags, including
+\fB\-\-max\-jobs\fR
+/
+\fB\-j\fR,
+\fB\-\-show\-trace\fR,
+\fB\-\-keep\-failed\fR,
+\fB\-\-keep\-going\fR
+and
+\fB\-\-verbose\fR
+/
+\fB\-v\fR\&. See the Nix manual for details\&.
+.SH "ENVIRONMENT"
+.PP
+\fBNIXOS_CONFIG\fR
+.RS 4
+Path to the main NixOS configuration module\&. Defaults to
+/etc/nixos/configuration\&.nix\&.
+.RE
+.PP
+\fBNIX_SSHOPTS\fR
+.RS 4
+Additional options to be passed to
+\fBssh\fR
+on the command line\&.
+.RE
+.SH "FILES"
+.PP
+/run/current\-system
+.RS 4
+A symlink to the currently active system configuration in the Nix store\&.
+.RE
+.PP
+/nix/var/nix/profiles/system
+.RS 4
+The Nix profile that contains the current and previous system configurations\&. Used to generate the GRUB boot menu\&.
+.RE
+.SH "BUGS"
+.PP
+This command should be renamed to something more descriptive\&.
+.SH "AUTHOR"
+.PP
+\fBEelco Dolstra\fR
+.RS 4
+Author
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2007-2018 Eelco Dolstra
+.br

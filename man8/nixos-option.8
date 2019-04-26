@@ -1,0 +1,122 @@
+'\" t
+.\"     Title: \fBnixos-option\fR
+  
+.\"    Author: Eelco Dolstra
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/01/1970
+.\"    Manual: NixOS Reference Pages
+.\"    Source: NixOS
+.\"  Language: English
+.\"
+.TH "\FBNIXOS\-OPTION\FR" "8" "01/01/1970" "NixOS" "NixOS Reference Pages"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" enable line breaks after slashes
+.cflags 4 /
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nixos-option
+__ \- inspect a NixOS configuration
+.SH "SYNOPSIS"
+.HP \w'\fBnixos\-option\fR\ 'u
+\fBnixos\-option\fR [\fB\-I\fR\ \fIpath\fR] [\fB\-\-verbose\fR] [\fB\-\-xml\fR] \fIoption\&.name\fR
+.SH "DESCRIPTION"
+.PP
+This command evaluates the configuration specified in
+/etc/nixos/configuration\&.nix
+and returns the properties of the option name given as argument\&.
+.PP
+When the option name is not an option, the command prints the list of attributes contained in the attribute set\&.
+.SH "OPTIONS"
+.PP
+This command accepts the following options:
+.PP
+\fB\-I\fR \fIpath\fR
+.RS 4
+This option is passed to the underlying
+\fBnix\-instantiate\fR
+invocation\&.
+.RE
+.PP
+\fB\-\-verbose\fR
+.RS 4
+This option enables verbose mode, which currently is just the Bash
+\fBset\fR
+\fB\-x\fR
+debug mode\&.
+.RE
+.PP
+\fB\-\-xml\fR
+.RS 4
+This option causes the output to be rendered as XML\&.
+.RE
+.SH "ENVIRONMENT"
+.PP
+\fBNIXOS_CONFIG\fR
+.RS 4
+Path to the main NixOS configuration module\&. Defaults to
+/etc/nixos/configuration\&.nix\&.
+.RE
+.SH "EXAMPLES"
+.PP
+Investigate option values:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nixos\-option boot\&.loader
+This attribute set contains:
+generationsDir
+grub
+initScript
+
+$ nixos\-option boot\&.loader\&.grub\&.enable
+Value:
+true
+
+Default:
+true
+
+Description:
+Whether to enable the GNU GRUB boot loader\&.
+
+Declared by:
+  "/nix/var/nix/profiles/per\-user/root/channels/nixos/nixpkgs/nixos/modules/system/boot/loader/grub/grub\&.nix"
+
+Defined by:
+  "/nix/var/nix/profiles/per\-user/root/channels/nixos/nixpkgs/nixos/modules/system/boot/loader/grub/grub\&.nix"
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "BUGS"
+.PP
+The author listed in the following section is wrong\&. If there is any other bug, please report to Nicolas Pierron\&.
+.SH "AUTHOR"
+.PP
+\fBEelco Dolstra\fR
+.RS 4
+Author
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2007-2018 Eelco Dolstra
+.br
