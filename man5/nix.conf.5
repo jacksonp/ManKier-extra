@@ -1,0 +1,878 @@
+'\" t
+.\"     Title: nix.conf
+.\"    Author: Eelco Dolstra
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/01/1970
+.\"    Manual: Command Reference
+.\"    Source: Nix 2.2.2
+.\"  Language: English
+.\"
+.TH "NIX\&.CONF" "5" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nix.conf \- Nix configuration file
+.SH "DESCRIPTION"
+.PP
+Nix reads settings from two configuration files:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The system\-wide configuration file
+\fIsysconfdir\fR/nix/nix\&.conf
+(i\&.e\&.
+/etc/nix/nix\&.conf
+on most systems), or
+$NIX_CONF_DIR/nix\&.conf
+if
+\fBNIX_CONF_DIR\fR
+is set\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The user configuration file
+$XDG_CONFIG_HOME/nix/nix\&.conf, or
+~/\&.config/nix/nix\&.conf
+if
+\fBXDG_CONFIG_HOME\fR
+is not set\&.
+.RE
+.PP
+The configuration files consist of
+\fIname\fR = \fIvalue\fR
+pairs, one per line\&. Other files can be included with a line like
+include \fIpath\fR, where
+\fIpath\fR
+is interpreted relative to the current conf file and a missing file is an error unless
+!include
+is used instead\&. Comments start with a
+#
+character\&. Here is an example configuration file:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+keep\-outputs = true       # Nice for developers
+keep\-derivations = true   # Idem
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+You can override settings on the command line using the
+\fB\-\-option\fR
+flag, e\&.g\&.
+\-\-option keep\-outputs false\&.
+.PP
+The following settings are currently available:
+.PP
+allowed\-uris
+.RS 4
+A list of URI prefixes to which access is allowed in restricted evaluation mode\&. For example, when set to
+https://github\&.com/NixOS, builtin functions such as
+\fBfetchGit\fR
+are allowed to access
+https://github\&.com/NixOS/patchelf\&.git\&.
+.RE
+.PP
+allow\-import\-from\-derivation
+.RS 4
+By default, Nix allows you to
+\fBimport\fR
+from a derivation, allowing building at evaluation time\&. With this option set to false, Nix will throw an error when evaluating an expression that uses this feature, allowing users to ensure their evaluation will not require any builds to take place\&.
+.RE
+.PP
+allow\-new\-privileges
+.RS 4
+(Linux\-specific\&.) By default, builders on Linux cannot acquire new privileges by calling setuid/setgid programs or programs that have file capabilities\&. For example, programs such as
+\fBsudo\fR
+or
+\fBping\fR
+will fail\&. (Note that in sandbox builds, no such programs are available unless you bind\-mount them into the sandbox via the
+\fBsandbox\-paths\fR
+option\&.) You can allow the use of such programs by enabling this option\&. This is impure and usually undesirable, but may be useful in certain scenarios (e\&.g\&. to spin up containers or set up userspace network interfaces in tests)\&.
+.RE
+.PP
+allowed\-users
+.RS 4
+A list of names of users (separated by whitespace) that are allowed to connect to the Nix daemon\&. As with the
+\fBtrusted\-users\fR
+option, you can specify groups by prefixing them with
+@\&. Also, you can allow all users by specifying
+*\&. The default is
+*\&.
+.sp
+Note that trusted users are always allowed to connect\&.
+.RE
+.PP
+auto\-optimise\-store
+.RS 4
+If set to
+true, Nix automatically detects files in the store that have identical contents, and replaces them with hard links to a single copy\&. This saves disk space\&. If set to
+false
+(the default), you can still run
+\fBnix\-store \-\-optimise\fR
+to get rid of duplicate files\&.
+.RE
+.PP
+builders
+.RS 4
+A list of machines on which to perform builds\&.
+.RE
+.PP
+builders\-use\-substitutes
+.RS 4
+If set to
+true, Nix will instruct remote build machines to use their own binary substitutes if available\&. In practical terms, this means that remote hosts will fetch as many build dependencies as possible from their own substitutes (e\&.g, from
+cache\&.nixos\&.org), instead of waiting for this host to upload them all\&. This can drastically reduce build times if the network connection between this computer and the remote build host is slow\&. Defaults to
+false\&.
+.RE
+.PP
+build\-users\-group
+.RS 4
+This options specifies the Unix group containing the Nix build user accounts\&. In multi\-user Nix installations, builds should not be performed by the Nix account since that would allow users to arbitrarily modify the Nix store and database by supplying specially crafted builders; and they cannot be performed by the calling user since that would allow him/her to influence the build result\&.
+.sp
+Therefore, if this option is non\-empty and specifies a valid group, builds will be performed under the user accounts that are a member of the group specified here (as listed in
+/etc/group)\&. Those user accounts should not be used for any other purpose!
+.sp
+Nix will never run two builds under the same user account at the same time\&. This is to prevent an obvious security hole: a malicious user writing a Nix expression that modifies the build result of a legitimate Nix expression being built by another user\&. Therefore it is good to have as many Nix build user accounts as you can spare\&. (Remember: uids are cheap\&.)
+.sp
+The build users should have permission to create files in the Nix store, but not delete them\&. Therefore,
+/nix/store
+should be owned by the Nix account, its group should be the group specified here, and its mode should be
+1775\&.
+.sp
+If the build users group is empty, builds will be performed under the uid of the Nix process (that is, the uid of the caller if
+\fBNIX_REMOTE\fR
+is empty, the uid under which the Nix daemon runs if
+\fBNIX_REMOTE\fR
+is
+daemon)\&. Obviously, this should not be used in multi\-user settings with untrusted users\&.
+.RE
+.PP
+compress\-build\-log
+.RS 4
+If set to
+true
+(the default), build logs written to
+/nix/var/log/nix/drvs
+will be compressed on the fly using bzip2\&. Otherwise, they will not be compressed\&.
+.RE
+.PP
+connect\-timeout
+.RS 4
+The timeout (in seconds) for establishing connections in the binary cache substituter\&. It corresponds to
+\fBcurl\fR\(cqs
+\fB\-\-connect\-timeout\fR
+option\&.
+.RE
+.PP
+cores
+.RS 4
+Sets the value of the
+\fBNIX_BUILD_CORES\fR
+environment variable in the invocation of builders\&. Builders can use this variable at their discretion to control the maximum amount of parallelism\&. For instance, in Nixpkgs, if the derivation attribute
+\fIenableParallelBuilding\fR
+is set to
+true, the builder passes the
+\fB\-j\fR\fB\fIN\fR\fR
+flag to GNU Make\&. It can be overridden using the
+\fB\-\-cores\fR
+command line switch and defaults to
+1\&. The value
+0
+means that the builder should use all available CPU cores in the system\&.
+.RE
+.PP
+extra\-sandbox\-paths
+.RS 4
+A list of additional paths appended to
+\fBsandbox\-paths\fR\&. Useful if you want to extend its default value\&.
+.RE
+.PP
+extra\-platforms
+.RS 4
+Platforms other than the native one which this machine is capable of building for\&. This can be useful for supporting additional architectures on compatible machines: i686\-linux can be built on x86_64\-linux machines (and the default for this setting reflects this); armv7 is backwards\-compatible with armv6 and armv5tel; some aarch64 machines can also natively run 32\-bit ARM code; and qemu\-user may be used to support non\-native platforms (though this may be slow and buggy)\&. Most values for this are not enabled by default because build systems will often misdetect the target platform and generate incompatible code, so you may wish to cross\-check the results of using this option against proper natively\-built versions of your derivations\&.
+.RE
+.PP
+extra\-substituters
+.RS 4
+Additional binary caches appended to those specified in
+\fBsubstituters\fR\&. When used by unprivileged users, untrusted substituters (i\&.e\&. those not listed in
+\fBtrusted\-substituters\fR) are silently ignored\&.
+.RE
+.PP
+fallback
+.RS 4
+If set to
+true, Nix will fall back to building from source if a binary substitute fails\&. This is equivalent to the
+\fB\-\-fallback\fR
+flag\&. The default is
+false\&.
+.RE
+.PP
+fsync\-metadata
+.RS 4
+If set to
+true, changes to the Nix store metadata (in
+/nix/var/nix/db) are synchronously flushed to disk\&. This improves robustness in case of system crashes, but reduces performance\&. The default is
+true\&.
+.RE
+.PP
+hashed\-mirrors
+.RS 4
+A list of web servers used by
+\fBbuiltins\&.fetchurl\fR
+to obtain files by hash\&. The default is
+http://tarballs\&.nixos\&.org/\&. Given a hash type
+\fIht\fR
+and a base\-16 hash
+\fIh\fR, Nix will try to download the file from
+hashed\-mirror/\fIht\fR/\fIh\fR\&. This allows files to be downloaded even if they have disappeared from their original URI\&. For example, given the default mirror
+http://tarballs\&.nixos\&.org/, when building the derivation
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+builtins\&.fetchurl {
+  url = https://example\&.org/foo\-1\&.2\&.3\&.tar\&.xz;
+  sha256 = "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae";
+}
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Nix will attempt to download this file from
+http://tarballs\&.nixos\&.org/sha256/2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae
+first\&. If it is not available there, if will try the original URI\&.
+.RE
+.PP
+http\-connections
+.RS 4
+The maximum number of parallel TCP connections used to fetch files from binary caches and by other downloads\&. It defaults to 25\&. 0 means no limit\&.
+.RE
+.PP
+keep\-build\-log
+.RS 4
+If set to
+true
+(the default), Nix will write the build log of a derivation (i\&.e\&. the standard output and error of its builder) to the directory
+/nix/var/log/nix/drvs\&. The build log can be retrieved using the command
+\fBnix\-store \-l \fR\fB\fIpath\fR\fR\&.
+.RE
+.PP
+keep\-derivations
+.RS 4
+If
+true
+(default), the garbage collector will keep the derivations from which non\-garbage store paths were built\&. If
+false, they will be deleted unless explicitly registered as a root (or reachable from other roots)\&.
+.sp
+Keeping derivation around is useful for querying and traceability (e\&.g\&., it allows you to ask with what dependencies or options a store path was built), so by default this option is on\&. Turn it off to save a bit of disk space (or a lot if
+keep\-outputs
+is also turned on)\&.
+.RE
+.PP
+keep\-env\-derivations
+.RS 4
+If
+false
+(default), derivations are not stored in Nix user environments\&. That is, the derivation any build\-time\-only dependencies may be garbage\-collected\&.
+.sp
+If
+true, when you add a Nix derivation to a user environment, the path of the derivation is stored in the user environment\&. Thus, the derivation will not be garbage\-collected until the user environment generation is deleted (\fBnix\-env \-\-delete\-generations\fR)\&. To prevent build\-time\-only dependencies from being collected, you should also turn on
+keep\-outputs\&.
+.sp
+The difference between this option and
+keep\-derivations
+is that this one is \(lqsticky\(rq: it applies to any user environment created while this option was enabled, while
+keep\-derivations
+only applies at the moment the garbage collector is run\&.
+.RE
+.PP
+keep\-outputs
+.RS 4
+If
+true, the garbage collector will keep the outputs of non\-garbage derivations\&. If
+false
+(default), outputs will be deleted unless they are GC roots themselves (or reachable from other roots)\&.
+.sp
+In general, outputs must be registered as roots separately\&. However, even if the output of a derivation is registered as a root, the collector will still delete store paths that are used only at build time (e\&.g\&., the C compiler, or source tarballs downloaded from the network)\&. To prevent it from doing so, set this option to
+true\&.
+.RE
+.PP
+max\-build\-log\-size
+.RS 4
+This option defines the maximum number of bytes that a builder can write to its stdout/stderr\&. If the builder exceeds this limit, it\(cqs killed\&. A value of
+0
+(the default) means that there is no limit\&.
+.RE
+.PP
+max\-free
+.RS 4
+This option defines after how many free bytes to stop collecting garbage once the
+min\-free
+condition gets triggered\&.
+.RE
+.PP
+max\-jobs
+.RS 4
+This option defines the maximum number of jobs that Nix will try to build in parallel\&. The default is
+1\&. The special value
+auto
+causes Nix to use the number of CPUs in your system\&.
+0
+is useful when using remote builders to prevent any local builds (except for
+preferLocalBuild
+derivation attribute which executes locally regardless)\&. It can be overridden using the
+\fB\-\-max\-jobs\fR
+(\fB\-j\fR) command line switch\&.
+.RE
+.PP
+max\-silent\-time
+.RS 4
+This option defines the maximum number of seconds that a builder can go without producing any data on standard output or standard error\&. This is useful (for instance in an automated build system) to catch builds that are stuck in an infinite loop, or to catch remote builds that are hanging due to network problems\&. It can be overridden using the
+\fB\-\-max\-silent\-time\fR
+command line switch\&.
+.sp
+The value
+0
+means that there is no timeout\&. This is also the default\&.
+.RE
+.PP
+min\-free
+.RS 4
+When the disk reaches
+min\-free
+bytes of free disk space during a build, nix will start to garbage\-collection until
+max\-free
+bytes are available on the disk\&. A value of
+0
+(the default) means that this feature is disabled\&.
+.RE
+.PP
+narinfo\-cache\-negative\-ttl
+.RS 4
+The TTL in seconds for negative lookups\&. If a store path is queried from a substituter but was not found, there will be a negative lookup cached in the local disk cache database for the specified duration\&.
+.RE
+.PP
+narinfo\-cache\-positive\-ttl
+.RS 4
+The TTL in seconds for positive lookups\&. If a store path is queried from a substituter, the result of the query will be cached in the local disk cache database including some of the NAR metadata\&. The default TTL is a month, setting a shorter TTL for positive lookups can be useful for binary caches that have frequent garbage collection, in which case having a more frequent cache invalidation would prevent trying to pull the path again and failing with a hash mismatch if the build isn\*(Aqt reproducible\&.
+.RE
+.PP
+netrc\-file
+.RS 4
+If set to an absolute path to a
+netrc
+file, Nix will use the HTTP authentication credentials in this file when trying to download from a remote host through HTTP or HTTPS\&. Defaults to
+$NIX_CONF_DIR/netrc\&.
+.sp
+The
+netrc
+file consists of a list of accounts in the following format:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+machine \fImy\-machine\fR
+login \fImy\-username\fR
+password \fImy\-password\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+For the exact syntax, see
+\m[blue]\fBthe curl documentation\&.\fR\m[]\&\s-2\u[1]\d\s+2
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+This must be an absolute path, and
+~
+is not resolved\&. For example,
+~/\&.netrc
+won\*(Aqt resolve to your home directory\*(Aqs
+\&.netrc\&.
+.sp .5v
+.RE
+.RE
+.PP
+plugin\-files
+.RS 4
+A list of plugin files to be loaded by Nix\&. Each of these files will be dlopened by Nix, allowing them to affect execution through static initialization\&. In particular, these plugins may construct static instances of RegisterPrimOp to add new primops or constants to the expression language, RegisterStoreImplementation to add new store implementations, RegisterCommand to add new subcommands to the
+nix
+command, and RegisterSetting to add new nix config settings\&. See the constructors for those types for more details\&.
+.sp
+Since these files are loaded into the same address space as Nix itself, they must be DSOs compatible with the instance of Nix running at the time (i\&.e\&. compiled against the same headers, not linked to any incompatible libraries)\&. They should not be linked to any Nix libs directly, as those will be available already at load time\&.
+.sp
+If an entry in the list is a directory, all files in the directory are loaded as plugins (non\-recursively)\&.
+.RE
+.PP
+pre\-build\-hook
+.RS 4
+If set, the path to a program that can set extra derivation\-specific settings for this system\&. This is used for settings that can\*(Aqt be captured by the derivation model itself and are too variable between different versions of the same system to be hard\-coded into nix\&.
+.sp
+The hook is passed the derivation path and, if sandboxes are enabled, the sandbox directory\&. It can then modify the sandbox and send a series of commands to modify various settings to stdout\&. The currently recognized commands are:
+.PP
+extra\-sandbox\-paths
+.RS 4
+Pass a list of files and directories to be included in the sandbox for this build\&. One entry per line, terminated by an empty line\&. Entries have the same format as
+sandbox\-paths\&.
+.RE
+.RE
+.PP
+repeat
+.RS 4
+How many times to repeat builds to check whether they are deterministic\&. The default value is 0\&. If the value is non\-zero, every build is repeated the specified number of times\&. If the contents of any of the runs differs from the previous ones, the build is rejected and the resulting store paths are not registered as \(lqvalid\(rq in Nix\(cqs database\&.
+.RE
+.PP
+require\-sigs
+.RS 4
+If set to
+true
+(the default), any non\-content\-addressed path added or copied to the Nix store (e\&.g\&. when substituting from a binary cache) must have a valid signature, that is, be signed using one of the keys listed in
+\fBtrusted\-public\-keys\fR
+or
+\fBsecret\-key\-files\fR\&. Set to
+false
+to disable signature checking\&.
+.RE
+.PP
+restrict\-eval
+.RS 4
+If set to
+true, the Nix evaluator will not allow access to any files outside of the Nix search path (as set via the
+\fBNIX_PATH\fR
+environment variable or the
+\fB\-I\fR
+option), or to URIs outside of
+\fBallowed\-uri\fR\&. The default is
+false\&.
+.RE
+.PP
+sandbox
+.RS 4
+If set to
+true, builds will be performed in a
+\fIsandboxed environment\fR, i\&.e\&., they\(cqre isolated from the normal file system hierarchy and will only see their dependencies in the Nix store, the temporary build directory, private versions of
+/proc,
+/dev,
+/dev/shm
+and
+/dev/pts
+(on Linux), and the paths configured with the
+sandbox\-paths option\&. This is useful to prevent undeclared dependencies on files in directories such as
+/usr/bin\&. In addition, on Linux, builds run in private PID, mount, network, IPC and UTS namespaces to isolate them from other processes in the system (except that fixed\-output derivations do not run in private network namespace to ensure they can access the network)\&.
+.sp
+Currently, sandboxing only work on Linux and macOS\&. The use of a sandbox requires that Nix is run as root (so you should use the
+\(lqbuild users\(rq feature
+to perform the actual builds under different users than root)\&.
+.sp
+If this option is set to
+relaxed, then fixed\-output derivations and derivations that have the
+\fI__noChroot\fR
+attribute set to
+true
+do not run in sandboxes\&.
+.sp
+The default is
+false\&.
+.RE
+.PP
+sandbox\-dev\-shm\-size
+.RS 4
+This option determines the maximum size of the
+tmpfs
+filesystem mounted on
+/dev/shm
+in Linux sandboxes\&. For the format, see the description of the
+\fBsize\fR
+option of
+tmpfs
+in
+\fBmount\fR(8)\&. The default is
+50%\&.
+.RE
+.PP
+sandbox\-paths
+.RS 4
+A list of paths bind\-mounted into Nix sandbox environments\&. You can use the syntax
+\fItarget\fR=\fIsource\fR
+to mount a path in a different location in the sandbox; for instance,
+/bin=/nix\-bin
+will mount the path
+/nix\-bin
+as
+/bin
+inside the sandbox\&. If
+\fIsource\fR
+is followed by
+?, then it is not an error if
+\fIsource\fR
+does not exist; for example,
+/dev/nvidiactl?
+specifies that
+/dev/nvidiactl
+will only be mounted in the sandbox if it exists in the host filesystem\&.
+.sp
+Depending on how Nix was built, the default value for this option may be empty or provide
+/bin/sh
+as a bind\-mount of
+\fBbash\fR\&.
+.RE
+.PP
+secret\-key\-files
+.RS 4
+A whitespace\-separated list of files containing secret (private) keys\&. These are used to sign locally\-built paths\&. They can be generated using
+\fBnix\-store \-\-generate\-binary\-cache\-key\fR\&. The corresponding public key can be distributed to other users, who can add it to
+\fBtrusted\-public\-keys\fR
+in their
+nix\&.conf\&.
+.RE
+.PP
+show\-trace
+.RS 4
+Causes Nix to print out a stack trace in case of Nix expression evaluation errors\&.
+.RE
+.PP
+substitute
+.RS 4
+If set to
+true
+(default), Nix will use binary substitutes if available\&. This option can be disabled to force building from source\&.
+.RE
+.PP
+substituters
+.RS 4
+A list of URLs of substituters, separated by whitespace\&. The default is
+https://cache\&.nixos\&.org\&.
+.RE
+.PP
+system
+.RS 4
+This option specifies the canonical Nix system name of the current installation, such as
+i686\-linux
+or
+x86_64\-darwin\&. Nix can only build derivations whose
+system
+attribute equals the value specified here\&. In general, it never makes sense to modify this value from its default, since you can use it to \(oqlie\(cq about the platform you are building on (e\&.g\&., perform a Mac OS build on a Linux machine; the result would obviously be wrong)\&. It only makes sense if the Nix binaries can run on multiple platforms, e\&.g\&., \(oquniversal binaries\(cq that run on
+x86_64\-linux
+and
+i686\-linux\&.
+.sp
+It defaults to the canonical Nix system name detected by
+configure
+at build time\&.
+.RE
+.PP
+system\-features
+.RS 4
+A set of system \(lqfeatures\(rq supported by this machine, e\&.g\&.
+kvm\&. Derivations can express a dependency on such features through the derivation attribute
+\fIrequiredSystemFeatures\fR\&. For example, the attribute
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+requiredSystemFeatures = [ "kvm" ];
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+ensures that the derivation can only be built on a machine with the
+kvm
+feature\&.
+.sp
+This setting by default includes
+kvm
+if
+/dev/kvm
+is accessible, and the pseudo\-features
+nixos\-test,
+benchmark
+and
+big\-parallel
+that are used in Nixpkgs to route builds to specific machines\&.
+.RE
+.PP
+timeout
+.RS 4
+This option defines the maximum number of seconds that a builder can run\&. This is useful (for instance in an automated build system) to catch builds that are stuck in an infinite loop but keep writing to their standard output or standard error\&. It can be overridden using the
+\fB\-\-timeout\fR
+command line switch\&.
+.sp
+The value
+0
+means that there is no timeout\&. This is also the default\&.
+.RE
+.PP
+trusted\-public\-keys
+.RS 4
+A whitespace\-separated list of public keys\&. When paths are copied from another Nix store (such as a binary cache), they must be signed with one of these keys\&. For example:
+cache\&.nixos\&.org\-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra\&.nixos\&.org\-1:CNHJZBh9K4tP3EKF6FkkgeVYsS3ohTl+oS0Qa8bezVs=\&.
+.RE
+.PP
+trusted\-substituters
+.RS 4
+A list of URLs of substituters, separated by whitespace\&. These are not used by default, but can be enabled by users of the Nix daemon by specifying
+\-\-option substituters \fIurls\fR
+on the command line\&. Unprivileged users are only allowed to pass a subset of the URLs listed in
+substituters
+and
+trusted\-substituters\&.
+.RE
+.PP
+trusted\-users
+.RS 4
+A list of names of users (separated by whitespace) that have additional rights when connecting to the Nix daemon, such as the ability to specify additional binary caches, or to import unsigned NARs\&. You can also specify groups by prefixing them with
+@; for instance,
+@wheel
+means all users in the
+wheel
+group\&. The default is
+root\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBWarning\fR
+.ps -1
+.br
+Adding a user to
+\fBtrusted\-users\fR
+is essentially equivalent to giving that user root access to the system\&. For example, the user can set
+\fBsandbox\-paths\fR
+and thereby obtain read access to directories that are otherwise inacessible to them\&.
+.sp .5v
+.RE
+.RE
+.SS "Deprecated Settings"
+.PP
+.PP
+binary\-caches
+.RS 4
+\fIDeprecated:\fR
+binary\-caches
+is now an alias to
+substituters\&.
+.RE
+.PP
+binary\-cache\-public\-keys
+.RS 4
+\fIDeprecated:\fR
+binary\-cache\-public\-keys
+is now an alias to
+trusted\-public\-keys\&.
+.RE
+.PP
+build\-compress\-log
+.RS 4
+\fIDeprecated:\fR
+build\-compress\-log
+is now an alias to
+compress\-build\-log\&.
+.RE
+.PP
+build\-cores
+.RS 4
+\fIDeprecated:\fR
+build\-cores
+is now an alias to
+cores\&.
+.RE
+.PP
+build\-extra\-chroot\-dirs
+.RS 4
+\fIDeprecated:\fR
+build\-extra\-chroot\-dirs
+is now an alias to
+extra\-sandbox\-paths\&.
+.RE
+.PP
+build\-extra\-sandbox\-paths
+.RS 4
+\fIDeprecated:\fR
+build\-extra\-sandbox\-paths
+is now an alias to
+extra\-sandbox\-paths\&.
+.RE
+.PP
+build\-fallback
+.RS 4
+\fIDeprecated:\fR
+build\-fallback
+is now an alias to
+fallback\&.
+.RE
+.PP
+build\-max\-jobs
+.RS 4
+\fIDeprecated:\fR
+build\-max\-jobs
+is now an alias to
+max\-jobs\&.
+.RE
+.PP
+build\-max\-log\-size
+.RS 4
+\fIDeprecated:\fR
+build\-max\-log\-size
+is now an alias to
+max\-build\-log\-size\&.
+.RE
+.PP
+build\-max\-silent\-time
+.RS 4
+\fIDeprecated:\fR
+build\-max\-silent\-time
+is now an alias to
+max\-silent\-time\&.
+.RE
+.PP
+build\-repeat
+.RS 4
+\fIDeprecated:\fR
+build\-repeat
+is now an alias to
+repeat\&.
+.RE
+.PP
+build\-timeout
+.RS 4
+\fIDeprecated:\fR
+build\-timeout
+is now an alias to
+timeout\&.
+.RE
+.PP
+build\-use\-chroot
+.RS 4
+\fIDeprecated:\fR
+build\-use\-chroot
+is now an alias to
+sandbox\&.
+.RE
+.PP
+build\-use\-sandbox
+.RS 4
+\fIDeprecated:\fR
+build\-use\-sandbox
+is now an alias to
+sandbox\&.
+.RE
+.PP
+build\-use\-substitutes
+.RS 4
+\fIDeprecated:\fR
+build\-use\-substitutes
+is now an alias to
+substitute\&.
+.RE
+.PP
+gc\-keep\-derivations
+.RS 4
+\fIDeprecated:\fR
+gc\-keep\-derivations
+is now an alias to
+keep\-derivations\&.
+.RE
+.PP
+gc\-keep\-outputs
+.RS 4
+\fIDeprecated:\fR
+gc\-keep\-outputs
+is now an alias to
+keep\-outputs\&.
+.RE
+.PP
+env\-keep\-derivations
+.RS 4
+\fIDeprecated:\fR
+env\-keep\-derivations
+is now an alias to
+keep\-env\-derivations\&.
+.RE
+.PP
+extra\-binary\-caches
+.RS 4
+\fIDeprecated:\fR
+extra\-binary\-caches
+is now an alias to
+extra\-substituters\&.
+.RE
+.PP
+trusted\-binary\-caches
+.RS 4
+\fIDeprecated:\fR
+trusted\-binary\-caches
+is now an alias to
+trusted\-substituters\&.
+.RE
+.SH "AUTHOR"
+.PP
+\fBEelco Dolstra\fR
+.RS 4
+Author
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2004-2018 Eelco Dolstra
+.br
+.SH "NOTES"
+.IP " 1." 4
+the
+    curl documentation.
+.RS 4
+\%https://ec.haxx.se/usingcurl-netrc.html
+.RE

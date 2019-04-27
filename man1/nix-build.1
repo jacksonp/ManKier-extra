@@ -1,0 +1,639 @@
+'\" t
+.\"     Title: nix-build
+.\"    Author: Eelco Dolstra
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/01/1970
+.\"    Manual: Command Reference
+.\"    Source: Nix 2.2.2
+.\"  Language: English
+.\"
+.TH "NIX\-BUILD" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nix-build \- build a Nix expression
+.SH "SYNOPSIS"
+.HP \w'\fBnix\-build\fR\ 'u
+\fBnix\-build\fR [\fB\-\-help\fR] [\fB\-\-version\fR] [{\fB\-\-verbose\fR\ |\ \fB\-v\fR}...] [\fB\-\-quiet\fR] [\fB\-\-no\-build\-output\fR\ |\ \fB\-Q\fR] [{\fB\-\-max\-jobs\fR\ |\ \fB\-j\fR}\ \fInumber\fR] [\fB\-\-cores\fR\ \fInumber\fR] [\fB\-\-max\-silent\-time\fR\ \fInumber\fR] [\fB\-\-timeout\fR\ \fInumber\fR] [\fB\-\-keep\-going\fR\ |\ \fB\-k\fR] [\fB\-\-keep\-failed\fR\ |\ \fB\-K\fR] [\fB\-\-fallback\fR] [\fB\-\-readonly\-mode\fR] [\fB\-I\fR\ \fIpath\fR] [\fB\-\-option\fR\ \fIname\fR\ \fIvalue\fR]
+.br
+[\fB\-\-arg\fR\ \fIname\fR\ \fIvalue\fR] [\fB\-\-argstr\fR\ \fIname\fR\ \fIvalue\fR] [{\fB\-\-attr\fR\ |\ \fB\-A\fR}\ \fIattrPath\fR] [\fB\-\-no\-out\-link\fR] [{\fB\-\-out\-link\fR\ |\ \fB\-o\fR}\ \fIoutlink\fR] \fIpaths\fR...
+.SH "DESCRIPTION"
+.PP
+The
+\fBnix\-build\fR
+command builds the derivations described by the Nix expressions in
+\fIpaths\fR\&. If the build succeeds, it places a symlink to the result in the current directory\&. The symlink is called
+result\&. If there are multiple Nix expressions, or the Nix expressions evaluate to multiple derivations, multiple sequentially numbered symlinks are created (result,
+result\-2, and so on)\&.
+.PP
+If no
+\fIpaths\fR
+are specified, then
+\fBnix\-build\fR
+will use
+default\&.nix
+in the current directory, if it exists\&.
+.PP
+If an element of
+\fIpaths\fR
+starts with
+http://
+or
+https://, it is interpreted as the URL of a tarball that will be downloaded and unpacked to a temporary location\&. The tarball must include a single top\-level directory containing at least a file named
+default\&.nix\&.
+.PP
+\fBnix\-build\fR
+is essentially a wrapper around
+\fBnix\-instantiate\fR
+(to translate a high\-level Nix expression to a low\-level store derivation) and
+\fBnix\-store \-\-realise\fR
+(to build the store derivation)\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBWarning\fR
+.ps -1
+.br
+.PP
+The result of the build is automatically registered as a root of the Nix garbage collector\&. This root disappears automatically when the
+result
+symlink is deleted or renamed\&. So don\(cqt rename the symlink\&.
+.sp .5v
+.RE
+.SH "OPTIONS"
+.PP
+All options not listed here are passed to
+\fBnix\-store \-\-realise\fR, except for
+\fB\-\-arg\fR
+and
+\fB\-\-attr\fR
+/
+\fB\-A\fR
+which are passed to
+\fBnix\-instantiate\fR\&.
+.PP
+\fB\-\-no\-out\-link\fR
+.RS 4
+Do not create a symlink to the output path\&. Note that as a result the output does not become a root of the garbage collector, and so might be deleted by
+\fBnix\-store \-\-gc\fR\&.
+.RE
+.PP
+\fB\-\-out\-link\fR / \fB\-o\fR \fIoutlink\fR
+.RS 4
+Change the name of the symlink to the output path created from
+result
+to
+\fIoutlink\fR\&.
+.RE
+.PP
+The following common options are supported:
+.PP
+\fB\-\-help\fR
+.RS 4
+Prints out a summary of the command syntax and exits\&.
+.RE
+.PP
+\fB\-\-version\fR
+.RS 4
+Prints out the Nix version number on standard output and exits\&.
+.RE
+.PP
+\fB\-\-verbose\fR / \fB\-v\fR
+.RS 4
+Increases the level of verbosity of diagnostic messages printed on standard error\&. For each Nix operation, the information printed on standard output is well\-defined; any diagnostic information is printed on standard error, never on standard output\&.
+.sp
+This option may be specified repeatedly\&. Currently, the following verbosity levels exist:
+.PP
+0
+.RS 4
+\(lqErrors only\(rq: only print messages explaining why the Nix invocation failed\&.
+.RE
+.PP
+1
+.RS 4
+\(lqInformational\(rq: print
+\fIuseful\fR
+messages about what Nix is doing\&. This is the default\&.
+.RE
+.PP
+2
+.RS 4
+\(lqTalkative\(rq: print more informational messages\&.
+.RE
+.PP
+3
+.RS 4
+\(lqChatty\(rq: print even more informational messages\&.
+.RE
+.PP
+4
+.RS 4
+\(lqDebug\(rq: print debug information\&.
+.RE
+.PP
+5
+.RS 4
+\(lqVomit\(rq: print vast amounts of debug information\&.
+.RE
+.RE
+.PP
+\fB\-\-quiet\fR
+.RS 4
+Decreases the level of verbosity of diagnostic messages printed on standard error\&. This is the inverse option to
+\fB\-v\fR
+/
+\fB\-\-verbose\fR\&.
+.sp
+This option may be specified repeatedly\&. See the previous verbosity levels list\&.
+.RE
+.PP
+\fB\-\-no\-build\-output\fR / \fB\-Q\fR
+.RS 4
+By default, output written by builders to standard output and standard error is echoed to the Nix command\*(Aqs standard error\&. This option suppresses this behaviour\&. Note that the builder\*(Aqs standard output and error are always written to a log file in
+\fIprefix\fR/nix/var/log/nix\&.
+.RE
+.PP
+\fB\-\-max\-jobs\fR / \fB\-j\fR \fInumber\fR
+.RS 4
+Sets the maximum number of build jobs that Nix will perform in parallel to the specified number\&. Specify
+auto
+to use the number of CPUs in the system\&. The default is specified by the
+max\-jobs
+configuration setting, which itself defaults to
+1\&. A higher value is useful on SMP systems or to exploit I/O latency\&.
+.RE
+.PP
+\fB\-\-cores\fR
+.RS 4
+Sets the value of the
+\fBNIX_BUILD_CORES\fR
+environment variable in the invocation of builders\&. Builders can use this variable at their discretion to control the maximum amount of parallelism\&. For instance, in Nixpkgs, if the derivation attribute
+\fIenableParallelBuilding\fR
+is set to
+true, the builder passes the
+\fB\-j\fR\fB\fIN\fR\fR
+flag to GNU Make\&. It defaults to the value of the
+cores
+configuration setting, if set, or
+1
+otherwise\&. The value
+0
+means that the builder should use all available CPU cores in the system\&.
+.RE
+.PP
+\fB\-\-max\-silent\-time\fR
+.RS 4
+Sets the maximum number of seconds that a builder can go without producing any data on standard output or standard error\&. The default is specified by the
+max\-silent\-time
+configuration setting\&.
+0
+means no time\-out\&.
+.RE
+.PP
+\fB\-\-timeout\fR
+.RS 4
+Sets the maximum number of seconds that a builder can run\&. The default is specified by the
+timeout
+configuration setting\&.
+0
+means no timeout\&.
+.RE
+.PP
+\fB\-\-keep\-going\fR / \fB\-k\fR
+.RS 4
+Keep going in case of failed builds, to the greatest extent possible\&. That is, if building an input of some derivation fails, Nix will still build the other inputs, but not the derivation itself\&. Without this option, Nix stops if any build fails (except for builds of substitutes), possibly killing builds in progress (in case of parallel or distributed builds)\&.
+.RE
+.PP
+\fB\-\-keep\-failed\fR / \fB\-K\fR
+.RS 4
+Specifies that in case of a build failure, the temporary directory (usually in
+/tmp) in which the build takes place should not be deleted\&. The path of the build directory is printed as an informational message\&.
+.RE
+.PP
+\fB\-\-fallback\fR
+.RS 4
+Whenever Nix attempts to build a derivation for which substitutes are known for each output path, but realising the output paths through the substitutes fails, fall back on building the derivation\&.
+.sp
+The most common scenario in which this is useful is when we have registered substitutes in order to perform binary distribution from, say, a network repository\&. If the repository is down, the realisation of the derivation will fail\&. When this option is specified, Nix will build the derivation instead\&. Thus, installation from binaries falls back on installation from source\&. This option is not the default since it is generally not desirable for a transient failure in obtaining the substitutes to lead to a full build from source (with the related consumption of resources)\&.
+.RE
+.PP
+\fB\-\-no\-build\-hook\fR
+.RS 4
+Disables the build hook mechanism\&. This allows to ignore remote builders if they are setup on the machine\&.
+.sp
+It\*(Aqs useful in cases where the bandwidth between the client and the remote builder is too low\&. In that case it can take more time to upload the sources to the remote builder and fetch back the result than to do the computation locally\&.
+.RE
+.PP
+\fB\-\-readonly\-mode\fR
+.RS 4
+When this option is used, no attempt is made to open the Nix database\&. Most Nix operations do need database access, so those operations will fail\&.
+.RE
+.PP
+\fB\-\-arg\fR \fIname\fR \fIvalue\fR
+.RS 4
+This option is accepted by
+\fBnix\-env\fR,
+\fBnix\-instantiate\fR
+and
+\fBnix\-build\fR\&. When evaluating Nix expressions, the expression evaluator will automatically try to call functions that it encounters\&. It can automatically call functions for which every argument has a
+default value
+(e\&.g\&.,
+{ \fIargName\fR ? \fIdefaultValue\fR }: \fI\&.\&.\&.\fR)\&. With
+\fB\-\-arg\fR, you can also call functions that have arguments without a default value (or override a default value)\&. That is, if the evaluator encounters a function with an argument named
+\fIname\fR, it will call it with value
+\fIvalue\fR\&.
+.sp
+For instance, the top\-level
+default\&.nix
+in Nixpkgs is actually a function:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{ # The system (e\&.g\&., `i686\-linux\*(Aq) for which to build the packages\&.
+  system ? builtins\&.currentSystem
+  \fI\&.\&.\&.\fR
+}: \fI\&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+So if you call this Nix expression (e\&.g\&., when you do
+nix\-env \-i \fIpkgname\fR), the function will be called automatically using the value
+builtins\&.currentSystem
+for the
+system
+argument\&. You can override this using
+\fB\-\-arg\fR, e\&.g\&.,
+nix\-env \-i \fIpkgname\fR \-\-arg system \e"i686\-freebsd\e"\&. (Note that since the argument is a Nix string literal, you have to escape the quotes\&.)
+.RE
+.PP
+\fB\-\-argstr\fR \fIname\fR \fIvalue\fR
+.RS 4
+This option is like
+\fB\-\-arg\fR, only the value is not a Nix expression but a string\&. So instead of
+\-\-arg system \e"i686\-linux\e"
+(the outer quotes are to keep the shell happy) you can say
+\-\-argstr system i686\-linux\&.
+.RE
+.PP
+\fB\-\-attr\fR / \fB\-A\fR \fIattrPath\fR
+.RS 4
+Select an attribute from the top\-level Nix expression being evaluated\&. (\fBnix\-env\fR,
+\fBnix\-instantiate\fR,
+\fBnix\-build\fR
+and
+\fBnix\-shell\fR
+only\&.) The
+\fIattribute path\fR
+\fIattrPath\fR
+is a sequence of attribute names separated by dots\&. For instance, given a top\-level Nix expression
+\fIe\fR, the attribute path
+xorg\&.xorgserver
+would cause the expression
+\fIe\fR\&.xorg\&.xorgserver
+to be used\&. See
+\fBnix\-env \-\-install\fR
+for some concrete examples\&.
+.sp
+In addition to attribute names, you can also specify array indices\&. For instance, the attribute path
+foo\&.3\&.bar
+selects the
+bar
+attribute of the fourth element of the array in the
+foo
+attribute of the top\-level expression\&.
+.RE
+.PP
+\fB\-\-expr\fR / \fB\-E\fR
+.RS 4
+Interpret the command line arguments as a list of Nix expressions to be parsed and evaluated, rather than as a list of file names of Nix expressions\&. (\fBnix\-instantiate\fR,
+\fBnix\-build\fR
+and
+\fBnix\-shell\fR
+only\&.)
+.RE
+.PP
+\fB\-I\fR \fIpath\fR
+.RS 4
+Add a path to the Nix expression search path\&. This option may be given multiple times\&. See the
+\fBNIX_PATH\fR
+environment variable for information on the semantics of the Nix search path\&. Paths added through
+\fB\-I\fR
+take precedence over
+\fBNIX_PATH\fR\&.
+.RE
+.PP
+\fB\-\-option\fR \fIname\fR \fIvalue\fR
+.RS 4
+Set the Nix configuration option
+\fIname\fR
+to
+\fIvalue\fR\&. This overrides settings in the Nix configuration file (see
+\fBnix.conf\fR(5))\&.
+.RE
+.PP
+\fB\-\-repair\fR
+.RS 4
+Fix corrupted or missing store paths by redownloading or rebuilding them\&. Note that this is slow because it requires computing a cryptographic hash of the contents of every path in the closure of the build\&. Also note the warning under
+\fBnix\-store \-\-repair\-path\fR\&.
+.RE
+.SH "EXAMPLES"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-build \*(Aq<nixpkgs>\*(Aq \-A firefox
+store derivation is /nix/store/qybprl8sz2lc\&.\&.\&.\-firefox\-1\&.5\&.0\&.7\&.drv
+/nix/store/d18hyl92g30l\&.\&.\&.\-firefox\-1\&.5\&.0\&.7
+
+$ ls \-l result
+lrwxrwxrwx  \fI\&.\&.\&.\fR  result \-> /nix/store/d18hyl92g30l\&.\&.\&.\-firefox\-1\&.5\&.0\&.7
+
+$ ls \&./result/bin/
+firefox  firefox\-config
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+If a derivation has multiple outputs,
+\fBnix\-build\fR
+will build the default (first) output\&. You can also build all outputs:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-build \*(Aq<nixpkgs>\*(Aq \-A openssl\&.all
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+This will create a symlink for each output named
+result\-\fIoutputname\fR\&. The suffix is omitted if the output name is
+out\&. So if
+openssl
+has outputs
+out,
+bin
+and
+man,
+\fBnix\-build\fR
+will create symlinks
+result,
+result\-bin
+and
+result\-man\&. It\(cqs also possible to build a specific output:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-build \*(Aq<nixpkgs>\*(Aq \-A openssl\&.man
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+This will create a symlink
+result\-man\&.
+.PP
+Build a Nix expression given on the command line:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-build \-E \*(Aqwith import <nixpkgs> { }; runCommand "foo" { } "echo bar > $out"\*(Aq
+$ cat \&./result
+bar
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Build the GNU Hello package from the latest revision of the master branch of Nixpkgs:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-build https://github\&.com/NixOS/nixpkgs/archive/master\&.tar\&.gz \-A hello
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "ENVIRONMENT VARIABLES"
+.PP
+\fBIN_NIX_SHELL\fR
+.RS 4
+Indicator that tells if the current environment was set up by
+\fBnix\-shell\fR\&.
+.RE
+.PP
+\fBNIX_PATH\fR
+.RS 4
+A colon\-separated list of directories used to look up Nix expressions enclosed in angle brackets (i\&.e\&.,
+<\fIpath\fR>)\&. For instance, the value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+/home/eelco/Dev:/etc/nixos
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+will cause Nix to look for paths relative to
+/home/eelco/Dev
+and
+/etc/nixos, in that order\&. It is also possible to match paths against a prefix\&. For example, the value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+nixpkgs=/home/eelco/Dev/nixpkgs\-branch:/etc/nixos
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+will cause Nix to search for
+<nixpkgs/\fIpath\fR>
+in
+/home/eelco/Dev/nixpkgs\-branch/\fIpath\fR
+and
+/etc/nixos/nixpkgs/\fIpath\fR\&.
+.sp
+If a path in the Nix search path starts with
+http://
+or
+https://, it is interpreted as the URL of a tarball that will be downloaded and unpacked to a temporary location\&. The tarball must consist of a single top\-level directory\&. For example, setting
+\fBNIX_PATH\fR
+to
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+nixpkgs=https://github\&.com/NixOS/nixpkgs\-channels/archive/nixos\-15\&.09\&.tar\&.gz
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+tells Nix to download the latest revision in the Nixpkgs/NixOS 15\&.09 channel\&.
+.sp
+A following shorthand can be used to refer to the official channels:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+nixpkgs=channel:nixos\-15\&.09
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The search path can be extended using the
+\fB\-I\fR
+option, which takes precedence over
+\fBNIX_PATH\fR\&.
+.RE
+.PP
+\fBNIX_IGNORE_SYMLINK_STORE\fR
+.RS 4
+Normally, the Nix store directory (typically
+/nix/store) is not allowed to contain any symlink components\&. This is to prevent \(lqimpure\(rq builds\&. Builders sometimes \(lqcanonicalise\(rq paths by resolving all symlink components\&. Thus, builds on different machines (with
+/nix/store
+resolving to different locations) could yield different results\&. This is generally not a problem, except when builds are deployed to machines where
+/nix/store
+resolves differently\&. If you are sure that you\(cqre not going to do that, you can set
+\fBNIX_IGNORE_SYMLINK_STORE\fR
+to
+\fB1\fR\&.
+.sp
+Note that if you\(cqre symlinking the Nix store so that you can put it on another file system than the root file system, on Linux you\(cqre better off using
+bind
+mount points, e\&.g\&.,
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ mkdir /nix
+$ mount \-o bind /mnt/otherdisk/nix /nix
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Consult the
+\fBmount\fR(8)
+manual page for details\&.
+.RE
+.PP
+\fBNIX_STORE_DIR\fR
+.RS 4
+Overrides the location of the Nix store (default
+\fIprefix\fR/store)\&.
+.RE
+.PP
+\fBNIX_DATA_DIR\fR
+.RS 4
+Overrides the location of the Nix static data directory (default
+\fIprefix\fR/share)\&.
+.RE
+.PP
+\fBNIX_LOG_DIR\fR
+.RS 4
+Overrides the location of the Nix log directory (default
+\fIprefix\fR/log/nix)\&.
+.RE
+.PP
+\fBNIX_STATE_DIR\fR
+.RS 4
+Overrides the location of the Nix state directory (default
+\fIprefix\fR/var/nix)\&.
+.RE
+.PP
+\fBNIX_CONF_DIR\fR
+.RS 4
+Overrides the location of the Nix configuration directory (default
+\fIprefix\fR/etc/nix)\&.
+.RE
+.PP
+\fBTMPDIR\fR
+.RS 4
+Use the specified directory to store temporary files\&. In particular, this includes temporary build directories; these can take up substantial amounts of disk space\&. The default is
+/tmp\&.
+.RE
+.PP
+\fBNIX_REMOTE\fR
+.RS 4
+This variable should be set to
+daemon
+if you want to use the Nix daemon to execute Nix operations\&. This is necessary in
+multi\-user Nix installations\&. If the Nix daemon\*(Aqs Unix socket is at some non\-standard path, this variable should be set to
+unix://path/to/socket\&. Otherwise, it should be left unset\&.
+.RE
+.PP
+\fBNIX_SHOW_STATS\fR
+.RS 4
+If set to
+1, Nix will print some evaluation statistics, such as the number of values allocated\&.
+.RE
+.PP
+\fBNIX_COUNT_CALLS\fR
+.RS 4
+If set to
+1, Nix will print how often functions were called during Nix expression evaluation\&. This is useful for profiling your Nix expressions\&.
+.RE
+.PP
+\fBGC_INITIAL_HEAP_SIZE\fR
+.RS 4
+If Nix has been configured to use the Boehm garbage collector, this variable sets the initial size of the heap in bytes\&. It defaults to 384 MiB\&. Setting it to a low value reduces memory consumption, but will increase runtime due to the overhead of garbage collection\&.
+.RE
+.SH "AUTHOR"
+.PP
+\fBEelco Dolstra\fR
+.RS 4
+Author
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2004-2018 Eelco Dolstra
+.br

@@ -1,0 +1,126 @@
+'\" t
+.\"     Title: nix-prefetch-url
+.\"    Author: Eelco Dolstra
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/01/1970
+.\"    Manual: Command Reference
+.\"    Source: Nix 2.2.2
+.\"  Language: English
+.\"
+.TH "NIX\-PREFETCH\-URL" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nix-prefetch-url \- copy a file from a URL into the store and print its hash
+.SH "SYNOPSIS"
+.HP \w'\fBnix\-prefetch\-url\fR\ 'u
+\fBnix\-prefetch\-url\fR [\fB\-\-version\fR] [\fB\-\-type\fR\ \fIhashAlgo\fR] [\fB\-\-print\-path\fR] [\fB\-\-unpack\fR] [\fB\-\-name\fR\ \fIname\fR] \fIurl\fR [\fIhash\fR]
+.SH "DESCRIPTION"
+.PP
+The command
+\fBnix\-prefetch\-url\fR
+downloads the file referenced by the URL
+\fIurl\fR, prints its cryptographic hash, and copies it into the Nix store\&. The file name in the store is
+\fIhash\fR\-\fIbaseName\fR, where
+\fIbaseName\fR
+is everything following the final slash in
+\fIurl\fR\&.
+.PP
+This command is just a convenience for Nix expression writers\&. Often a Nix expression fetches some source distribution from the network using the
+fetchurl
+expression contained in Nixpkgs\&. However,
+fetchurl
+requires a cryptographic hash\&. If you don\*(Aqt know the hash, you would have to download the file first, and then
+fetchurl
+would download it again when you build your Nix expression\&. Since
+fetchurl
+uses the same name for the downloaded file as
+\fBnix\-prefetch\-url\fR, the redundant download can be avoided\&.
+.PP
+If
+\fIhash\fR
+is specified, then a download is not performed if the Nix store already contains a file with the same hash and base name\&. Otherwise, the file is downloaded, and an error if signaled if the actual hash of the file does not match the specified hash\&.
+.PP
+This command prints the hash on standard output\&. Additionally, if the option
+\fB\-\-print\-path\fR
+is used, the path of the downloaded file in the Nix store is also printed\&.
+.SH "OPTIONS"
+.PP
+\fB\-\-type\fR \fIhashAlgo\fR
+.RS 4
+Use the specified cryptographic hash algorithm, which can be one of
+md5,
+sha1, and
+sha256\&.
+.RE
+.PP
+\fB\-\-print\-path\fR
+.RS 4
+Print the store path of the downloaded file on standard output\&.
+.RE
+.PP
+\fB\-\-unpack\fR
+.RS 4
+Unpack the archive (which must be a tarball or zip file) and add the result to the Nix store\&. The resulting hash can be used with functions such as Nixpkgs\(cqs
+\fIfetchzip\fR
+or
+\fIfetchFromGitHub\fR\&.
+.RE
+.PP
+\fB\-\-name\fR \fIname\fR
+.RS 4
+Override the name of the file in the Nix store\&. By default, this is
+\fIhash\fR\-\fIbasename\fR, where
+\fIbasename\fR
+is the last component of
+\fIurl\fR\&. Overriding the name is necessary when
+\fIbasename\fR
+contains characters that are not allowed in Nix store paths\&.
+.RE
+.SH "EXAMPLES"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-prefetch\-url ftp://ftp\&.gnu\&.org/pub/gnu/hello/hello\-2\&.10\&.tar\&.gz
+0ssi1wpaf7plaswqqjwigppsg5fyh99vdlb9kzl7c9lng89ndq1i
+
+$ nix\-prefetch\-url \-\-print\-path mirror://gnu/hello/hello\-2\&.10\&.tar\&.gz
+0ssi1wpaf7plaswqqjwigppsg5fyh99vdlb9kzl7c9lng89ndq1i
+/nix/store/3x7dwzq014bblazs7kq20p9hyzz0qh8g\-hello\-2\&.10\&.tar\&.gz
+
+$ nix\-prefetch\-url \-\-unpack \-\-print\-path https://github\&.com/NixOS/patchelf/archive/0\&.8\&.tar\&.gz
+079agjlv0hrv7fxnx9ngipx14gyncbkllxrp9cccnh3a50fxcmy7
+/nix/store/19zrmhm3m40xxaw81c8cqm6aljgrnwj2\-0\&.8\&.tar\&.gz
+.fi
+.if n \{\
+.RE
+.\}
+.SH "AUTHOR"
+.PP
+\fBEelco Dolstra\fR
+.RS 4
+Author
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2004-2018 Eelco Dolstra
+.br

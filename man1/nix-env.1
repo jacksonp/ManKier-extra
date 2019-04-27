@@ -1,0 +1,1660 @@
+'\" t
+.\"     Title: nix-env
+.\"    Author: Eelco Dolstra
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 01/01/1970
+.\"    Manual: Command Reference
+.\"    Source: Nix 2.2.2
+.\"  Language: English
+.\"
+.TH "NIX\-ENV" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+nix-env \- manipulate or query Nix user environments
+.SH "SYNOPSIS"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR [\fB\-\-help\fR] [\fB\-\-version\fR] [{\fB\-\-verbose\fR\ |\ \fB\-v\fR}...] [\fB\-\-quiet\fR] [\fB\-\-no\-build\-output\fR\ |\ \fB\-Q\fR] [{\fB\-\-max\-jobs\fR\ |\ \fB\-j\fR}\ \fInumber\fR] [\fB\-\-cores\fR\ \fInumber\fR] [\fB\-\-max\-silent\-time\fR\ \fInumber\fR] [\fB\-\-timeout\fR\ \fInumber\fR] [\fB\-\-keep\-going\fR\ |\ \fB\-k\fR] [\fB\-\-keep\-failed\fR\ |\ \fB\-K\fR] [\fB\-\-fallback\fR] [\fB\-\-readonly\-mode\fR] [\fB\-I\fR\ \fIpath\fR] [\fB\-\-option\fR\ \fIname\fR\ \fIvalue\fR]
+.br
+[\fB\-\-arg\fR\ \fIname\fR\ \fIvalue\fR] [\fB\-\-argstr\fR\ \fIname\fR\ \fIvalue\fR] [{\fB\-\-file\fR\ |\ \fB\-f\fR}\ \fIpath\fR] [{\fB\-\-profile\fR\ |\ \fB\-p\fR}\ \fIpath\fR] [\fB\-\-system\-filter\fR\ \fIsystem\fR] [\fB\-\-dry\-run\fR] \fIoperation\fR [\fIoptions\fR...] [\fIarguments\fR...]
+.SH "DESCRIPTION"
+.PP
+The command
+\fBnix\-env\fR
+is used to manipulate Nix user environments\&. User environments are sets of software packages available to a user at some point in time\&. In other words, they are a synthesised view of the programs available in the Nix store\&. There may be many user environments: different users can have different environments, and individual users can switch between different environments\&.
+.PP
+\fBnix\-env\fR
+takes exactly one
+\fIoperation\fR
+flag which indicates the subcommand to be performed\&. These are documented below\&.
+.SH "SELECTORS"
+.PP
+Several commands, such as
+\fBnix\-env \-q\fR
+and
+\fBnix\-env \-i\fR, take a list of arguments that specify the packages on which to operate\&. These are extended regular expressions that must match the entire name of the package\&. (For details on regular expressions, see
+\fBregex\fR(7)\&.) The match is case\-sensitive\&. The regular expression can optionally be followed by a dash and a version number; if omitted, any version of the package will match\&. Here are some examples:
+.PP
+firefox
+.RS 4
+Matches the package name
+firefox
+and any version\&.
+.RE
+.PP
+firefox\-32\&.0
+.RS 4
+Matches the package name
+firefox
+and version
+32\&.0\&.
+.RE
+.PP
+gtk\e\e+
+.RS 4
+Matches the package name
+gtk+\&. The
++
+character must be escaped using a backslash to prevent it from being interpreted as a quantifier, and the backslash must be escaped in turn with another backslash to ensure that the shell passes it on\&.
+.RE
+.PP
+\&.\e*
+.RS 4
+Matches any package name\&. This is the default for most commands\&.
+.RE
+.PP
+\*(Aq\&.*zip\&.*\*(Aq
+.RS 4
+Matches any package name containing the string
+zip\&. Note the dots:
+\*(Aq*zip*\*(Aq
+does not work, because in a regular expression, the character
+*
+is interpreted as a quantifier\&.
+.RE
+.PP
+\*(Aq\&.*(firefox|chromium)\&.*\*(Aq
+.RS 4
+Matches any package name containing the strings
+firefox
+or
+chromium\&.
+.RE
+.SH "COMMON OPTIONS"
+.PP
+This section lists the options that are common to all operations\&. These options are allowed for every subcommand, though they may not always have an effect\&.
+.PP
+\fB\-\-file\fR / \fB\-f\fR \fIpath\fR
+.RS 4
+Specifies the Nix expression (designated below as the
+\fIactive Nix expression\fR) used by the
+\fB\-\-install\fR,
+\fB\-\-upgrade\fR, and
+\fB\-\-query \-\-available\fR
+operations to obtain derivations\&. The default is
+~/\&.nix\-defexpr\&.
+.sp
+If the argument starts with
+http://
+or
+https://, it is interpreted as the URL of a tarball that will be downloaded and unpacked to a temporary location\&. The tarball must include a single top\-level directory containing at least a file named
+default\&.nix\&.
+.RE
+.PP
+\fB\-\-profile\fR / \fB\-p\fR \fIpath\fR
+.RS 4
+Specifies the profile to be used by those operations that operate on a profile (designated below as the
+\fIactive profile\fR)\&. A profile is a sequence of user environments called
+\fIgenerations\fR, one of which is the
+\fIcurrent generation\fR\&.
+.RE
+.PP
+\fB\-\-dry\-run\fR
+.RS 4
+For the
+\fB\-\-install\fR,
+\fB\-\-upgrade\fR,
+\fB\-\-uninstall\fR,
+\fB\-\-switch\-generation\fR,
+\fB\-\-delete\-generations\fR
+and
+\fB\-\-rollback\fR
+operations, this flag will cause
+\fBnix\-env\fR
+to print what
+\fIwould\fR
+be done if this flag had not been specified, without actually doing it\&.
+.sp
+\fB\-\-dry\-run\fR
+also prints out which paths will be
+substituted
+(i\&.e\&., downloaded) and which paths will be built from source (because no substitute is available)\&.
+.RE
+.PP
+\fB\-\-system\-filter\fR \fIsystem\fR
+.RS 4
+By default, operations such as
+\fB\-\-query \-\-available\fR
+show derivations matching any platform\&. This option allows you to use derivations for the specified platform
+\fIsystem\fR\&.
+.RE
+.PP
+\fB\-\-help\fR
+.RS 4
+Prints out a summary of the command syntax and exits\&.
+.RE
+.PP
+\fB\-\-version\fR
+.RS 4
+Prints out the Nix version number on standard output and exits\&.
+.RE
+.PP
+\fB\-\-verbose\fR / \fB\-v\fR
+.RS 4
+Increases the level of verbosity of diagnostic messages printed on standard error\&. For each Nix operation, the information printed on standard output is well\-defined; any diagnostic information is printed on standard error, never on standard output\&.
+.sp
+This option may be specified repeatedly\&. Currently, the following verbosity levels exist:
+.PP
+0
+.RS 4
+\(lqErrors only\(rq: only print messages explaining why the Nix invocation failed\&.
+.RE
+.PP
+1
+.RS 4
+\(lqInformational\(rq: print
+\fIuseful\fR
+messages about what Nix is doing\&. This is the default\&.
+.RE
+.PP
+2
+.RS 4
+\(lqTalkative\(rq: print more informational messages\&.
+.RE
+.PP
+3
+.RS 4
+\(lqChatty\(rq: print even more informational messages\&.
+.RE
+.PP
+4
+.RS 4
+\(lqDebug\(rq: print debug information\&.
+.RE
+.PP
+5
+.RS 4
+\(lqVomit\(rq: print vast amounts of debug information\&.
+.RE
+.RE
+.PP
+\fB\-\-quiet\fR
+.RS 4
+Decreases the level of verbosity of diagnostic messages printed on standard error\&. This is the inverse option to
+\fB\-v\fR
+/
+\fB\-\-verbose\fR\&.
+.sp
+This option may be specified repeatedly\&. See the previous verbosity levels list\&.
+.RE
+.PP
+\fB\-\-no\-build\-output\fR / \fB\-Q\fR
+.RS 4
+By default, output written by builders to standard output and standard error is echoed to the Nix command\*(Aqs standard error\&. This option suppresses this behaviour\&. Note that the builder\*(Aqs standard output and error are always written to a log file in
+\fIprefix\fR/nix/var/log/nix\&.
+.RE
+.PP
+\fB\-\-max\-jobs\fR / \fB\-j\fR \fInumber\fR
+.RS 4
+Sets the maximum number of build jobs that Nix will perform in parallel to the specified number\&. Specify
+auto
+to use the number of CPUs in the system\&. The default is specified by the
+max\-jobs
+configuration setting, which itself defaults to
+1\&. A higher value is useful on SMP systems or to exploit I/O latency\&.
+.RE
+.PP
+\fB\-\-cores\fR
+.RS 4
+Sets the value of the
+\fBNIX_BUILD_CORES\fR
+environment variable in the invocation of builders\&. Builders can use this variable at their discretion to control the maximum amount of parallelism\&. For instance, in Nixpkgs, if the derivation attribute
+\fIenableParallelBuilding\fR
+is set to
+true, the builder passes the
+\fB\-j\fR\fB\fIN\fR\fR
+flag to GNU Make\&. It defaults to the value of the
+cores
+configuration setting, if set, or
+1
+otherwise\&. The value
+0
+means that the builder should use all available CPU cores in the system\&.
+.RE
+.PP
+\fB\-\-max\-silent\-time\fR
+.RS 4
+Sets the maximum number of seconds that a builder can go without producing any data on standard output or standard error\&. The default is specified by the
+max\-silent\-time
+configuration setting\&.
+0
+means no time\-out\&.
+.RE
+.PP
+\fB\-\-timeout\fR
+.RS 4
+Sets the maximum number of seconds that a builder can run\&. The default is specified by the
+timeout
+configuration setting\&.
+0
+means no timeout\&.
+.RE
+.PP
+\fB\-\-keep\-going\fR / \fB\-k\fR
+.RS 4
+Keep going in case of failed builds, to the greatest extent possible\&. That is, if building an input of some derivation fails, Nix will still build the other inputs, but not the derivation itself\&. Without this option, Nix stops if any build fails (except for builds of substitutes), possibly killing builds in progress (in case of parallel or distributed builds)\&.
+.RE
+.PP
+\fB\-\-keep\-failed\fR / \fB\-K\fR
+.RS 4
+Specifies that in case of a build failure, the temporary directory (usually in
+/tmp) in which the build takes place should not be deleted\&. The path of the build directory is printed as an informational message\&.
+.RE
+.PP
+\fB\-\-fallback\fR
+.RS 4
+Whenever Nix attempts to build a derivation for which substitutes are known for each output path, but realising the output paths through the substitutes fails, fall back on building the derivation\&.
+.sp
+The most common scenario in which this is useful is when we have registered substitutes in order to perform binary distribution from, say, a network repository\&. If the repository is down, the realisation of the derivation will fail\&. When this option is specified, Nix will build the derivation instead\&. Thus, installation from binaries falls back on installation from source\&. This option is not the default since it is generally not desirable for a transient failure in obtaining the substitutes to lead to a full build from source (with the related consumption of resources)\&.
+.RE
+.PP
+\fB\-\-no\-build\-hook\fR
+.RS 4
+Disables the build hook mechanism\&. This allows to ignore remote builders if they are setup on the machine\&.
+.sp
+It\*(Aqs useful in cases where the bandwidth between the client and the remote builder is too low\&. In that case it can take more time to upload the sources to the remote builder and fetch back the result than to do the computation locally\&.
+.RE
+.PP
+\fB\-\-readonly\-mode\fR
+.RS 4
+When this option is used, no attempt is made to open the Nix database\&. Most Nix operations do need database access, so those operations will fail\&.
+.RE
+.PP
+\fB\-\-arg\fR \fIname\fR \fIvalue\fR
+.RS 4
+This option is accepted by
+\fBnix\-env\fR,
+\fBnix\-instantiate\fR
+and
+\fBnix\-build\fR\&. When evaluating Nix expressions, the expression evaluator will automatically try to call functions that it encounters\&. It can automatically call functions for which every argument has a
+default value
+(e\&.g\&.,
+{ \fIargName\fR ? \fIdefaultValue\fR }: \fI\&.\&.\&.\fR)\&. With
+\fB\-\-arg\fR, you can also call functions that have arguments without a default value (or override a default value)\&. That is, if the evaluator encounters a function with an argument named
+\fIname\fR, it will call it with value
+\fIvalue\fR\&.
+.sp
+For instance, the top\-level
+default\&.nix
+in Nixpkgs is actually a function:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{ # The system (e\&.g\&., `i686\-linux\*(Aq) for which to build the packages\&.
+  system ? builtins\&.currentSystem
+  \fI\&.\&.\&.\fR
+}: \fI\&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+So if you call this Nix expression (e\&.g\&., when you do
+nix\-env \-i \fIpkgname\fR), the function will be called automatically using the value
+builtins\&.currentSystem
+for the
+system
+argument\&. You can override this using
+\fB\-\-arg\fR, e\&.g\&.,
+nix\-env \-i \fIpkgname\fR \-\-arg system \e"i686\-freebsd\e"\&. (Note that since the argument is a Nix string literal, you have to escape the quotes\&.)
+.RE
+.PP
+\fB\-\-argstr\fR \fIname\fR \fIvalue\fR
+.RS 4
+This option is like
+\fB\-\-arg\fR, only the value is not a Nix expression but a string\&. So instead of
+\-\-arg system \e"i686\-linux\e"
+(the outer quotes are to keep the shell happy) you can say
+\-\-argstr system i686\-linux\&.
+.RE
+.PP
+\fB\-\-attr\fR / \fB\-A\fR \fIattrPath\fR
+.RS 4
+Select an attribute from the top\-level Nix expression being evaluated\&. (\fBnix\-env\fR,
+\fBnix\-instantiate\fR,
+\fBnix\-build\fR
+and
+\fBnix\-shell\fR
+only\&.) The
+\fIattribute path\fR
+\fIattrPath\fR
+is a sequence of attribute names separated by dots\&. For instance, given a top\-level Nix expression
+\fIe\fR, the attribute path
+xorg\&.xorgserver
+would cause the expression
+\fIe\fR\&.xorg\&.xorgserver
+to be used\&. See
+\fBnix\-env \-\-install\fR
+for some concrete examples\&.
+.sp
+In addition to attribute names, you can also specify array indices\&. For instance, the attribute path
+foo\&.3\&.bar
+selects the
+bar
+attribute of the fourth element of the array in the
+foo
+attribute of the top\-level expression\&.
+.RE
+.PP
+\fB\-\-expr\fR / \fB\-E\fR
+.RS 4
+Interpret the command line arguments as a list of Nix expressions to be parsed and evaluated, rather than as a list of file names of Nix expressions\&. (\fBnix\-instantiate\fR,
+\fBnix\-build\fR
+and
+\fBnix\-shell\fR
+only\&.)
+.RE
+.PP
+\fB\-I\fR \fIpath\fR
+.RS 4
+Add a path to the Nix expression search path\&. This option may be given multiple times\&. See the
+\fBNIX_PATH\fR
+environment variable for information on the semantics of the Nix search path\&. Paths added through
+\fB\-I\fR
+take precedence over
+\fBNIX_PATH\fR\&.
+.RE
+.PP
+\fB\-\-option\fR \fIname\fR \fIvalue\fR
+.RS 4
+Set the Nix configuration option
+\fIname\fR
+to
+\fIvalue\fR\&. This overrides settings in the Nix configuration file (see
+\fBnix.conf\fR(5))\&.
+.RE
+.PP
+\fB\-\-repair\fR
+.RS 4
+Fix corrupted or missing store paths by redownloading or rebuilding them\&. Note that this is slow because it requires computing a cryptographic hash of the contents of every path in the closure of the build\&. Also note the warning under
+\fBnix\-store \-\-repair\-path\fR\&.
+.RE
+.SH "FILES"
+.PP
+~/\&.nix\-defexpr
+.RS 4
+A directory that contains the default Nix expressions used by the
+\fB\-\-install\fR,
+\fB\-\-upgrade\fR, and
+\fB\-\-query \-\-available\fR
+operations to obtain derivations\&. The
+\fB\-\-file\fR
+option may be used to override this default\&.
+.sp
+The Nix expressions in this directory are combined into a single set, with each file as an attribute that has the name of the file\&. Thus, if
+~/\&.nix\-defexpr
+contains two files,
+foo
+and
+bar, then the default Nix expression will essentially be
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+{
+  foo = import ~/\&.nix\-defexpr/foo;
+  bar = import ~/\&.nix\-defexpr/bar;
+}
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The command
+\fBnix\-channel\fR
+places symlinks to the downloaded Nix expressions from each subscribed channel in this directory\&.
+.RE
+.PP
+~/\&.nix\-profile
+.RS 4
+A symbolic link to the user\*(Aqs current profile\&. By default, this symlink points to
+\fIprefix\fR/var/nix/profiles/default\&. The
+\fBPATH\fR
+environment variable should include
+~/\&.nix\-profile/bin
+for the user environment to be visible to the user\&.
+.RE
+.SH "OPERATION \-\-INSTALL"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR {\fB\-\-install\fR | \fB\-i\fR} [{\fB\-\-prebuilt\-only\fR\ |\ \fB\-b\fR}] [{\fB\-\-attr\fR\ |\ \fB\-A\fR}] [\fB\-\-from\-expression\fR] [\fB\-E\fR] [\fB\-\-from\-profile\fR\ \fIpath\fR] [\fB\-\-preserve\-installed\fR | \fB\-P\fR] [\fB\-\-remove\-all\fR | \fB\-r\fR] \fIargs\fR...
+.SS "Description"
+.PP
+The install operation creates a new user environment, based on the current generation of the active profile, to which a set of store paths described by
+\fIargs\fR
+is added\&. The arguments
+\fIargs\fR
+map to store paths in a number of possible ways:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+By default,
+\fIargs\fR
+is a set of derivation names denoting derivations in the active Nix expression\&. These are realised, and the resulting output paths are installed\&. Currently installed derivations with a name equal to the name of a derivation being added are removed unless the option
+\fB\-\-preserve\-installed\fR
+is specified\&.
+.sp
+If there are multiple derivations matching a name in
+\fIargs\fR
+that have the same name (e\&.g\&.,
+gcc\-3\&.3\&.6
+and
+gcc\-4\&.1\&.1), then the derivation with the highest
+\fIpriority\fR
+is used\&. A derivation can define a priority by declaring the
+\fImeta\&.priority\fR
+attribute\&. This attribute should be a number, with a higher value denoting a lower priority\&. The default priority is
+0\&.
+.sp
+If there are multiple matching derivations with the same priority, then the derivation with the highest version will be installed\&.
+.sp
+You can force the installation of multiple derivations with the same name by being specific about the versions\&. For instance,
+nix\-env \-i gcc\-3\&.3\&.6 gcc\-4\&.1\&.1
+will install both version of GCC (and will probably cause a user environment conflict!)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If
+\fB\-\-attr\fR
+(\fB\-A\fR) is specified, the arguments are
+\fIattribute paths\fR
+that select attributes from the top\-level Nix expression\&. This is faster than using derivation names and unambiguous\&. To find out the attribute paths of available packages, use
+nix\-env \-qaP\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If
+\fB\-\-from\-profile\fR
+\fIpath\fR
+is given,
+\fIargs\fR
+is a set of names denoting installed store paths in the profile
+\fIpath\fR\&. This is an easy way to copy user environment elements from one profile to another\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If
+\fB\-\-from\-expression\fR
+is given,
+\fIargs\fR
+are Nix
+functions
+that are called with the active Nix expression as their single argument\&. The derivations returned by those function calls are installed\&. This allows derivations to be specified in an unambiguous way, which is necessary if there are multiple derivations with the same name\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If
+\fIargs\fR
+are store derivations, then these are
+realised, and the resulting output paths are installed\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If
+\fIargs\fR
+are store paths that are not store derivations, then these are
+realised
+and installed\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+By default all outputs are installed for each derivation\&. That can be reduced by setting
+meta\&.outputsToInstall\&.
+.RE
+.sp
+.SS "Flags"
+.PP
+\fB\-\-prebuilt\-only\fR / \fB\-b\fR
+.RS 4
+Use only derivations for which a substitute is registered, i\&.e\&., there is a pre\-built binary available that can be downloaded in lieu of building the derivation\&. Thus, no packages will be built from source\&.
+.RE
+.PP
+\fB\-\-preserve\-installed\fR, \fB\-P\fR
+.RS 4
+Do not remove derivations with a name matching one of the derivations being installed\&. Usually, trying to have two versions of the same package installed in the same generation of a profile will lead to an error in building the generation, due to file name clashes between the two versions\&. However, this is not the case for all packages\&.
+.RE
+.PP
+\fB\-\-remove\-all\fR, \fB\-r\fR
+.RS 4
+Remove all previously installed packages first\&. This is equivalent to running
+nix\-env \-e \*(Aq\&.*\*(Aq
+first, except that everything happens in a single transaction\&.
+.RE
+.SS "Examples"
+.PP
+To install a specific version of
+\fBgcc\fR
+from the active Nix expression:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-\-install gcc\-3\&.3\&.2
+installing `gcc\-3\&.3\&.2\*(Aq
+uninstalling `gcc\-3\&.1\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Note the previously installed version is removed, since
+\fB\-\-preserve\-installed\fR
+was not specified\&.
+.PP
+To install an arbitrary version:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-\-install gcc
+installing `gcc\-3\&.3\&.2\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To install using a specific attribute:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-i \-A gcc40mips
+$ nix\-env \-i \-A xorg\&.xorgserver
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To install all derivations in the Nix expression
+foo\&.nix:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-f ~/foo\&.nix \-i \*(Aq\&.*\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To copy the store path with symbolic name
+gcc
+from another profile:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-i \-\-from\-profile /nix/var/nix/profiles/foo gcc
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To install a specific store derivation (typically created by
+\fBnix\-instantiate\fR):
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-i /nix/store/fibjb1bfbpm5mrsxc4mh2d8n37sxh91i\-gcc\-3\&.4\&.3\&.drv
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To install a specific output path:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-i /nix/store/y3cgx0xj1p4iv9x0pnnmdhr8iyg741vk\-gcc\-3\&.4\&.3
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To install from a Nix expression specified on the command\-line:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-f \&./foo\&.nix \-i \-E \e
+    \*(Aqf: (f {system = "i686\-linux";})\&.subversionWithJava\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+I\&.e\&., this evaluates to
+(f: (f {system = "i686\-linux";})\&.subversionWithJava) (import \&./foo\&.nix), thus selecting the
+subversionWithJava
+attribute from the set returned by calling the function defined in
+\&./foo\&.nix\&.
+.PP
+A dry\-run tells you which paths will be downloaded or built from source:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-f \*(Aq<nixpkgs>\*(Aq \-iA hello \-\-dry\-run
+(dry run; not doing anything)
+installing \(oqhello\-2\&.10\(cq
+these paths will be fetched (0\&.04 MiB download, 0\&.19 MiB unpacked):
+  /nix/store/wkhdf9jinag5750mqlax6z2zbwhqb76n\-hello\-2\&.10
+  \fI\&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To install Firefox from the latest revision in the Nixpkgs/NixOS 14\&.12 channel:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-f https://github\&.com/NixOS/nixpkgs\-channels/archive/nixos\-14\&.12\&.tar\&.gz \-iA firefox
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+(The GitHub repository
+nixpkgs\-channels
+is updated automatically from the main
+nixpkgs
+repository after certain tests have succeeded and binaries have been built and uploaded to the binary cache at
+cache\&.nixos\&.org\&.)
+.SH "OPERATION \-\-UPGRADE"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR {\fB\-\-upgrade\fR | \fB\-u\fR} [{\fB\-\-prebuilt\-only\fR\ |\ \fB\-b\fR}] [{\fB\-\-attr\fR\ |\ \fB\-A\fR}] [\fB\-\-from\-expression\fR] [\fB\-E\fR] [\fB\-\-from\-profile\fR\ \fIpath\fR] [\fB\-\-lt\fR | \fB\-\-leq\fR | \fB\-\-eq\fR | \fB\-\-always\fR] \fIargs\fR...
+.SS "Description"
+.PP
+The upgrade operation creates a new user environment, based on the current generation of the active profile, in which all store paths are replaced for which there are newer versions in the set of paths described by
+\fIargs\fR\&. Paths for which there are no newer versions are left untouched; this is not an error\&. It is also not an error if an element of
+\fIargs\fR
+matches no installed derivations\&.
+.PP
+For a description of how
+\fIargs\fR
+is mapped to a set of store paths, see
+\fB\-\-install\fR\&. If
+\fIargs\fR
+describes multiple store paths with the same symbolic name, only the one with the highest version is installed\&.
+.SS "Flags"
+.PP
+\fB\-\-lt\fR
+.RS 4
+Only upgrade a derivation to newer versions\&. This is the default\&.
+.RE
+.PP
+\fB\-\-leq\fR
+.RS 4
+In addition to upgrading to newer versions, also \(lqupgrade\(rq to derivations that have the same version\&. Version are not a unique identification of a derivation, so there may be many derivations that have the same version\&. This flag may be useful to force \(lqsynchronisation\(rq between the installed and available derivations\&.
+.RE
+.PP
+\fB\-\-eq\fR
+.RS 4
+\fIOnly\fR
+\(lqupgrade\(rq to derivations that have the same version\&. This may not seem very useful, but it actually is, e\&.g\&., when there is a new release of Nixpkgs and you want to replace installed applications with the same versions built against newer dependencies (to reduce the number of dependencies floating around on your system)\&.
+.RE
+.PP
+\fB\-\-always\fR
+.RS 4
+In addition to upgrading to newer versions, also \(lqupgrade\(rq to derivations that have the same or a lower version\&. I\&.e\&., derivations may actually be downgraded depending on what is available in the active Nix expression\&.
+.RE
+.PP
+For the other flags, see
+\fB\-\-install\fR\&.
+.SS "Examples"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-\-upgrade gcc
+upgrading `gcc\-3\&.3\&.1\*(Aq to `gcc\-3\&.4\*(Aq
+
+$ nix\-env \-u gcc\-3\&.3\&.2 \-\-always (switch to a specific version)
+upgrading `gcc\-3\&.4\*(Aq to `gcc\-3\&.3\&.2\*(Aq
+
+$ nix\-env \-\-upgrade pan
+(no upgrades available, so nothing happens)
+
+$ nix\-env \-u (try to upgrade everything)
+upgrading `hello\-2\&.1\&.2\*(Aq to `hello\-2\&.1\&.3\*(Aq
+upgrading `mozilla\-1\&.2\*(Aq to `mozilla\-1\&.4\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.SS "Versions"
+.PP
+The upgrade operation determines whether a derivation
+\fIy\fR
+is an upgrade of a derivation
+\fIx\fR
+by looking at their respective
+name
+attributes\&. The names (e\&.g\&.,
+gcc\-3\&.3\&.1
+are split into two parts: the package name (gcc), and the version (3\&.3\&.1)\&. The version part starts after the first dash not following by a letter\&.
+\fIx\fR
+is considered an upgrade of
+\fIy\fR
+if their package names match, and the version of
+\fIy\fR
+is higher that that of
+\fIx\fR\&.
+.PP
+The versions are compared by splitting them into contiguous components of numbers and letters\&. E\&.g\&.,
+3\&.3\&.1pre5
+is split into
+[3, 3, 1, "pre", 5]\&. These lists are then compared lexicographically (from left to right)\&. Corresponding components
+\fIa\fR
+and
+\fIb\fR
+are compared as follows\&. If they are both numbers, integer comparison is used\&. If
+\fIa\fR
+is an empty string and
+\fIb\fR
+is a number,
+\fIa\fR
+is considered less than
+\fIb\fR\&. The special string component
+pre
+(for
+\fIpre\-release\fR) is considered to be less than other components\&. String components are considered less than number components\&. Otherwise, they are compared lexicographically (i\&.e\&., using case\-sensitive string comparison)\&.
+.PP
+This is illustrated by the following examples:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+1\&.0 < 2\&.3
+2\&.1 < 2\&.3
+2\&.3 = 2\&.3
+2\&.5 > 2\&.3
+3\&.1 > 2\&.3
+2\&.3\&.1 > 2\&.3
+2\&.3\&.1 > 2\&.3a
+2\&.3pre1 < 2\&.3
+2\&.3pre3 < 2\&.3pre12
+2\&.3a < 2\&.3c
+2\&.3pre1 < 2\&.3c
+2\&.3pre1 < 2\&.3q
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-UNINSTALL"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR {\fB\-\-uninstall\fR | \fB\-e\fR} \fIdrvnames\fR...
+.SS "Description"
+.PP
+The uninstall operation creates a new user environment, based on the current generation of the active profile, from which the store paths designated by the symbolic names
+\fInames\fR
+are removed\&.
+.SS "Examples"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-\-uninstall gcc
+$ nix\-env \-e \*(Aq\&.*\*(Aq (remove everything)
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-SET"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR \fB\-\-set\fR \fIdrvname\fR
+.SS "Description"
+.PP
+The
+\fB\-\-set\fR
+operation modifies the current generation of a profile so that it contains exactly the specified derivation, and nothing else\&.
+.SS "Examples"
+.PP
+The following updates a profile such that its current generation will contain just Firefox:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-p /nix/var/nix/profiles/browser \-\-set firefox
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-SET\-FLAG"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR \fB\-\-set\-flag\fR \fIname\fR \fIvalue\fR \fIdrvnames\fR...
+.SS "Description"
+.PP
+The
+\fB\-\-set\-flag\fR
+operation allows meta attributes of installed packages to be modified\&. There are several attributes that can be usefully modified, because they affect the behaviour of
+\fBnix\-env\fR
+or the user environment build script:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIpriority\fR
+can be changed to resolve filename clashes\&. The user environment build script uses the
+\fImeta\&.priority\fR
+attribute of derivations to resolve filename collisions between packages\&. Lower priority values denote a higher priority\&. For instance, the GCC wrapper package and the Binutils package in Nixpkgs both have a file
+bin/ld, so previously if you tried to install both you would get a collision\&. Now, on the other hand, the GCC wrapper declares a higher priority than Binutils, so the former\(cqs
+bin/ld
+is symlinked in the user environment\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIkeep\fR
+can be set to
+true
+to prevent the package from being upgraded or replaced\&. This is useful if you want to hang on to an older version of a package\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+\fIactive\fR
+can be set to
+false
+to \(lqdisable\(rq the package\&. That is, no symlinks will be generated to the files of the package, but it remains part of the profile (so it won\(cqt be garbage\-collected)\&. It can be set back to
+true
+to re\-enable the package\&.
+.RE
+.sp
+.SS "Examples"
+.PP
+To prevent the currently installed Firefox from being upgraded:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-\-set\-flag keep true firefox
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+After this,
+\fBnix\-env \-u\fR
+will ignore Firefox\&.
+.PP
+To disable the currently installed Firefox, then install a new Firefox while the old remains part of the profile:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-q
+firefox\-2\&.0\&.0\&.9 (the current one)
+
+$ nix\-env \-\-preserve\-installed \-i firefox\-2\&.0\&.0\&.11
+installing `firefox\-2\&.0\&.0\&.11\*(Aq
+building path(s) `/nix/store/myy0y59q3ig70dgq37jqwg1j0rsapzsl\-user\-environment\*(Aq
+collision between `/nix/store/\fI\&.\&.\&.\fR\-firefox\-2\&.0\&.0\&.11/bin/firefox\*(Aq
+  and `/nix/store/\fI\&.\&.\&.\fR\-firefox\-2\&.0\&.0\&.9/bin/firefox\*(Aq\&.
+(i\&.e\&., can\(cqt have two active at the same time)
+
+$ nix\-env \-\-set\-flag active false firefox
+setting flag on `firefox\-2\&.0\&.0\&.9\*(Aq
+
+$ nix\-env \-\-preserve\-installed \-i firefox\-2\&.0\&.0\&.11
+installing `firefox\-2\&.0\&.0\&.11\*(Aq
+
+$ nix\-env \-q
+firefox\-2\&.0\&.0\&.11 (the enabled one)
+firefox\-2\&.0\&.0\&.9 (the disabled one)
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To make files from
+binutils
+take precedence over files from
+gcc:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-\-set\-flag priority 5 binutils
+$ nix\-env \-\-set\-flag priority 10 gcc
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-QUERY"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR {\fB\-\-query\fR | \fB\-q\fR} [\fB\-\-installed\fR | \fB\-\-available\fR | \fB\-a\fR]
+.br
+[{\fB\-\-status\fR\ |\ \fB\-s\fR}] [{\fB\-\-attr\-path\fR\ |\ \fB\-P\fR}] [\fB\-\-no\-name\fR] [{\fB\-\-compare\-versions\fR\ |\ \fB\-c\fR}] [\fB\-\-system\fR] [\fB\-\-drv\-path\fR] [\fB\-\-out\-path\fR] [\fB\-\-description\fR] [\fB\-\-meta\fR]
+.br
+[\fB\-\-xml\fR] [\fB\-\-json\fR] [{\fB\-\-prebuilt\-only\fR\ |\ \fB\-b\fR}] [{\fB\-\-attr\fR\ |\ \fB\-A\fR}\ \fIattribute\-path\fR]
+.br
+\fInames\fR...
+.SS "Description"
+.PP
+The query operation displays information about either the store paths that are installed in the current generation of the active profile (\fB\-\-installed\fR), or the derivations that are available for installation in the active Nix expression (\fB\-\-available\fR)\&. It only prints information about derivations whose symbolic name matches one of
+\fInames\fR\&.
+.PP
+The derivations are sorted by their
+name
+attributes\&.
+.SS "Source selection"
+.PP
+The following flags specify the set of things on which the query operates\&.
+.PP
+\fB\-\-installed\fR
+.RS 4
+The query operates on the store paths that are installed in the current generation of the active profile\&. This is the default\&.
+.RE
+.PP
+\fB\-\-available\fR, \fB\-a\fR
+.RS 4
+The query operates on the derivations that are available in the active Nix expression\&.
+.RE
+.SS "Queries"
+.PP
+The following flags specify what information to display about the selected derivations\&. Multiple flags may be specified, in which case the information is shown in the order given here\&. Note that the name of the derivation is shown unless
+\fB\-\-no\-name\fR
+is specified\&.
+.PP
+\fB\-\-xml\fR
+.RS 4
+Print the result in an XML representation suitable for automatic processing by other tools\&. The root element is called
+items, which contains a
+item
+element for each available or installed derivation\&. The fields discussed below are all stored in attributes of the
+item
+elements\&.
+.RE
+.PP
+\fB\-\-json\fR
+.RS 4
+Print the result in a JSON representation suitable for automatic processing by other tools\&.
+.RE
+.PP
+\fB\-\-prebuilt\-only\fR / \fB\-b\fR
+.RS 4
+Show only derivations for which a substitute is registered, i\&.e\&., there is a pre\-built binary available that can be downloaded in lieu of building the derivation\&. Thus, this shows all packages that probably can be installed quickly\&.
+.RE
+.PP
+\fB\-\-status\fR, \fB\-s\fR
+.RS 4
+Print the
+\fIstatus\fR
+of the derivation\&. The status consists of three characters\&. The first is
+I
+or
+\-, indicating whether the derivation is currently installed in the current generation of the active profile\&. This is by definition the case for
+\fB\-\-installed\fR, but not for
+\fB\-\-available\fR\&. The second is
+P
+or
+\-, indicating whether the derivation is present on the system\&. This indicates whether installation of an available derivation will require the derivation to be built\&. The third is
+S
+or
+\-, indicating whether a substitute is available for the derivation\&.
+.RE
+.PP
+\fB\-\-attr\-path\fR, \fB\-P\fR
+.RS 4
+Print the
+\fIattribute path\fR
+of the derivation, which can be used to unambiguously select it using the
+\fB\-\-attr\fR option
+available in commands that install derivations like
+nix\-env \-\-install\&.
+.RE
+.PP
+\fB\-\-no\-name\fR
+.RS 4
+Suppress printing of the
+name
+attribute of each derivation\&.
+.RE
+.PP
+\fB\-\-compare\-versions\fR / \fB\-c\fR
+.RS 4
+Compare installed versions to available versions, or vice versa (if
+\fB\-\-available\fR
+is given)\&. This is useful for quickly seeing whether upgrades for installed packages are available in a Nix expression\&. A column is added with the following meaning:
+.PP
+< \fIversion\fR
+.RS 4
+A newer version of the package is available or installed\&.
+.RE
+.PP
+= \fIversion\fR
+.RS 4
+At most the same version of the package is available or installed\&.
+.RE
+.PP
+> \fIversion\fR
+.RS 4
+Only older versions of the package are available or installed\&.
+.RE
+.PP
+\- ?
+.RS 4
+No version of the package is available or installed\&.
+.RE
+.sp
+.RE
+.PP
+\fB\-\-system\fR
+.RS 4
+Print the
+system
+attribute of the derivation\&.
+.RE
+.PP
+\fB\-\-drv\-path\fR
+.RS 4
+Print the path of the store derivation\&.
+.RE
+.PP
+\fB\-\-out\-path\fR
+.RS 4
+Print the output path of the derivation\&.
+.RE
+.PP
+\fB\-\-description\fR
+.RS 4
+Print a short (one\-line) description of the derivation, if available\&. The description is taken from the
+meta\&.description
+attribute of the derivation\&.
+.RE
+.PP
+\fB\-\-meta\fR
+.RS 4
+Print all of the meta\-attributes of the derivation\&. This option is only available with
+\fB\-\-xml\fR
+or
+\fB\-\-json\fR\&.
+.RE
+.SS "Examples"
+.PP
+To show installed packages:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-q
+bison\-1\&.875c
+docbook\-xml\-4\&.2
+firefox\-1\&.0\&.4
+MPlayer\-1\&.0pre7
+ORBit2\-2\&.8\&.3
+\fI\&...\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To show available packages:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-qa
+firefox\-1\&.0\&.7
+GConf\-2\&.4\&.0\&.1
+MPlayer\-1\&.0pre7
+ORBit2\-2\&.8\&.3
+\fI\&...\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To show the status of available packages:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-qas
+\-P\- firefox\-1\&.0\&.7   (not installed but present)
+\-\-S GConf\-2\&.4\&.0\&.1   (not present, but there is a substitute for fast installation)
+\-\-S MPlayer\-1\&.0pre3 (i\&.e\&., this is not the installed MPlayer, even though the version is the same!)
+IP\- ORBit2\-2\&.8\&.3    (installed and by definition present)
+\fI\&...\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To show available packages in the Nix expression
+foo\&.nix:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-f \&./foo\&.nix \-qa
+foo\-1\&.2\&.3
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To compare installed versions to what\(cqs available:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-qc
+\fI\&.\&.\&.\fR
+acrobat\-reader\-7\&.0 \- ?      (package is not available at all)
+autoconf\-2\&.59      = 2\&.59   (same version)
+firefox\-1\&.0\&.4      < 1\&.0\&.7  (a more recent version is available)
+\fI\&.\&.\&.\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To show all packages with \(lqzip\(rq in the name:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-qa \*(Aq\&.*zip\&.*\*(Aq
+bzip2\-1\&.0\&.6
+gzip\-1\&.6
+zip\-3\&.0
+\fI\&...\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To show all packages with \(lqfirefox\(rq or \(lqchromium\(rq in the name:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-qa \*(Aq\&.*(firefox|chromium)\&.*\*(Aq
+chromium\-37\&.0\&.2062\&.94
+chromium\-beta\-38\&.0\&.2125\&.24
+firefox\-32\&.0\&.3
+firefox\-with\-plugins\-13\&.0\&.1
+\fI\&...\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To show all packages in the latest revision of the Nixpkgs repository:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-f https://github\&.com/NixOS/nixpkgs/archive/master\&.tar\&.gz \-qa
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.SH "OPERATION \-\-SWITCH\-PROFILE"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR {\fB\-\-switch\-profile\fR | \fB\-S\fR} {\fIpath\fR}
+.SS "Description"
+.PP
+This operation makes
+\fIpath\fR
+the current profile for the user\&. That is, the symlink
+~/\&.nix\-profile
+is made to point to
+\fIpath\fR\&.
+.SS "Examples"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-S ~/my\-profile
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-LIST\-GENERATIONS"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR \fB\-\-list\-generations\fR
+.SS "Description"
+.PP
+This operation print a list of all the currently existing generations for the active profile\&. These may be switched to using the
+\fB\-\-switch\-generation\fR
+operation\&. It also prints the creation date of the generation, and indicates the current generation\&.
+.SS "Examples"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-\-list\-generations
+  95   2004\-02\-06 11:48:24
+  96   2004\-02\-06 11:49:01
+  97   2004\-02\-06 16:22:45
+  98   2004\-02\-06 16:24:33   (current)
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-DELETE\-GENERATIONS"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR \fB\-\-delete\-generations\fR \fIgenerations\fR...
+.SS "Description"
+.PP
+This operation deletes the specified generations of the current profile\&. The generations can be a list of generation numbers, the special value
+old
+to delete all non\-current generations, a value such as
+30d
+to delete all generations older than the specified number of days (except for the generation that was active at that point in time), or a value such as\&.
++5
+to only keep the specified items older than the current generation\&. Periodically deleting old generations is important to make garbage collection effective\&.
+.SS "Examples"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-\-delete\-generations 3 4 8
+
+$ nix\-env \-\-delete\-generations +5
+
+$ nix\-env \-\-delete\-generations 30d
+
+$ nix\-env \-p other_profile \-\-delete\-generations old
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-SWITCH\-GENERATION"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR {\fB\-\-switch\-generation\fR | \fB\-G\fR} {\fIgeneration\fR}
+.SS "Description"
+.PP
+This operation makes generation number
+\fIgeneration\fR
+the current generation of the active profile\&. That is, if the
+\fIprofile\fR
+is the path to the active profile, then the symlink
+\fIprofile\fR
+is made to point to
+\fIprofile\fR\-\fIgeneration\fR\-link, which is in turn a symlink to the actual user environment in the Nix store\&.
+.PP
+Switching will fail if the specified generation does not exist\&.
+.SS "Examples"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-G 42
+switching from generation 50 to 42
+.fi
+.if n \{\
+.RE
+.\}
+.SH "OPERATION \-\-ROLLBACK"
+.SS "Synopsis"
+.HP \w'\fBnix\-env\fR\ 'u
+\fBnix\-env\fR \fB\-\-rollback\fR
+.SS "Description"
+.PP
+This operation switches to the \(lqprevious\(rq generation of the active profile, that is, the highest numbered generation lower than the current generation, if it exists\&. It is just a convenience wrapper around
+\fB\-\-list\-generations\fR
+and
+\fB\-\-switch\-generation\fR\&.
+.SS "Examples"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-env \-\-rollback
+switching from generation 92 to 91
+
+$ nix\-env \-\-rollback
+error: no generation older than the current (91) exists
+.fi
+.if n \{\
+.RE
+.\}
+.SH "ENVIRONMENT VARIABLES"
+.PP
+\fBNIX_PROFILE\fR
+.RS 4
+Location of the Nix profile\&. Defaults to the target of the symlink
+~/\&.nix\-profile, if it exists, or
+/nix/var/nix/profiles/default
+otherwise\&.
+.RE
+.PP
+\fBIN_NIX_SHELL\fR
+.RS 4
+Indicator that tells if the current environment was set up by
+\fBnix\-shell\fR\&.
+.RE
+.PP
+\fBNIX_PATH\fR
+.RS 4
+A colon\-separated list of directories used to look up Nix expressions enclosed in angle brackets (i\&.e\&.,
+<\fIpath\fR>)\&. For instance, the value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+/home/eelco/Dev:/etc/nixos
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+will cause Nix to look for paths relative to
+/home/eelco/Dev
+and
+/etc/nixos, in that order\&. It is also possible to match paths against a prefix\&. For example, the value
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+nixpkgs=/home/eelco/Dev/nixpkgs\-branch:/etc/nixos
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+will cause Nix to search for
+<nixpkgs/\fIpath\fR>
+in
+/home/eelco/Dev/nixpkgs\-branch/\fIpath\fR
+and
+/etc/nixos/nixpkgs/\fIpath\fR\&.
+.sp
+If a path in the Nix search path starts with
+http://
+or
+https://, it is interpreted as the URL of a tarball that will be downloaded and unpacked to a temporary location\&. The tarball must consist of a single top\-level directory\&. For example, setting
+\fBNIX_PATH\fR
+to
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+nixpkgs=https://github\&.com/NixOS/nixpkgs\-channels/archive/nixos\-15\&.09\&.tar\&.gz
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+tells Nix to download the latest revision in the Nixpkgs/NixOS 15\&.09 channel\&.
+.sp
+A following shorthand can be used to refer to the official channels:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+nixpkgs=channel:nixos\-15\&.09
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The search path can be extended using the
+\fB\-I\fR
+option, which takes precedence over
+\fBNIX_PATH\fR\&.
+.RE
+.PP
+\fBNIX_IGNORE_SYMLINK_STORE\fR
+.RS 4
+Normally, the Nix store directory (typically
+/nix/store) is not allowed to contain any symlink components\&. This is to prevent \(lqimpure\(rq builds\&. Builders sometimes \(lqcanonicalise\(rq paths by resolving all symlink components\&. Thus, builds on different machines (with
+/nix/store
+resolving to different locations) could yield different results\&. This is generally not a problem, except when builds are deployed to machines where
+/nix/store
+resolves differently\&. If you are sure that you\(cqre not going to do that, you can set
+\fBNIX_IGNORE_SYMLINK_STORE\fR
+to
+\fB1\fR\&.
+.sp
+Note that if you\(cqre symlinking the Nix store so that you can put it on another file system than the root file system, on Linux you\(cqre better off using
+bind
+mount points, e\&.g\&.,
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ mkdir /nix
+$ mount \-o bind /mnt/otherdisk/nix /nix
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Consult the
+\fBmount\fR(8)
+manual page for details\&.
+.RE
+.PP
+\fBNIX_STORE_DIR\fR
+.RS 4
+Overrides the location of the Nix store (default
+\fIprefix\fR/store)\&.
+.RE
+.PP
+\fBNIX_DATA_DIR\fR
+.RS 4
+Overrides the location of the Nix static data directory (default
+\fIprefix\fR/share)\&.
+.RE
+.PP
+\fBNIX_LOG_DIR\fR
+.RS 4
+Overrides the location of the Nix log directory (default
+\fIprefix\fR/log/nix)\&.
+.RE
+.PP
+\fBNIX_STATE_DIR\fR
+.RS 4
+Overrides the location of the Nix state directory (default
+\fIprefix\fR/var/nix)\&.
+.RE
+.PP
+\fBNIX_CONF_DIR\fR
+.RS 4
+Overrides the location of the Nix configuration directory (default
+\fIprefix\fR/etc/nix)\&.
+.RE
+.PP
+\fBTMPDIR\fR
+.RS 4
+Use the specified directory to store temporary files\&. In particular, this includes temporary build directories; these can take up substantial amounts of disk space\&. The default is
+/tmp\&.
+.RE
+.PP
+\fBNIX_REMOTE\fR
+.RS 4
+This variable should be set to
+daemon
+if you want to use the Nix daemon to execute Nix operations\&. This is necessary in
+multi\-user Nix installations\&. If the Nix daemon\*(Aqs Unix socket is at some non\-standard path, this variable should be set to
+unix://path/to/socket\&. Otherwise, it should be left unset\&.
+.RE
+.PP
+\fBNIX_SHOW_STATS\fR
+.RS 4
+If set to
+1, Nix will print some evaluation statistics, such as the number of values allocated\&.
+.RE
+.PP
+\fBNIX_COUNT_CALLS\fR
+.RS 4
+If set to
+1, Nix will print how often functions were called during Nix expression evaluation\&. This is useful for profiling your Nix expressions\&.
+.RE
+.PP
+\fBGC_INITIAL_HEAP_SIZE\fR
+.RS 4
+If Nix has been configured to use the Boehm garbage collector, this variable sets the initial size of the heap in bytes\&. It defaults to 384 MiB\&. Setting it to a low value reduces memory consumption, but will increase runtime due to the overhead of garbage collection\&.
+.RE
+.SH "AUTHOR"
+.PP
+\fBEelco Dolstra\fR
+.RS 4
+Author
+.RE
+.SH "COPYRIGHT"
+.br
+Copyright \(co 2004-2018 Eelco Dolstra
+.br
