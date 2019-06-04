@@ -1,9 +1,10 @@
-.TH NITROCLI 1 2019-01-21
+.TH NITROCLI 1 2019-05-26
 .SH NAME
 nitrocli \- access Nitrokey devices
 .SH SYNOPSIS
 .B nitrocli
 [\fB\-m\fR|\fB\-\-model pro\fR|\fBstorage\fR] \fR[\fB\-v\fR|\fB\-\-verbose\fR]
+[\fB\-V\fR|\fB\-\-version\fR]
 \fIcommand\fR
 [\fIarguments\fR]
 .SH DESCRIPTION
@@ -25,6 +26,9 @@ supplied multiple times. A single occurrence will show additional warnings.
 Commands sent to the device will be shown when supplied three times and full
 device communication is available with four occurrences. Supplying this option
 five times enables the highest verbosity.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print the nitrocli version and exit.
 .SH COMMANDS
 .SS General
 .TP
@@ -37,6 +41,16 @@ Lock the Nitrokey.
 This command locks the password safe (see the Password safe section). On the
 Nitrokey Storage, it will also close any active encrypted or hidden volumes (see
 the Storage section).
+.TP
+.B nitrocli reset
+Perform a factory reset on the Nitrokey.
+This command performs a factory reset on the OpenPGP smart card, clears the
+flash storage and builds a new AES key.
+The user PIN is reset to 123456, the admin PIN to 12345678.
+
+This command requires the admin PIN.
+To avoid accidental calls of this command, the user has to enter the PIN even
+if it has been cached.
 
 .SS Storage
 The Nitrokey Storage comes with a storage area. This area is comprised of an
@@ -222,7 +236,7 @@ The initial retry counter is three.
 If the retry counter for the user PIN is zero, you can use the
 \fBpin unblock\fR command to unblock and reset the user PIN.
 If the retry counter for the admin PIN is zero, you have to perform a factory
-reset using \fBgpg\fR(1).
+reset using the \fBreset\fR command or \fBgpg\fR(1).
 Use the \fBstatus\fR command to check the retry counters.
 .TP
 .B nitrocli pin clear
@@ -265,6 +279,13 @@ for the \fBuser\fR type.
 .TP
 .B NITROCLI_PASSWORD
 A password used by commands that require one (e.g., \fBstorage hidden open\fR).
+.TP
+.B NITROCLI_NO_CACHE
+If this variable is present in the environment, do not cache any inquired
+secrets using \fBgpg\-agent\fR(1) but ask for them each time they are needed.
+Note that this variable does not cause any cached secrets to be cleared. If a
+secret is already in the cache it will be ignored, but left otherwise untouched.
+Use the \fBpin clear\fR command to clear secrets from the cache.
 
 .SH EXAMPLES
 .SS Storage
