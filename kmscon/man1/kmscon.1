@@ -1,0 +1,379 @@
+'\" t
+.\"     Title: kmscon
+.\"    Author: David Herrmann <dh.herrmann@googlemail.com>
+.\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
+.\"      Date: December 2012
+.\"    Manual: kmscon
+.\"    Source: kmscon
+.\"  Language: English
+.\"
+.TH "KMSCON" "1" "December 2012" "kmscon" "kmscon"
+.\" -----------------------------------------------------------------
+.\" * Define some portability stuff
+.\" -----------------------------------------------------------------
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.\" http://bugs.debian.org/507673
+.\" http://lists.gnu.org/archive/html/groff/2009-02/msg00013.html
+.\" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+kmscon \- KMS/DRM based System Console
+.SH "SYNOPSIS"
+.HP \w'\fBkmscon\ \fR\fB[OPTIONS...]\fR\ 'u
+\fBkmscon \fR\fB[OPTIONS...]\fR
+.HP \w'\fBkmscon\ \-l\ \fR\fB[OPTIONS...]\fR\fB\ \-\-\ /bin/login\ \fR\fB[/bin/login\-OPTIONS...]\fR\ 'u
+\fBkmscon \-l \fR\fB[OPTIONS...]\fR\fB \-\- /bin/login \fR\fB[/bin/login\-OPTIONS...]\fR
+.SH "DESCRIPTION"
+.PP
+kmscon is a KMS/DRM\-based system console with an integrated terminal emulator for linux operating systems\&. It was designed as a replacement for the linux kernel console and virtual terminals\&.
+.PP
+When run in default mode, kmscon allocates a virtual terminal and provides a terminal emulator on it\&. It can thus be used as replacement for the linux console and
+\fBagetty\fR(1)
+on virtual terminals\&. Compared to the linux console, kmscon provides a rich set of enhanced features including full internationalized keyboard support, full UTF\-8 input/font support, hardware\-accelerated rendering, multi\-seat support and more\&.
+.PP
+When run in listener mode, kmscon watches the system for new seats and automatically provides a system console on it\&.
+.SH "OPTIONS"
+.PP
+Boolean options take no arguments\&. If the default value is true, then you can disable the option by prefixing it with
+\fIno\-\fR\&.
+.PP
+General Options:
+.PP
+\fB\-h\fR, \fB\-\-help\fR
+.RS 4
+Prints a short help text and exits\&. (default: off)
+.RE
+.PP
+\fB\-v\fR, \fB\-\-verbose\fR
+.RS 4
+Be more verbose\&. (default: off)
+.RE
+.PP
+\fB\-\-debug\fR
+.RS 4
+Print debug messages\&. Works only if kmscon was compiled with debug mode enabled\&. (default: off)
+.RE
+.PP
+\fB\-\-silent\fR
+.RS 4
+Suppress notices and warnings\&. (default: off)
+.RE
+.PP
+\fB\-\-configdir {/path/to/config/dir/}\fR
+.RS 4
+Specify path to config directory\&. (default: /etc/kmscon/)
+.RE
+.PP
+\fB\-\-listen\fR
+.RS 4
+Run kmscon in listen\-mode\&. See section below for more information\&. (default: off)
+.RE
+.PP
+Seat Options:
+.PP
+\fB\-\-vt {/path/to/vt}\fR
+.RS 4
+Use this VT\&. If not specified, kmscon tries to find a VT by itself\&. On seats without VTs, kmscon simply activates itself automatically without using any VT\&. Please note that you cannot use this option if kmscon runs on multiple seats (see
+\fB\-\-seats\fR)\&. To avoid this, specify this option in a seat configuration
+/etc/kmscon/{seat}\&.kmscon\&.conf\&.
+.sp
+You must not run multiple applications on a single VT, otherwise, you might get an unresponsive system\&. Also note, by default, kmscon tries to use it\*(Aqs controlling terminal as VT and if that fails, it tries to allocate a new unused VT\&.
+.RE
+.PP
+\fB\-\-switchvt\fR
+.RS 4
+If kmscon is started on a VT that is currently not active, this option makes kmscon activate this VT during startup\&. The same way, during shutdown kmscon will reactivate the VT that was previously active\&. (default: on)
+.RE
+.PP
+\fB\-\-seats {list,of,seats}\fR
+.RS 4
+List of seats kmscon will run on\&. Use \*(Aqall\*(Aq to make kmscon run on all seats\&. Use \*(Aqall,\*(Aq to make kmscon run on a seat called \*(Aqall\*(Aq (empty entries are ignored)\&. Use \*(Aqcurrent\*(Aq to make kmscon run on the current seat\&. (default: "current")
+.sp
+If kmscon runs on multiple seats, all seats are independent of each other\&. You can either run a different kmscon process on ecah seat or make a single kmscon process run on multiple seats\&. In the latter case, global state can be shared to reduce memory consumption (like glyph\-caches)\&.
+.RE
+.PP
+Session Options:
+.PP
+\fB\-\-session\-max {num}\fR
+.RS 4
+Change the maximum number of sessions that are allowed on each seat\&. Use \*(Aq0\*(Aq for no limit\&. (default: 50)
+.RE
+.PP
+\fB\-\-session\-control\fR
+.RS 4
+Allow keyboard\-shortcuts to control the session manager\&. This allows the use to create new sessions, kill sessions and switch sessions via keyboard input\&. (default: off)
+.RE
+.PP
+\fB\-\-terminal\-session\fR
+.RS 4
+Start a terminal session after setup is done\&. (default: on)
+.RE
+.PP
+Terminal Options:
+.PP
+\fB\-l\fR, \fB\-\-login\fR
+.RS 4
+Specify the application that is started on new terminal sessions\&. This takes no argument but instead everything left after all options have been parsed is used as argument to this option\&. Note that nothing after two dashes
+\fB\-\-\fR
+is parsed as regular option by kmscon\&. (default: /bin/login \-p)
+.sp
+This example starts \*(Aq/bin/bash \-i\*(Aq on each new terminal session: \&./kmscon \-\-login \-\-debug \-\-no\-switchvt \-\- /bin/bash \-i
+.RE
+.PP
+\fB\-t {term}\fR, \fB\-\-term {term}\fR
+.RS 4
+This changes the
+\fI$TERM\fR
+environment variable that is set on new terminal sessions\&. (default: xterm\-256color)
+.RE
+.PP
+\fB\-\-reset\-env\fR
+.RS 4
+Reset environment before spawning the child process\&. (default: on)
+.RE
+.PP
+\fB\-\-palette {name}\fR
+.RS 4
+Change the default color\-palette\&. This shouldn\*(Aqt be used anymore\&. Dynamic color palettes should be implemented instead\&.
+.RE
+.PP
+\fB\-\-sb\-size {size}\fR
+.RS 4
+Maximum scrollback\-buffer line count\&. (default: 1000)
+.RE
+.PP
+Input Options:
+.PP
+\fB\-\-xkb\-model {model}\fR
+.RS 4
+Keyboard model\&. This should normally not be changed\&. (default: {xkb default})
+.RE
+.PP
+\fB\-\-xkb\-layout {layout}\fR
+.RS 4
+Keyboard layout\&. (default: {xkb default})
+.sp
+German keyboard example: \-\-xkb\-layout=de
+.RE
+.PP
+\fB\-\-xkb\-variant {variant}\fR
+.RS 4
+Keyboard variant\&. (default: {xkb default})
+.RE
+.PP
+\fB\-\-xkb\-options {options}\fR
+.RS 4
+Keyboard options\&. (default: {xkb default})
+.RE
+.PP
+\fB\-\-xkb\-keymap {file}\fR
+.RS 4
+Path to a single predefined keymap file\&. This takes precedence over the above options\&. An empty path "" is interpreted as not using a keymap\&. (default: not used)
+.RE
+.PP
+\fB\-\-xkb\-repeat\-delay {delay}\fR
+.RS 4
+Delay after key was pressed until key\-repeat starts (in milliseconds)\&. (default: 250)
+.RE
+.PP
+\fB\-\-xkb\-repeat\-rate {rate}\fR
+.RS 4
+Time between two key\-repeats (in milliseconds)\&. (default: 50)
+.RE
+.PP
+Grabs / Keyboard\-Shortcuts:
+.PP
+All keyboard shortcuts (here: grabs) in kmscon can be modified with these options\&. The argument to such an option is a list of comma\-separated keyboard\-shortcuts that should trigger the specified action\&. To disable a shortcut, pass an empty argument (empty list)\&. A keyboard shortcut exists of a list of modifiers followed by a single key\&. All modifiers must be down when the key is pressed for the shortcut to be detected\&. A modifier is surrounded by \*(Aq<\*(Aq and \*(Aq>\*(Aq (like \*(Aq<shift>\*(Aq)\&. A key is the name of a keysym (like \*(Aqa\*(Aq or \*(AqReturn\*(Aq)\&. Keysyms are case\-sensitive and kmscon will suggest a keysym name if you entered a wrong case\&. However, kmscon can not always guess the right case as lower\-case\-only keysyms are ambiguous\&.
+.PP
+If a key generates multiple keysyms in your keyboard layout, you can match these keys by concatenating the keysyms with a \*(Aq+\*(Aq (like \*(AqH+E+L+L+O\*(Aq)\&. This does not mean that all the listed keys must be pressed! It\*(Aqs rather a way to match multi\-keysym keys\&.
+.PP
+Valid modifiers are: Shift, Control/Ctrl, Alt, Logo (Windows/Apple key)
+.PP
+\fB\-\-grab\-scroll\-up {grab}\fR
+.RS 4
+Scroll up in scrollback buffer by one line\&. (default: <Shift>Up)
+.RE
+.PP
+\fB\-\-grab\-scroll\-down {grab}\fR
+.RS 4
+Scroll down in scrollback buffer by one line\&. (default: <Shift>Down)
+.RE
+.PP
+\fB\-\-grab\-page\-up {grab}\fR
+.RS 4
+Scroll up in scrollback buffer by one page\&. (default: <Shift>Prior/PageUp)
+.RE
+.PP
+\fB\-\-grab\-page\-down {grab}\fR
+.RS 4
+Scroll down in scrollback buffer by one page\&. (default: <Shift>Next/PageDown)
+.RE
+.PP
+\fB\-\-grab\-zoom\-in {grab}\fR
+.RS 4
+Increase font size of the current terminal\&. (default: <Ctrl>Plus)
+.RE
+.PP
+\fB\-\-grab\-zoom\-out {grab}\fR
+.RS 4
+Decrease font size of the current terminal\&. (default: <Ctrl>Minus)
+.RE
+.PP
+\fB\-\-grab\-session\-next {grab}\fR
+.RS 4
+Switch to next session\&. (default: <Ctrl><Logo>Right)
+.RE
+.PP
+\fB\-\-grab\-session\-prev {grab}\fR
+.RS 4
+Switch to previous session\&. (default: <Ctrl><Logo>Left)
+.RE
+.PP
+\fB\-\-grab\-session\-dummy {grab}\fR
+.RS 4
+Switch to dummy session (black screen)\&. (default: <Ctrl><Logo>Escape)
+.RE
+.PP
+\fB\-\-grab\-session\-close {grab}\fR
+.RS 4
+Close current session (press twice to kill it)\&. (default: <Ctrl><Logo>BackSpace)
+.RE
+.PP
+\fB\-\-grab\-terminal\-new {grab}\fR
+.RS 4
+Create new terminal session next to current session\&. (default: <Ctrl><Logo>Return)
+.RE
+.PP
+Video Options:
+.PP
+\fB\-\-drm\fR
+.RS 4
+Use DRM devices as display devices, too\&. fbdev devices are always used, but DRM devices are only used if this option is on\&. (default: on)
+.RE
+.PP
+\fB\-\-hwaccel\fR
+.RS 4
+Use 3D hardware acceleration\&. Note that this should be used in conjunction with
+\fB\-\-drm\fR\&. On newer hardware, this can speed up rendering by multiple orders of magnitude\&. However, on older hardware this might even slow down rendering speed\&. (default: off)
+.RE
+.PP
+\fB\-\-gpus {all,aux,primary}\fR
+.RS 4
+GPU selection algorithm\&. If \*(Aqall\*(Aq then all found GPUs are used\&. If \*(Aqaux\*(Aq then primary and auxiliary GPUs are used\&. If \*(Aqprimary\*(Aq then only primary GPUs are used\&. Primary GPUs are the default GPU on a seat\&. There is always only one primary GPU on a seat\&. Auxiliary GPUs are hotpluggable GPUs that provide additional independent displays\&. (default: all)
+.RE
+.PP
+\fB\-\-render\-engine {engine}\fR
+.RS 4
+Select console render engine\&. Available engines are \*(Aqbblit\*(Aq, \*(Aqbbulk\*(Aq and \*(Aqgltex\*(Aq\&. (default: detect by GPU type)
+.RE
+.PP
+\fB\-\-render\-timing\fR
+.RS 4
+Display timing information of the render engines\&. This should only be used to debug render engines\&. (default: off)
+.RE
+.PP
+Font Options:
+.PP
+\fB\-\-font\-engine {engine}\fR
+.RS 4
+Select font\-engine\&. Available engines are \*(Aqpango\*(Aq, \*(Aqunifont\*(Aq and \*(Aq8x16\*(Aq\&. (default: pango)
+.RE
+.PP
+\fB\-\-font\-size {points}\fR
+.RS 4
+Font size in points\&. (default: 12)
+.RE
+.PP
+\fB\-\-font\-name {name}\fR
+.RS 4
+Font name\&. (default: monospace)
+.RE
+.PP
+\fB\-\-font\-dpi {dpi}\fR
+.RS 4
+DPI used for font\-rendering\&. Per monitor DPI values overwrite this global default\&. (default: 96)
+.RE
+.SH "CONFIGURATION"
+.PP
+Default configuration directory is
+/etc/kmscon/
+and the main configuration file is called
+/etc/kmscon/kmscon\&.conf\&. You can provide an additional configuration file for each seat via
+/etc/kmscon/{seatname}\&.kmscon\&.conf\&. Any command\-line option that can be passed to kmscon can also be put into those configuration files\&. For example:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+      font\-name=Meslo LG M
+      font\-size=14
+      login=/bin/bash \-i
+    
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Command\-line options overwrite configuration file options\&. And per\-seat configuration files overwrite the global configuration file\&.
+.SH "DEFAULT MODE"
+.PP
+In default mode, kmscon acts as a replacement for
+\fBagetty\fR(1)\&. kmscon opens a virtual terminal and provides a system console on it\&. It replaces the linux\-console on this VT\&. You can select the virtual terminal via the
+\fB\-\-vt\fR
+option\&. kmscon will seamlessly integrate into existing setups so you can use X, Wayland or any other Graphics Systems simultaneously\&. You can even use the linux\-console on all the other virtual terminals\&.
+.PP
+By default, kmscon runs on
+\fIseat0\fR
+but you can change the seat via the
+\fB\-\-seats\fR
+option\&. For seats without virtual terminals, kmscon will automatically activate itself and run exclusively on that seat\&. If the virtual terminal or the seat that kmscon runs on is gone, kmscon will automatically exit\&. See the
+\fIListener\-Mode\fR
+to avoid this\&.
+.PP
+kmscon spawns
+\fBlogin\fR(1)
+on each new terminal\&. After a session exits, kmscon automatically respawns the next session\&. You can change the program that is spawned with the
+\fB\-\-login\fR
+option\&. To stop kmscon, send SIGTERM to the kmscon process\&.
+.PP
+Keyboard input is done by
+\fIlibxkbcommon\fR\&. This provides the same features as the X11 Keyboard System but without any dependencies on X11 libraries\&. See the
+\fI\-\-xkb\-{option}\fR
+options for ways to change the keyboard layout, model, repeat rates and more\&. For instance
+\fB\-\-xkb\-layout=de\fR
+changes the keyboard layout to German\&.
+.PP
+kmscon uses KMS/DRM to access graphics devices (like the X\-Server does)\&. Compared to the linux console this allows kmscon to provide much better font\-rendering and enhanced monitor control\&. However, for backwards compatibility, kmscon can also use fbdev devices\&. Hotpluggable graphics devices are marked as auxiliary devices, primary GPUs on a seat are marked as primary\&. Other GPUs stay unmarked\&. By default kmscon uses all graphics devices but you can make it use only primary or auxiliary devices with the
+\fB\-\-gpus\fR
+option\&.
+.SH "LISTENER MODE"
+.PP
+If started in listen\-mode (\fB\-\-listen\fR) kmscon will run as system daemon and provide a system console on each seat that shows up if that seat does not have virtual terminals\&. On seats with virtual terminals you should run kmscon in default mode\&.
+.PP
+Several options are exclusively limited to listen\-mode, other than these, kmscon behaves the same way as in default\-mode\&.
+.SH "SESSIONS"
+.PP
+If kmscon is active on a seat, the internal session\-manager is woken up\&. At most times, only the terminal\-session is active, but kmscon can also support any other session type\&. You can switch between sessions with keyboard\-shortcuts and you can create/destroy sessions during runtime\&.
+.PP
+Dummy sessions simply show a black screen and are used if no other session is available\&. Otherwise, dummy sessions are hidden from the user so they cannot switch to it\&.
+.PP
+Terminal sessions provide a terminal emulator\&. They are the main session type and provide all the terminal\-emulation functionality\&.
+.SH "VIRTUAL TERMINALS"
+.PP
+Historically, linux provides virtual terminals (VT) only on seat
+\fIseat0\fR\&. This is because only one VT can be active at a time but in multi\-seat environments you want multiple active VTs, one per seat\&. It is easy to run kmscon on seat0 on a VT, however, if you want to run kmscon on another seat, there are no VTs\&. This means, you can only run one application that uses graphics devices on these seats\&. In most environments this is the X\-Server\&. But if you want to run kmscon together with the X\-Server (or any other graphics server), you need a mechanism to notify these servers when they are active\&. This is done via VT APIs on seat0\&. But note that if the kernel is compiled without CONFIG_VT (which controls whether VTs are available), then even seat0 does not have VTs\&.
+.SH "SEE ALSO"
+.PP
+\fBkmscon.conf\fR(5),
+\fBconsole\fR(4)
