@@ -1,0 +1,45 @@
+.TH "DOCKER" "1" "May 2020" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-builder\-prune \- Remove build cache
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker builder prune\fP
+
+
+.SH DESCRIPTION
+.PP
+Remove build cache
+
+
+.SH OPTIONS
+.PP
+\fB\-a\fP, \fB\-\-all\fP[=false]
+    Remove all unused build cache, not just dangling ones
+
+.PP
+\fB\-\-filter\fP=
+    Provide filter values (e.g. 'until=24h')
+
+.PP
+\fB\-f\fP, \fB\-\-force\fP[=false]
+    Do not prompt for confirmation
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for prune
+
+.PP
+\fB\-\-keep\-storage\fP=0
+    Amount of disk space to keep for cache
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-builder(1)\fP

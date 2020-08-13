@@ -1,0 +1,169 @@
+.TH "DOCKER" "1" "May 2020" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-builder\-build \- Build an image from a Dockerfile
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker builder build [OPTIONS] PATH | URL | \-\fP
+
+
+.SH DESCRIPTION
+.PP
+Build an image from a Dockerfile
+
+
+.SH OPTIONS
+.PP
+\fB\-\-add\-host\fP=
+    Add a custom host\-to\-IP mapping (host:ip)
+
+.PP
+\fB\-\-build\-arg\fP=
+    Set build\-time variables
+
+.PP
+\fB\-\-cache\-from\fP=[]
+    Images to consider as cache sources
+
+.PP
+\fB\-\-cgroup\-parent\fP=""
+    Optional parent cgroup for the container
+
+.PP
+\fB\-\-compress\fP[=false]
+    Compress the build context using gzip
+
+.PP
+\fB\-\-cpu\-period\fP=0
+    Limit the CPU CFS (Completely Fair Scheduler) period
+
+.PP
+\fB\-\-cpu\-quota\fP=0
+    Limit the CPU CFS (Completely Fair Scheduler) quota
+
+.PP
+\fB\-c\fP, \fB\-\-cpu\-shares\fP=0
+    CPU shares (relative weight)
+
+.PP
+\fB\-\-cpuset\-cpus\fP=""
+    CPUs in which to allow execution (0\-3, 0,1)
+
+.PP
+\fB\-\-cpuset\-mems\fP=""
+    MEMs in which to allow execution (0\-3, 0,1)
+
+.PP
+\fB\-\-disable\-content\-trust\fP[=true]
+    Skip image verification
+
+.PP
+\fB\-f\fP, \fB\-\-file\fP=""
+    Name of the Dockerfile (Default is 'PATH/Dockerfile')
+
+.PP
+\fB\-\-force\-rm\fP[=false]
+    Always remove intermediate containers
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for build
+
+.PP
+\fB\-\-iidfile\fP=""
+    Write the image ID to the file
+
+.PP
+\fB\-\-isolation\fP=""
+    Container isolation technology
+
+.PP
+\fB\-\-label\fP=
+    Set metadata for an image
+
+.PP
+\fB\-m\fP, \fB\-\-memory\fP=0
+    Memory limit
+
+.PP
+\fB\-\-memory\-swap\fP=0
+    Swap limit equal to memory plus swap: '\-1' to enable unlimited swap
+
+.PP
+\fB\-\-network\fP="default"
+    Set the networking mode for the RUN instructions during build
+
+.PP
+\fB\-\-no\-cache\fP[=false]
+    Do not use cache when building the image
+
+.PP
+\fB\-o\fP, \fB\-\-output\fP=[]
+    Output destination (format: type=local,dest=path)
+
+.PP
+\fB\-\-platform\fP=""
+    Set platform if server is multi\-platform capable
+
+.PP
+\fB\-\-progress\fP="auto"
+    Set type of progress output (auto, plain, tty). Use plain to show container output
+
+.PP
+\fB\-\-pull\fP[=false]
+    Always attempt to pull a newer version of the image
+
+.PP
+\fB\-q\fP, \fB\-\-quiet\fP[=false]
+    Suppress the build output and print image ID on success
+
+.PP
+\fB\-\-rm\fP[=true]
+    Remove intermediate containers after a successful build
+
+.PP
+\fB\-\-secret\fP=[]
+    Secret file to expose to the build (only if BuildKit enabled): id=mysecret,src=/local/secret
+
+.PP
+\fB\-\-security\-opt\fP=[]
+    Security options
+
+.PP
+\fB\-\-shm\-size\fP=0
+    Size of /dev/shm
+
+.PP
+\fB\-\-squash\fP[=false]
+    Squash newly built layers into a single new layer
+
+.PP
+\fB\-\-ssh\fP=[]
+    SSH agent socket or keys to expose to the build (only if BuildKit enabled) (format: default|<id>[=<socket>|<key>[,<key>]])
+
+.PP
+\fB\-\-stream\fP[=false]
+    Stream attaches to server to negotiate build context
+
+.PP
+\fB\-t\fP, \fB\-\-tag\fP=
+    Name and optionally a tag in the 'name:tag' format
+
+.PP
+\fB\-\-target\fP=""
+    Set the target build stage to build.
+
+.PP
+\fB\-\-ulimit\fP=[]
+    Ulimit options
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-builder(1)\fP

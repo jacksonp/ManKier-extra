@@ -1,0 +1,73 @@
+.TH "DOCKER" "1" "May 2020" "Docker Community" "" 
+.nh
+.ad l
+
+
+.SH NAME
+.PP
+docker\-context\-update \- Update a context
+
+
+.SH SYNOPSIS
+.PP
+\fBdocker context update [OPTIONS] CONTEXT\fP
+
+
+.SH DESCRIPTION
+.PP
+Update a context
+
+.PP
+Docker endpoint config:
+
+.PP
+NAME                DESCRIPTION
+from                Copy named context's Docker endpoint configuration
+host                Docker endpoint on which to connect
+ca                  Trust certs signed only by this CA
+cert                Path to TLS certificate file
+key                 Path to TLS key file
+skip\-tls\-verify     Skip TLS certificate validation
+
+.PP
+Kubernetes endpoint config:
+
+.PP
+NAME                 DESCRIPTION
+from                 Copy named context's Kubernetes endpoint configuration
+config\-file          Path to a Kubernetes config file
+context\-override     Overrides the context set in the kubernetes config file
+namespace\-override   Overrides the namespace set in the kubernetes config file
+
+.PP
+Example:
+
+.PP
+$ docker context update my\-context \-\-description "some description" \-\-docker "host=tcp://myserver:2376,ca=\~/ca\-file,cert=\~/cert\-file,key=\~/key\-file"
+
+
+.SH OPTIONS
+.PP
+\fB\-\-default\-stack\-orchestrator\fP=""
+    Default orchestrator for stack operations to use with this context (swarm|kubernetes|all)
+
+.PP
+\fB\-\-description\fP=""
+    Description of the context
+
+.PP
+\fB\-\-docker\fP=[]
+    set the docker endpoint
+
+.PP
+\fB\-h\fP, \fB\-\-help\fP[=false]
+    help for update
+
+.PP
+\fB\-\-kubernetes\fP=[]
+    set the kubernetes endpoint
+
+
+.SH SEE ALSO
+.PP
+\fBdocker\-context(1)\fP

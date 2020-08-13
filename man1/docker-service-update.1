@@ -1,4 +1,4 @@
-.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.TH "DOCKER" "1" "May 2020" "Docker Community" "" 
 .nh
 .ad l
 
@@ -240,6 +240,10 @@ Update a service
     Number of tasks
 
 .PP
+\fB\-\-replicas\-max\-per\-node\fP=0
+    Maximum number of tasks per node (default 0 = unlimited)
+
+.PP
 \fB\-\-reserve\-cpu\fP=
     Reserve CPUs
 
@@ -306,6 +310,14 @@ Update a service
 .PP
 \fB\-\-stop\-signal\fP=""
     Signal to stop the container
+
+.PP
+\fB\-\-sysctl\-add\fP=
+    Add or update a Sysctl option
+
+.PP
+\fB\-\-sysctl\-rm\fP=
+    Remove a Sysctl option
 
 .PP
 \fB\-t\fP, \fB\-\-tty\fP[=false]

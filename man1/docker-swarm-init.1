@@ -1,4 +1,4 @@
-.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.TH "DOCKER" "1" "May 2020" "Docker Community" "" 
 .nh
 .ad l
 
@@ -38,6 +38,18 @@ Initialize a swarm
 .PP
 \fB\-\-data\-path\-addr\fP=""
     Address or interface to use for data path traffic (format: <ip|interface>)
+
+.PP
+\fB\-\-data\-path\-port\fP=0
+    Port number to use for data path traffic (1024 \- 49151). If no value is set or is set to 0, the default port (4789) is used.
+
+.PP
+\fB\-\-default\-addr\-pool\fP=[]
+    default address pool in CIDR format
+
+.PP
+\fB\-\-default\-addr\-pool\-mask\-length\fP=24
+    default address pool subnet mask length
 
 .PP
 \fB\-\-dispatcher\-heartbeat\fP=5s

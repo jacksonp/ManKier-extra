@@ -1,4 +1,4 @@
-.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.TH "DOCKER" "1" "May 2020" "Docker Community" "" 
 .nh
 .ad l
 
@@ -103,6 +103,22 @@ This example sets the docker image ENV variable DEBUG to true by default.
 .fi
 .RE
 
+.SH When the daemon supports multiple operating systems
+.PP
+If the daemon supports multiple operating systems, and the image being imported
+does not match the default operating system, it may be necessary to add
+\fB\fC\-\-platform\fR\&. This would be necessary when importing a Linux image into a Windows
+daemon.
+
+.PP
+.RS
+
+.nf
+# docker image import \-\-platform=linux .\\linuximage.tar
+
+.fi
+.RE
+
 
 .SH See also
 .PP
@@ -121,6 +137,10 @@ This example sets the docker image ENV variable DEBUG to true by default.
 .PP
 \fB\-m\fP, \fB\-\-message\fP=""
     Set commit message for imported image
+
+.PP
+\fB\-\-platform\fP=""
+    Set platform if server is multi\-platform capable
 
 
 .SH SEE ALSO

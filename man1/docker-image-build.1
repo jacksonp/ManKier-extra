@@ -1,4 +1,4 @@
-.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.TH "DOCKER" "1" "May 2020" "Docker Community" "" 
 .nh
 .ad l
 
@@ -38,10 +38,6 @@ Alias for \fB\fCdocker build\fR\&.
 .PP
 \fB\-\-compress\fP[=false]
     Compress the build context using gzip
-
-.PP
-\fB\-\-console\fP=auto
-    Show console output (with buildkit only) (true, false, auto)
 
 .PP
 \fB\-\-cpu\-period\fP=0
@@ -108,8 +104,16 @@ Alias for \fB\fCdocker build\fR\&.
     Do not use cache when building the image
 
 .PP
+\fB\-o\fP, \fB\-\-output\fP=[]
+    Output destination (format: type=local,dest=path)
+
+.PP
 \fB\-\-platform\fP=""
     Set platform if server is multi\-platform capable
+
+.PP
+\fB\-\-progress\fP="auto"
+    Set type of progress output (auto, plain, tty). Use plain to show container output
 
 .PP
 \fB\-\-pull\fP[=false]
@@ -124,6 +128,10 @@ Alias for \fB\fCdocker build\fR\&.
     Remove intermediate containers after a successful build
 
 .PP
+\fB\-\-secret\fP=[]
+    Secret file to expose to the build (only if BuildKit enabled): id=mysecret,src=/local/secret
+
+.PP
 \fB\-\-security\-opt\fP=[]
     Security options
 
@@ -134,6 +142,10 @@ Alias for \fB\fCdocker build\fR\&.
 .PP
 \fB\-\-squash\fP[=false]
     Squash newly built layers into a single new layer
+
+.PP
+\fB\-\-ssh\fP=[]
+    SSH agent socket or keys to expose to the build (only if BuildKit enabled) (format: default|<id>[=<socket>|<key>[,<key>]])
 
 .PP
 \fB\-\-stream\fP[=false]

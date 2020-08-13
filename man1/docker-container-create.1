@@ -1,4 +1,4 @@
-.TH "DOCKER" "1" "Aug 2018" "Docker Community" "" 
+.TH "DOCKER" "1" "May 2020" "Docker Community" "" 
 .nh
 .ad l
 
@@ -235,6 +235,10 @@ apply to bind mounts..
     Set custom DNS search domains
 
 .PP
+\fB\-\-domainname\fP=""
+    Container NIS domain name
+
+.PP
 \fB\-\-entrypoint\fP=""
     Overwrite the default ENTRYPOINT of the image
 
@@ -249,6 +253,10 @@ apply to bind mounts..
 .PP
 \fB\-\-expose\fP=
     Expose a port or a range of ports
+
+.PP
+\fB\-\-gpus\fP=
+    GPU devices to add to the container ('all' to pass all GPUs)
 
 .PP
 \fB\-\-group\-add\fP=
@@ -371,7 +379,7 @@ apply to bind mounts..
     Assign a name to the container
 
 .PP
-\fB\-\-network\fP="default"
+\fB\-\-network\fP=
     Connect a container to a network
 
 .PP
