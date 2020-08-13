@@ -2,12 +2,12 @@
 .\"     Title: zmq_msg_send
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_MSG_SEND" "3" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_MSG_SEND" "3" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,7 +40,7 @@ The \fIzmq_msg_send()\fR function shall queue the message referenced by the \fIm
 .PP
 \fBZMQ_DONTWAIT\fR
 .RS 4
-For socket types (DEALER, PUSH) that block when there are no available peers (or all peers have full high\-water mark), specifies that the operation should be performed in non\-blocking mode\&. If the message cannot be queued on the
+For socket types (DEALER, PUSH) that block (either with ZMQ_IMMEDIATE option set and no peer available, or all peers having full high\-water mark), specifies that the operation should be performed in non\-blocking mode\&. If the message cannot be queued on the
 \fIsocket\fR, the
 \fIzmq_msg_send()\fR
 function shall fail with
@@ -53,7 +53,7 @@ set to EAGAIN\&.
 Specifies that the message being sent is a multi\-part message, and that further message parts are to follow\&. Refer to the section regarding multi\-part messages below for a detailed description\&.
 .RE
 .sp
-The \fIzmq_msg_t\fR structure passed to \fIzmq_msg_send()\fR is nullified during the call\&. If you want to send the same message to multiple sockets you have to copy it (e\&.g\&. using \fIzmq_msg_copy()\fR)\&.
+The \fIzmq_msg_t\fR structure passed to \fIzmq_msg_send()\fR is nullified on a successful call\&. If you want to send the same message to multiple sockets you have to copy it (e\&.g\&. using \fIzmq_msg_copy()\fR)\&. If the call fails, the \fIzmq_msg_t\fR structure stays intact, and must be consumed by another call to \fIzmq_msg_send()\fR on the same or another socket, or released using \fIzmq_msg_close()\fR to avoid a memory leak\&.
 .if n \{\
 .sp
 .\}
@@ -77,7 +77,7 @@ A 0MQ message is composed of 1 or more message parts\&. Each message part is an 
 An application that sends multi\-part messages must use the \fIZMQ_SNDMORE\fR flag when sending each message part except the final one\&.
 .SH "RETURN VALUE"
 .sp
-The \fIzmq_msg_send()\fR function shall return number of bytes in the message if successful\&. Otherwise it shall return \-1 and set \fIerrno\fR to one of the values defined below\&.
+The \fIzmq_msg_send()\fR function shall return number of bytes in the message if successful (if number of bytes is higher than \fIMAX_INT\fR, the function will return \fIMAX_INT\fR)\&. Otherwise it shall return \-1 and set \fIerrno\fR to one of the values defined below\&.
 .SH "ERRORS"
 .PP
 \fBEAGAIN\fR

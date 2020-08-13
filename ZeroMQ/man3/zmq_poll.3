@@ -2,12 +2,12 @@
 .\"     Title: zmq_poll
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_POLL" "3" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_POLL" "3" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -120,6 +120,11 @@ For 0MQ sockets this flags is of no use\&. For standard sockets this means there
 The \fIzmq_poll()\fR function may be implemented or emulated using operating system interfaces other than \fIpoll()\fR, and as such may be subject to the limits of those interfaces in ways not defined in this documentation\&.
 .sp .5v
 .RE
+.SH "THREAD SAFETY"
+.sp
+The \fBzmq_pollitem_t\fR array must only be used by the thread which will/is calling \fIzmq_poll\fR\&.
+.sp
+If a socket is contained in multiple \fBzmq_pollitem_t\fR arrays, each owned by a different thread, the socket itself needs to be thead\-safe (Server, Client, \&...)\&. Otherwise, behaviour is undefined\&.
 .SH "RETURN VALUE"
 .sp
 Upon successful completion, the \fIzmq_poll()\fR function shall return the number of \fBzmq_pollitem_t\fR structures with events signaled in \fIrevents\fR or 0 if no events have been signaled\&. Upon failure, \fIzmq_poll()\fR shall return \-1 and set \fIerrno\fR to one of the values defined below\&.

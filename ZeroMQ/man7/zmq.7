@@ -2,12 +2,12 @@
 .\"     Title: zmq
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ" "7" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ" "7" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -95,6 +95,7 @@ Initialise a message
 .RS 4
 \fBzmq_msg_init\fR(3)
 \fBzmq_msg_init_size\fR(3)
+\fBzmq_msg_init_buffer\fR(3)
 \fBzmq_msg_init_data\fR(3)
 .RE
 .PP
@@ -173,7 +174,9 @@ Monitoring socket events
 \fBInput/output multiplexing\fR. 0MQ provides a mechanism for applications to multiplex input/output events over a set containing both 0MQ sockets and standard sockets\&. This mechanism mirrors the standard
 \fIpoll()\fR
 system call, and is described in detail in
-\fBzmq_poll\fR(3)\&.
+\fBzmq_poll\fR(3)\&. This API is deprecated, however\&.
+.sp
+There is a new DRAFT API with multiple zmq_poller_* function, which is described in \fBzmq_poller\fR(3)\&.
 .SS "Transports"
 .sp
 A 0MQ socket can use multiple different underlying transport mechanisms\&. Each transport mechanism is suited to a particular purpose and has its own advantages and drawbacks\&.

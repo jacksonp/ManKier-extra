@@ -2,12 +2,12 @@
 .\"     Title: zmq_pgm
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_PGM" "7" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_PGM" "7" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -165,6 +165,64 @@ Third datagram payload
 | Frame offset |   Frame 2, final 8 bytes   |   Frame 3   |
 | 0x0008       | (Message 2, final 8 bytes) | (Message 3) |
 +\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-\-+
+.fi
+.if n \{\
+.RE
+.\}
+.SH "CONFIGURATION"
+.sp
+The PGM is protocol is capable of multicasting data at high rates (500Mbps+) with large messages (1MB+), however it requires setting the relevent ZMQ socket options that are documented in \fBzmq_setsockopt\fR(3):
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The
+\fIZMQ_RATE\fR
+should be set sufficiently high, e\&.g\&. 1Gbps
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The
+\fIZMQ_RCVBUF\fR
+should be increased on the subscriber, e\&.g\&. 4MB
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The
+\fIZMQ_SNDBUF\fR
+should be increased on the publisher, e\&.g\&. 4MB
+.RE
+.sp
+It\(cqs important to note that the \fIZMQ_RCVBUF\fR and \fIZMQ_SNDBUF\fR options are limited by the underlying host OS tx/rx buffer size limit\&. On linux, these can be increased for the current session with the following commands:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+# set tx/rx buffers to 4MB (default can also be read as the initial buffer size)
+sudo sysctl \-w net\&.core\&.rmem_max=4194304
+sudo sysctl \-w net\&.core\&.wmem_max=4194304
+sudo sysctl \-w net\&.core\&.rmem_default=4194304
+sudo sysctl \-w net\&.core\&.wmem_default=4194304
 .fi
 .if n \{\
 .RE

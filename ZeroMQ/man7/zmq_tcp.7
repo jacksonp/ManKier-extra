@@ -2,12 +2,12 @@
 .\"     Title: zmq_tcp
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_TCP" "7" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_TCP" "7" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -135,6 +135,15 @@ The IPv4 or IPv6 address of the peer, in its numeric representation\&.
 .RE
 .sp
 Note: A description of the ZeroMQ Message Transport Protocol (ZMTP) which is used by the TCP transport can be found at \m[blue]\fBhttp://rfc\&.zeromq\&.org/spec:15\fR\m[]
+.SH "HWM"
+.sp
+For the TCP transport, the high water mark (HWM) mechanism works in conjunction with the TCP socket buffers handled at OS level\&. Depending on the OS and several other factors the size of such TCP buffers will be different\&. Moreover TCP buffers provided by the OS will accomodate a varying number of messages depending on the size of messages (unlike ZMQ HWM settings the TCP socket buffers are measured in bytes and not messages)\&.
+.sp
+This may result in apparently inexplicable behaviors: e\&.g\&., you may expect that setting ZMQ_SNDHWM to 100 on a socket using TCP transport will have the effect of blocking the transmission of the 101\-th message if the receiver is slow\&. This is very unlikely when using TCP transport since OS TCP buffers will typically provide enough buffering to allow you sending much more than 100 messages\&.
+.sp
+Of course if the receiver is slow, transmitting on a TCP ZMQ socket will eventually trigger the "mute state" of the socket; simply don\(cqt rely on the exact HWM value\&.
+.sp
+Obviously the same considerations apply for the receive HWM (see ZMQ_RCVHWM)\&.
 .SH "EXAMPLES"
 .PP
 \fBAssigning a local address to a socket\fR. 

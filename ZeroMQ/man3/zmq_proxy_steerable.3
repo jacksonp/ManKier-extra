@@ -2,12 +2,12 @@
 .\"     Title: zmq_proxy_steerable
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_PROXY_STEERABLE" "3" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_PROXY_STEERABLE" "3" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -99,6 +99,21 @@ assert (zmq_send (control, "RESUME", 6, 0) == 0);
 
 // terminate the proxy
 assert (zmq_send (control, "TERMINATE", 9, 0) == 0);
+
+// check statistics
+assert (zmq_send (control, "STATISTICS", 10, 0) == 0);
+zmq_msg_t stats_msg;
+
+while (1) {
+    assert (zmq_msg_init (&stats_msg) == 0);
+    assert (zmq_recvmsg (control, &stats_msg, 0) == sizeof (uint64_t));
+    assert (rc == sizeof (uint64_t));
+    printf ("Stat: %lu\en", *(unsigned long int *)zmq_msg_data (&stats_msg));
+    if (!zmq_msg_get (&stats_msg, ZMQ_MORE))
+        break;
+    assert (zmq_msg_close (&stats_msg) == 0);
+}
+assert (zmq_msg_close (&stats_msg) == 0);
 \-\-\-
 
 

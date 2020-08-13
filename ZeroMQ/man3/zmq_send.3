@@ -2,12 +2,12 @@
 .\"     Title: zmq_send
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_SEND" "3" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_SEND" "3" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,14 +31,14 @@
 zmq_send \- send a message part on a socket
 .SH "SYNOPSIS"
 .sp
-\fBint zmq_send (void \fR\fB\fI*socket\fR\fR\fB, void \fR\fB\fI*buf\fR\fR\fB, size_t \fR\fB\fIlen\fR\fR\fB, int \fR\fB\fIflags\fR\fR\fB);\fR
+\fBint zmq_send (void \fR\fB\fI*socket\fR\fR\fB, const void \fR\fB\fI*buf\fR\fR\fB, size_t \fR\fB\fIlen\fR\fR\fB, int \fR\fB\fIflags\fR\fR\fB);\fR
 .SH "DESCRIPTION"
 .sp
 The \fIzmq_send()\fR function shall queue a message created from the buffer referenced by the \fIbuf\fR and \fIlen\fR arguments\&. The \fIflags\fR argument is a combination of the flags defined below:
 .PP
 \fBZMQ_DONTWAIT\fR
 .RS 4
-For socket types (DEALER, PUSH) that block when there are no available peers (or all peers have full high\-water mark), specifies that the operation should be performed in non\-blocking mode\&. If the message cannot be queued on the
+For socket types (DEALER, PUSH) that block (either with ZMQ_IMMEDIATE option set and no peer available, or all peers having full high\-water mark), specifies that the operation should be performed in non\-blocking mode\&. If the message cannot be queued on the
 \fIsocket\fR, the
 \fIzmq_send()\fR
 function shall fail with

@@ -2,12 +2,12 @@
 .\"     Title: zmq_ctx_get
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_CTX_GET" "3" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_CTX_GET" "3" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -46,6 +46,9 @@ The \fIZMQ_MAX_SOCKETS\fR argument returns the maximum number of sockets allowed
 .SS "ZMQ_MAX_MSGSZ: Get maximum message size"
 .sp
 The \fIZMQ_MAX_MSGSZ\fR argument returns the maximum size of a message allowed for this context\&. Default value is INT_MAX\&.
+.SS "ZMQ_ZERO_COPY_RECV: Get message decoding strategy"
+.sp
+The \fIZMQ_ZERO_COPY_RECV\fR argument return whether message decoder uses a zero copy strategy when receiving messages\&. Default value is 1\&. NOTE: in DRAFT state, not yet available in stable releases\&.
 .SS "ZMQ_SOCKET_LIMIT: Get largest configurable number of sockets"
 .sp
 The \fIZMQ_SOCKET_LIMIT\fR argument returns the largest number of sockets that \fBzmq_ctx_set\fR(3) will accept\&.
@@ -55,9 +58,15 @@ The \fIZMQ_IPV6\fR argument returns the IPv6 option for the context\&.
 .SS "ZMQ_BLOCKY: Get blocky setting"
 .sp
 The \fIZMQ_BLOCKY\fR argument returns 1 if the context will block on terminate, zero if the "block forever on context termination" gambit was disabled by setting ZMQ_BLOCKY to false on all new contexts\&.
+.SS "ZMQ_THREAD_SCHED_POLICY: Get scheduling policy for I/O threads"
+.sp
+The \fIZMQ_THREAD_SCHED_POLICY\fR argument returns the scheduling policy for internal context\(cqs thread pool\&.
+.SS "ZMQ_THREAD_NAME_PREFIX: Get name prefix for I/O threads"
+.sp
+The \fIZMQ_THREAD_NAME_PREFIX\fR argument gets the numeric prefix of each thread created for the internal context\(cqs thread pool\&.
 .SS "ZMQ_MSG_T_SIZE: Get the zmq_msg_t size at runtime"
 .sp
-The \fIZMQ_MSG_T_SIZE\fR argument returns the size of the zmq_msg_t structure at runtime, as defined in the include/zmq\&.h public header\&. This is useful for example for FFI bindings that can\(cqt simply do a sizeof()\&. NOTE: in DRAFT state, not yet available in stable releases\&.
+The \fIZMQ_MSG_T_SIZE\fR argument returns the size of the zmq_msg_t structure at runtime, as defined in the include/zmq\&.h public header\&. This is useful for example for FFI bindings that can\(cqt simply do a sizeof()\&.
 .SH "RETURN VALUE"
 .sp
 The \fIzmq_ctx_get()\fR function returns a value of 0 or greater if successful\&. Otherwise it returns \-1 and sets \fIerrno\fR to one of the values defined below\&.

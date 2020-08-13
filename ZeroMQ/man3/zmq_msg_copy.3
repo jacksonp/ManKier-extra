@@ -2,12 +2,12 @@
 .\"     Title: zmq_msg_copy
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_MSG_COPY" "3" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_MSG_COPY" "3" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -48,7 +48,7 @@ The \fIzmq_msg_copy()\fR function shall copy the message object referenced by \f
 .ps -1
 .br
 .sp
-The implementation may choose not to physically copy the message content, rather to share the underlying buffer between \fIsrc\fR and \fIdest\fR\&. Avoid modifying message content after a message has been copied with \fIzmq_msg_copy()\fR, doing so can result in undefined behaviour\&. If what you need is an actual hard copy, allocate a new message using \fIzmq_msg_init_size()\fR and copy the message content using \fImemcpy()\fR\&.
+The implementation may choose not to physically copy the message content, rather to share the underlying buffer between \fIsrc\fR and \fIdest\fR\&. Avoid modifying message content after a message has been copied with \fIzmq_msg_copy()\fR, doing so can result in undefined behaviour\&. If what you need is an actual hard copy, initialize a new message using \fIzmq_msg_init_buffer()\fR with the message content\&.
 .sp .5v
 .RE
 .if n \{\
@@ -85,8 +85,7 @@ Invalid message\&.
 .\}
 .nf
 zmq_msg_t msg;
-zmq_msg_init_size (&msg, 255);
-memcpy (zmq_msg_data (&msg, "Hello, World", 12);
+zmq_msg_init_buffer (&msg, "Hello, World", 12);
 zmq_msg_t copy;
 zmq_msg_init (&copy);
 zmq_msg_copy (&copy, &msg);
@@ -100,7 +99,7 @@ zmq_msg_close (&msg);
 .sp
 .SH "SEE ALSO"
 .sp
-\fBzmq_msg_move\fR(3) \fBzmq_msg_init\fR(3) \fBzmq_msg_init_size\fR(3) \fBzmq_msg_init_data\fR(3) \fBzmq_msg_close\fR(3) \fBzmq\fR(7)
+\fBzmq_msg_move\fR(3) \fBzmq_msg_init\fR(3) \fBzmq_msg_init_size\fR(3) \fBzmq_msg_init_buffer\fR(3) \fBzmq_msg_init_data\fR(3) \fBzmq_msg_close\fR(3) \fBzmq\fR(7)
 .SH "AUTHORS"
 .sp
 This page was written by the 0MQ community\&. To make a change please read the 0MQ Contribution Policy at \m[blue]\fBhttp://www\&.zeromq\&.org/docs:contributing\fR\m[]\&.

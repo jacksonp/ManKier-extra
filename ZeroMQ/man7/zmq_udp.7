@@ -2,12 +2,12 @@
 .\"     Title: zmq_udp
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_UDP" "7" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_UDP" "7" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -55,11 +55,12 @@ colon and the UDP port number to use\&.
 An \*(Aqinterface\*(Aq may be specified by either of the following:
 
 * The wild\-card `*`, meaning all available interfaces\&.
-* The primary IPv4 address assigned to the interface, in its numeric
-  representation\&.
+* The name of the network interface (i\&.e\&. eth0, lo, wlan0 etc\&.\&.\&.)
+* The primary address assigned to the interface, in its numeric representation\&.
 * Multicast address in its numeric representation the socket should join\&.
 
-The UDP port number may be specified a numeric value, usually above 1024 on POSIX systems\&.
+The UDP port number may be specified a numeric value, usually above
+1024 on POSIX systems\&.
 
 Connecting a socket
 .fi
@@ -79,7 +80,7 @@ A \fIpeer address\fR may be specified by either of the following:
 .sp -1
 .IP \(bu 2.3
 .\}
-The IPv4 or IPv6 address of the peer, in its numeric representation\&.
+The IPv4 or IPv6 address of the peer, in its numeric representation or using its hostname\&.
 .RE
 .sp
 .RS 4
@@ -106,8 +107,17 @@ assert (rc == 0);
 //  Unicast \- UDP port 5555 on the local loop\-back interface
 rc = zmq_bind(dish, "udp://127\&.0\&.0\&.1:5555");
 assert (rc == 0);
+//  Unicast \- UDP port 5555 on interface eth1
+rc = zmq_bind(dish, "udp://eth1:5555");
+assert (rc == 0);
 //  Multicast \- UDP port 5555 on a Multicast address
 rc = zmq_bind(dish, "udp://239\&.0\&.0\&.1:5555");
+assert (rc == 0);
+//  Same as above but joining only on interface eth0
+rc = zmq_bind(dish, "udp://eth0;239\&.0\&.0\&.1:5555");
+assert (rc == 0);
+//  Same as above using IPv6 multicast
+rc = zmq_bind(dish, "udp://eth0;[ff02::1]:5555");
 assert (rc == 0);
 .fi
 .if n \{\
@@ -123,8 +133,14 @@ assert (rc == 0);
 //  Connecting using an Unicast IP address
 rc = zmq_connect(radio, "udp://192\&.168\&.1\&.1:5555");
 assert (rc == 0);
-//  Connecting using a Multicast address"
+//  Connecting using a Multicast address
 rc = zmq_connect(socket, "udp://239\&.0\&.0\&.1:5555);
+assert (rc == 0);
+//  Connecting using a Multicast address using local interface wlan0
+rc = zmq_connect(socket, "udp://wlan0;239\&.0\&.0\&.1:5555);
+assert (rc == 0);
+//  Connecting to IPv6 multicast
+rc = zmq_connect(socket, "udp://[ff02::1]:5555);
 assert (rc == 0);
 .fi
 .if n \{\

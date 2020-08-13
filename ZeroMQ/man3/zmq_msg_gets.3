@@ -2,12 +2,12 @@
 .\"     Title: zmq_msg_gets
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_MSG_GETS" "3" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_MSG_GETS" "3" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,9 +36,9 @@ zmq_msg_gets \- get message metadata property
 .sp
 The \fIzmq_msg_gets()\fR function shall return the string value for the metadata property specified by the \fIproperty\fR argument for the message pointed to by the \fImessage\fR argument\&. Both the \fIproperty\fR argument and the \fIvalue\fR shall be NULL\-terminated UTF8\-encoded strings\&.
 .sp
-Metadata is defined on a per\-connection basis during the ZeroMQ connection handshake as specified in <rfc\&.zeromq\&.org/spec:37>\&.
+Metadata is defined on a per\-connection basis during the ZeroMQ connection handshake as specified in <rfc\&.zeromq\&.org/spec:37>\&. Applications can set metadata properties using \fBzmq_setsockopt\fR(3) option ZMQ_METADATA\&. Application metadata properties must be prefixed with \fIX\-\fR\&.
 .sp
-The following ZMTP properties can be retrieved with the \fIzmq_msg_gets()\fR function:
+In addition to application metadata, the following ZMTP properties can be retrieved with the \fIzmq_msg_gets()\fR function:
 .sp
 .if n \{\
 .RS 4
@@ -90,7 +90,7 @@ zmq_msg_close (&msg);
 .sp
 .SH "SEE ALSO"
 .sp
-\fBzmq\fR(7)
+\fBzmq\fR(7) \fBzmq_setsockopt\fR(3)
 .SH "AUTHORS"
 .sp
 This page was written by the 0MQ community\&. To make a change please read the 0MQ Contribution Policy at \m[blue]\fBhttp://www\&.zeromq\&.org/docs:contributing\fR\m[]\&.

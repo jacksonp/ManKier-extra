@@ -2,12 +2,12 @@
 .\"     Title: zmq_getsockopt
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_GETSOCKOPT" "3" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_GETSOCKOPT" "3" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -122,22 +122,6 @@ T}
 .SS "ZMQ_BINDTODEVICE: Retrieve name of device the socket is bound to"
 .sp
 The \fIZMQ_BINDTODEVICE\fR option retrieves the name of the device this socket is bound to, eg\&. an interface or VRF\&. If a socket is bound to an interface, only packets received from that interface are processed by the socket\&. If device is a VRF device, then subsequent binds/connects to that socket use addresses in the VRF routing table\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBNote\fR
-.ps -1
-.br
-.sp
-in DRAFT state, not yet available in stable releases\&.
-.sp .5v
-.RE
 .TS
 tab(:);
 lt lt
@@ -627,22 +611,6 @@ T}
 .SS "ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE: Retrieve nametype for service principal"
 .sp
 Returns the \fIZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE\fR option, if any, previously set on the socket\&. A value of \fIZMQ_GSSAPI_NT_HOSTBASED\fR (0) means the name specified with \fIZMQ_GSSAPI_SERVICE_PRINCIPAL\fR is interpreted as a host based name\&. A value of \fIZMQ_GSSAPI_NT_USER_NAME\fR (1) means it is interpreted as a local user name\&. A value of \fIZMQ_GSSAPI_NT_KRB5_PRINCIPAL\fR (2) means it is interpreted as an unparsed principal name string (valid only with the krb5 GSSAPI mechanism)\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBNote\fR
-.ps -1
-.br
-.sp
-in DRAFT state, not yet available in stable releases\&.
-.sp .5v
-.RE
 .TS
 tab(:);
 lt lt
@@ -682,22 +650,6 @@ T}
 .SS "ZMQ_GSSAPI_PRINCIPAL_NAMETYPE: Retrieve nametype for service principal"
 .sp
 Returns the \fIZMQ_GSSAPI_PRINCIPAL_NAMETYPE\fR option, if any, previously set on the socket\&. A value of \fIZMQ_GSSAPI_NT_HOSTBASED\fR (0) means the name specified with \fIZMQ_GSSAPI_PRINCIPAL\fR is interpreted as a host based name\&. A value of \fIZMQ_GSSAPI_NT_USER_NAME\fR (1) means it is interpreted as a local user name\&. A value of \fIZMQ_GSSAPI_NT_KRB5_PRINCIPAL\fR (2) means it is interpreted as an unparsed principal name string (valid only with the krb5 GSSAPI mechanism)\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBNote\fR
-.ps -1
-.br
-.sp
-in DRAFT state, not yet available in stable releases\&.
-.sp .5v
-.RE
 .TS
 tab(:);
 lt lt
@@ -938,7 +890,7 @@ T}
 .sp 1
 .SS "ZMQ_LAST_ENDPOINT: Retrieve the last endpoint set"
 .sp
-The \fIZMQ_LAST_ENDPOINT\fR option shall retrieve the last endpoint bound for TCP and IPC transports\&. The returned value will be a string in the form of a ZMQ DSN\&. Note that if the TCP host is INADDR_ANY, indicated by a *, then the returned address will be 0\&.0\&.0\&.0 (for IPv4)\&.
+The \fIZMQ_LAST_ENDPOINT\fR option shall retrieve the last endpoint bound for TCP and IPC transports\&. The returned value will be a string in the form of a ZMQ DSN\&. Note that if the TCP host is INADDR_ANY, indicated by a *, then the returned address will be 0\&.0\&.0\&.0 (for IPv4)\&. Note: not supported on GNU/Hurd with IPC due to non\-working getsockname()\&.
 .TS
 tab(:);
 lt lt
@@ -1673,6 +1625,47 @@ all, only for connection\-oriented transport
 T}
 .TE
 .sp 1
+.SS "ZMQ_RECONNECT_STOP: Retrieve condition where reconnection will stop"
+.sp
+The \fIZMQ_RECONNECT_STOP\fR option shall retrieve the conditions under which automatic reconnection will stop\&.
+.sp
+The \fIZMQ_RECONNECT_STOP_CONN_REFUSED\fR option will stop reconnection when 0MQ receives the ECONNREFUSED return code from the connect\&. This indicates that there is no code bound to the specified endpoint\&.
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+\fIZMQ_RECONNECT_STOP_CONN_REFUSED\fR
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+0
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+all, only for connection\-oriented transports
+T}
+.TE
+.sp 1
 .SS "ZMQ_RECOVERY_IVL: Get multicast recovery interval"
 .sp
 The \fIZMQ_RECOVERY_IVL\fR option shall retrieve the recovery interval for multicast transports using the specified \fIsocket\fR\&. The recovery interval determines the maximum time in milliseconds that a receiver can be absent from a multicast group before unrecoverable data loss will occur\&.
@@ -2108,14 +2101,22 @@ T}
 .sp 1
 .SS "ZMQ_THREAD_SAFE: Retrieve socket thread safety"
 .sp
-The \fIZMQ_THREAD_SAFE\fR option shall retrieve a boolean value indicating whether or not the socket is threadsafe\&. Currently \fIZMQ_CLIENT\fR and \fIZMQ_SERVER\fR sockets are threadsafe\&.
+The \fIZMQ_THREAD_SAFE\fR option shall retrieve a boolean value indicating whether or not the socket is threadsafe\&. See \fBzmq_socket\fR(3) for which sockets are thread\-safe\&.
 .TS
 tab(:);
+lt lt
 lt lt
 lt lt.
 T{
 .sp
 Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
 T}:T{
 .sp
 boolean
@@ -2438,6 +2439,214 @@ Applicable socket types
 T}:T{
 .sp
 all, when using VMCI transport
+T}
+.TE
+.sp 1
+.SS "ZMQ_MULTICAST_LOOP: Retrieve multicast local loopback configuration"
+.sp
+Retrieve the current multicast loopback configuration\&. A value of 1 means that the multicast packets sent on this socket will be looped back to local listening interface\&.
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+0, 1
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+1
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+ZMQ_RADIO, when using UDP multicast transport
+T}
+.TE
+.sp 1
+.SS "ZMQ_ROUTER_NOTIFY: Retrieve router socket notification settings"
+.sp
+Retrieve the current notification settings of a router socket\&. The returned value is a bitmask composed of ZMQ_NOTIFY_CONNECT and ZMQ_NOTIFY_DISCONNECT flags, meaning connect and disconnect notifications are enabled, respectively\&. A value of \fI0\fR means the notifications are off\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+in DRAFT state, not yet available in stable releases\&.
+.sp .5v
+.RE
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+0, ZMQ_NOTIFY_CONNECT, ZMQ_NOTIFY_DISCONNECT, ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+0
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+ZMQ_ROUTER
+T}
+.TE
+.sp 1
+.SS "ZMQ_IN_BATCH_SIZE: Maximal receive batch size"
+.sp
+Gets the maximal amount of messages that can be received in a single \fIrecv\fR system call\&.
+.sp
+Cannot be zero\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+in DRAFT state, not yet available in stable releases\&.
+.sp .5v
+.RE
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+messages
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+8192
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+All, when using TCP, IPC, PGM or NORM transport\&.
+T}
+.TE
+.sp 1
+.SS "ZMQ_OUT_BATCH_SIZE: Maximal send batch size"
+.sp
+Gets the maximal amount of messages that can be sent in a single \fIsend\fR system call\&.
+.sp
+Cannot be zero\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+in DRAFT state, not yet available in stable releases\&.
+.sp .5v
+.RE
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+messages
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+8192
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+All, when using TCP, IPC, PGM or NORM transport\&.
 T}
 .TE
 .sp 1

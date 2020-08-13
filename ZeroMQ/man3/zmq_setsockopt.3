@@ -2,12 +2,12 @@
 .\"     Title: zmq_setsockopt
 .\"    Author: [see the "AUTHORS" section]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/17/2018
+.\"      Date: 08/13/2020
 .\"    Manual: 0MQ Manual
-.\"    Source: 0MQ 4.2.4
+.\"    Source: 0MQ 4.3.3
 .\"  Language: English
 .\"
-.TH "ZMQ_SETSOCKOPT" "3" "01/17/2018" "0MQ 4\&.2\&.4" "0MQ Manual"
+.TH "ZMQ_SETSOCKOPT" "3" "08/13/2020" "0MQ 4\&.3\&.3" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -139,7 +139,7 @@ The \fIZMQ_BINDTODEVICE\fR option binds this socket to a particular device, eg\&
 .ps -1
 .br
 .sp
-requires setting CAP_NET_RAW on the compiled program\&. NOTE: in DRAFT state, not yet available in stable releases\&.
+requires setting CAP_NET_RAW on the compiled program\&.
 .sp .5v
 .RE
 .TS
@@ -229,6 +229,22 @@ T}
 .SS "ZMQ_CONFLATE: Keep only last message"
 .sp
 If set, a socket shall keep only one message in its inbound/outbound queue, this message being the last message received/the last message to be sent\&. Ignores \fIZMQ_RCVHWM\fR and \fIZMQ_SNDHWM\fR options\&. Does not support multi\-part messages, in particular, only one part of it is kept in the socket internal queue\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+If recv is not called on the inbound socket, the queue and memory will grow with each message received\&. Use \fBzmq_getsockopt\fR(3) with ZMQ_EVENTS to trigger the conflation of the messages\&.
+.sp .5v
+.RE
 .TS
 tab(:);
 lt lt
@@ -508,6 +524,45 @@ all, when using TCP transport
 T}
 .TE
 .sp 1
+.SS "ZMQ_DISCONNECT_MSG: set a disconnect message that the socket will generate when accepted peer disconnect"
+.sp
+When set, the socket will generate a disconnect message when accepted peer has been disconnected\&. You may set this on ROUTER, SERVER and PEER sockets\&. The combination with ZMQ_HEARTBEAT_IVL is powerful and simplify protocols, when heartbeat recognize a connection drop it will generate a disconnect message that can match the protocol of the application\&.
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+binary data
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+N/A
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+NULL
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+ZMQ_ROUTER, ZMQ_SERVER and ZMQ_PEER
+T}
+.TE
+.sp 1
 .SS "ZMQ_GSSAPI_PLAINTEXT: Disable GSSAPI encryption"
 .sp
 Defines whether communications on the socket will be encrypted, see \fBzmq_gssapi\fR(7)\&. A value of \fI1\fR means that communications will be plaintext\&. A value of \fI0\fR means communications will be encrypted\&.
@@ -667,22 +722,6 @@ T}
 .SS "ZMQ_GSSAPI_SERVICE_PRINCIPAL_NAMETYPE: Set name type of service principal"
 .sp
 Sets the name type of the GSSAPI service principal\&. A value of \fIZMQ_GSSAPI_NT_HOSTBASED\fR (0) means the name specified with \fIZMQ_GSSAPI_SERVICE_PRINCIPAL\fR is interpreted as a host based name\&. A value of \fIZMQ_GSSAPI_NT_USER_NAME\fR (1) means it is interpreted as a local user name\&. A value of \fIZMQ_GSSAPI_NT_KRB5_PRINCIPAL\fR (2) means it is interpreted as an unparsed principal name string (valid only with the krb5 GSSAPI mechanism)\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBNote\fR
-.ps -1
-.br
-.sp
-in DRAFT state, not yet available in stable releases\&.
-.sp .5v
-.RE
 .TS
 tab(:);
 lt lt
@@ -722,22 +761,6 @@ T}
 .SS "ZMQ_GSSAPI_PRINCIPAL_NAMETYPE: Set name type of principal"
 .sp
 Sets the name type of the GSSAPI principal\&. A value of \fIZMQ_GSSAPI_NT_HOSTBASED\fR (0) means the name specified with \fIZMQ_GSSAPI_PRINCIPAL\fR is interpreted as a host based name\&. A value of \fIZMQ_GSSAPI_NT_USER_NAME\fR (1) means it is interpreted as a local user name\&. A value of \fIZMQ_GSSAPI_NT_KRB5_PRINCIPAL\fR (2) means it is interpreted as an unparsed principal name string (valid only with the krb5 GSSAPI mechanism)\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBNote\fR
-.ps -1
-.br
-.sp
-in DRAFT state, not yet available in stable releases\&.
-.sp .5v
-.RE
 .TS
 tab(:);
 lt lt
@@ -813,6 +836,45 @@ all but ZMQ_STREAM, only for connection\-oriented transports
 T}
 .TE
 .sp 1
+.SS "ZMQ_HELLO_MSG: set an hello message that will be sent when a new peer connect"
+.sp
+When set, the socket will automatically send an hello message when a new connection is made or accepted\&. You may set this on DEALER, ROUTER, CLIENT, SERVER and PEER sockets\&. The combination with ZMQ_HEARTBEAT_IVL is powerful and simplify protocols, as now heartbeat and sending the hello message can be left out of protocols and be handled by zeromq\&.
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+binary data
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+N/A
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+NULL
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+ZMQ_ROUTER, ZMQ_DEALER, ZMQ_CLIENT, ZMQ_SERVER and ZMQ_PEER
+T}
+.TE
+.sp 1
 .SS "ZMQ_HEARTBEAT_IVL: Set interval between sending ZMTP heartbeats"
 .sp
 The \fIZMQ_HEARTBEAT_IVL\fR option shall set the interval between sending ZMTP heartbeats for the specified \fIsocket\fR\&. If this option is set and is greater than 0, then a \fIPING\fR ZMTP command will be sent every \fIZMQ_HEARTBEAT_IVL\fR milliseconds\&.
@@ -880,7 +942,7 @@ T{
 Default value
 T}:T{
 .sp
-0
+0 normally, ZMQ_HEARTBEAT_IVL if it is set
 T}
 T{
 .sp
@@ -896,6 +958,7 @@ T}
 The \fIZMQ_HEARTBEAT_TTL\fR option shall set the timeout on the remote peer for ZMTP heartbeats\&. If this option is greater than 0, the remote side shall time out the connection if it does not receive any more traffic within the TTL period\&. This option does not have any effect if \fIZMQ_HEARTBEAT_IVL\fR is not set or is 0\&. Internally, this value is rounded down to the nearest decisecond, any value less than 100 will have no effect\&.
 .TS
 tab(:);
+lt lt
 lt lt
 lt lt
 lt lt
@@ -920,6 +983,13 @@ Default value
 T}:T{
 .sp
 0
+T}
+T{
+.sp
+Maximum value
+T}:T{
+.sp
+6553599 (which is 2^16\-1 deciseconds)
 T}
 T{
 .sp
@@ -1164,6 +1234,61 @@ Default value
 T}:T{
 .sp
 \-1
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+all
+T}
+.TE
+.sp 1
+.SS "ZMQ_METADATA: Add application metadata properties to a socket"
+.sp
+The \fIZMQ_METADATA\fR option shall add application metadata to the specified \fIsocket\fR, the metadata is exchanged with peers during connection setup\&. A metadata property is specfied as a string, delimited by a colon, starting with the metadata \fIproperty\fR followed by the metadata value, for example "X\-key:value"\&. \fIProperty\fR names are restrited to maximum 255 characters and must be prefixed by "X\-"\&. Multiple application metadata properties can be added to a socket by executing zmq_setsockopt() multiple times\&. As the argument is a null\-terminated string, binary data must be encoded before it is added e\&.g\&. using Z85 (\fBzmq_z85_encode\fR(3))\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+in DRAFT state, not yet available in stable releases\&.
+.sp .5v
+.RE
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+character string
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+N/A
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+not set
 T}
 T{
 .sp
@@ -1564,6 +1689,22 @@ T}
 The \fIZMQ_RCVHWM\fR option shall set the high water mark for inbound messages on the specified \fIsocket\fR\&. The high water mark is a hard limit on the maximum number of outstanding messages 0MQ shall queue in memory for any single peer that the specified \fIsocket\fR is communicating with\&. A value of zero means no limit\&.
 .sp
 If this limit has been reached the socket shall enter an exceptional state and depending on the socket type, 0MQ shall take appropriate action such as blocking or dropping sent messages\&. Refer to the individual socket descriptions in \fBzmq_socket\fR(3) for details on the exact action taken for each socket type\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+0MQ does not guarantee that the socket will be able to queue as many as ZMQ_RCVHWM messages, and the actual limit may be lower or higher, depending on socket transport\&. A notable example is for sockets using TCP transport; see \fBzmq_tcp\fR(7)\&.
+.sp .5v
+.RE
 .TS
 tab(:);
 lt lt
@@ -1749,6 +1890,65 @@ all, only for connection\-oriented transports
 T}
 .TE
 .sp 1
+.SS "ZMQ_RECONNECT_STOP: Set condition where reconnection will stop"
+.sp
+The \fIZMQ_RECONNECT_STOP\fR option shall set the conditions under which automatic reconnection will stop\&. This can be useful when a process binds to a wild\-card port, where the OS supplies an ephemeral port\&.
+.sp
+The \fIZMQ_RECONNECT_STOP_CONN_REFUSED\fR option will stop reconnection when 0MQ receives the ECONNREFUSED return code from the connect\&. This indicates that there is no code bound to the specified endpoint\&.
+.sp
+The \fIZMQ_RECONNECT_STOP_HANDSHAKE_FAILED\fR option will stop reconnection if the 0MQ handshake fails\&. This can be used to detect and/or prevent errant connection attempts to non\-0MQ sockets\&. Note that when specifying this option you may also want to set ZMQ_HANDSHAKE_IVL \(em the default handshake interval is 30000 (30 seconds), which is typically too large\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+in DRAFT state, not yet available in stable releases\&.
+.sp .5v
+.RE
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+0, ZMQ_RECONNECT_STOP_CONN_REFUSED, ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED, ZMQ_RECONNECT_STOP_CONN_REFUSED | ZMQ_RECONNECT_STOP_HANDSHAKE_FAILED
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+0
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+all, only for connection\-oriented transports (ZMQ_HANDSHAKE_IVL is not applicable for ZMQ_STREAM sockets)
+T}
+.TE
+.sp 1
 .SS "ZMQ_RECOVERY_IVL: Set multicast recovery interval"
 .sp
 The \fIZMQ_RECOVERY_IVL\fR option shall set the recovery interval for multicast transports using the specified \fIsocket\fR\&. The recovery interval determines the maximum time in milliseconds that a receiver can be absent from a multicast group before unrecoverable data loss will occur\&.
@@ -1927,7 +2127,7 @@ T}
 .sp
 Sets the ROUTER socket behaviour when an unroutable message is encountered\&. A value of 0 is the default and discards the message silently when it cannot be routed or the peers SNDHWM is reached\&. A value of 1 returns an \fIEHOSTUNREACH\fR error code if the message cannot be routed or \fIEAGAIN\fR error code if the SNDHWM is reached and ZMQ_DONTWAIT was used\&. Without ZMQ_DONTWAIT it will block until the SNDTIMEO is reached or a spot in the send queue opens up\&.
 .sp
-When ZMQ_ROUTER_MANDATORY is set to 1, \fIZMQ_POLLOUT\fR events will be generated if one or more messages can be sent to at least one of the peers\&. If ZMQ_ROUTER_MANDATORY is set to 0, the socket will generate a \fIZMQ_POLLOUT\fR event on every call to \fIzmq_poll\fR\&.
+When ZMQ_ROUTER_MANDATORY is set to 1, \fIZMQ_POLLOUT\fR events will be generated if one or more messages can be sent to at least one of the peers\&. If ZMQ_ROUTER_MANDATORY is set to 0, the socket will generate a \fIZMQ_POLLOUT\fR event on every call to \fIzmq_poll\fR resp\&. \fIzmq_poller_wait_all\fR\&.
 .TS
 tab(:);
 lt lt
@@ -2119,7 +2319,7 @@ If this limit has been reached the socket shall enter an exceptional state and d
 .ps -1
 .br
 .sp
-0MQ does not guarantee that the socket will accept as many as ZMQ_SNDHWM messages, and the actual limit may be as much as 90% lower depending on the flow of messages on the socket\&.
+0MQ does not guarantee that the socket will accept as many as ZMQ_SNDHWM messages, and the actual limit may be as much as 90% lower depending on the flow of messages on the socket\&. The socket may even be able to accept more messages than the ZMQ_SNDHWM threshold; a notable example is for sockets using TCP transport; see \fBzmq_tcp\fR(7)\&.
 .sp .5v
 .RE
 .TS
@@ -2199,7 +2399,85 @@ T}
 .sp 1
 .SS "ZMQ_SOCKS_PROXY: Set SOCKS5 proxy address"
 .sp
-Sets the SOCKS5 proxy address that shall be used by the socket for the TCP connection(s)\&. Does not support SOCKS5 authentication\&. If the endpoints are domain names instead of addresses they shall not be resolved and they shall be forwarded unchanged to the SOCKS proxy service in the client connection request message (address type 0x03 domain name)\&.
+Sets the SOCKS5 proxy address that shall be used by the socket for the TCP connection(s)\&. Supported authentication methods are: no authentication or basic authentication when setup with ZMQ_SOCKS_USERNAME\&. If the endpoints are domain names instead of addresses they shall not be resolved and they shall be forwarded unchanged to the SOCKS proxy service in the client connection request message (address type 0x03 domain name)\&.
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+character string
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+N/A
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+not set
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+all, when using TCP transport
+T}
+.TE
+.sp 1
+.SS "ZMQ_SOCKS_USERNAME: Set SOCKS username and select basic authentication"
+.sp
+Sets the username for authenticated connection to the SOCKS5 proxy\&. If you set this to a non\-null and non\-empty value, the authentication method used for the SOCKS5 connection shall be basic authentication\&. In this case, use ZMQ_SOCKS_PASSWORD option in order to set the password\&. If you set this to a null value or empty value, the authentication method shall be no authentication, the default\&.
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+character string
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+N/A
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+not set
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+all, when using TCP transport
+T}
+.TE
+.sp 1
+.SS "ZMQ_SOCKS_PASSWORD: Set SOCKS basic authentication password"
+.sp
+Sets the password for authenticating to the SOCKS5 proxy server\&. This is used only when the SOCKS5 authentication method has been set to basic authentication through the ZMQ_SOCKS_USERNAME option\&. Setting this to a null value (the default) is equivalent to an empty password string\&.
 .TS
 tab(:);
 lt lt
@@ -2589,9 +2867,9 @@ ZMQ_SUB
 T}
 .TE
 .sp 1
-.SS "ZMQ_XPUB_VERBOSE: pass subscribe messages on XPUB socket"
+.SS "ZMQ_XPUB_VERBOSE: pass duplicate subscribe messages on XPUB socket"
 .sp
-Sets the \fIXPUB\fR socket behaviour on new subscriptions\&. If enabled, the socket passes all subscribe messages to the caller\&. If disabled, these are not visible to the caller\&. The default is 0 (disabled)\&.
+Sets the \fIXPUB\fR socket behaviour on new duplicated subscriptions\&. If enabled, the socket passes all subscribe messages to the caller\&. If disabled, only the first subscription to each filter will be passed\&. The default is 0 (disabled)\&.
 .TS
 tab(:);
 lt lt
@@ -2628,9 +2906,9 @@ ZMQ_XPUB
 T}
 .TE
 .sp 1
-.SS "ZMQ_XPUB_VERBOSER: pass subscribe and unsubscribe messages on XPUB socket"
+.SS "ZMQ_XPUB_VERBOSER: pass duplicate subscribe and unsubscribe messages on XPUB socket"
 .sp
-Sets the \fIXPUB\fR socket behaviour on new subscriptions and ubsubscriptions\&. If enabled, the socket passes all subscribe and unsubscribe messages to the caller\&. If disabled, these are not visible to the caller\&. The default is 0 (disabled)\&.
+Sets the \fIXPUB\fR socket behaviour on new duplicated subscriptions and unsubscriptions\&. If enabled, the socket passes all subscribe and unsubscribe messages to the caller\&. If disabled, only the first subscription to each filter and the last unsubscription from each filter will be passed\&. The default is 0 (disabled)\&.
 .TS
 tab(:);
 lt lt
@@ -2670,6 +2948,61 @@ T}
 .SS "ZMQ_XPUB_MANUAL: change the subscription handling to manual"
 .sp
 Sets the \fIXPUB\fR socket subscription handling mode manual/automatic\&. A value of \fI0\fR is the default and subscription requests will be handled automatically\&. A value of \fI1\fR will change the subscription requests handling to manual, with manual mode subscription requests are not added to the subscription list\&. To add subscription the user need to call setsockopt with ZMQ_SUBSCRIBE on XPUB socket\&.
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+0, 1
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+0
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+ZMQ_XPUB
+T}
+.TE
+.sp 1
+.SS "ZMQ_XPUB_MANUAL_LAST_VALUE: change the subscription handling to manual"
+.sp
+This option is similar to ZMQ_XPUB_MANUAL\&. The difference is that ZMQ_XPUB_MANUAL_LAST_VALUE changes the \fIXPUB\fR socket behaviour to send the first message to the last subscriber after the socket receives a subscription and call setsockopt with ZMQ_SUBSCRIBE on \fIXPUB\fR socket\&. This prevents duplicated messages when using last value caching(LVC)\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+in DRAFT state, not yet available in stable releases\&.
+.sp .5v
+.RE
 .TS
 tab(:);
 lt lt
@@ -2751,7 +3084,7 @@ T}
 .sp
 Sets a welcome message the will be recieved by subscriber when connecting\&. Subscriber must subscribe to the Welcome message before connecting\&. Welcome message will also be sent on reconnecting\&. For welcome message to work well user must poll on incoming subscription messages on the XPUB socket and handle them\&.
 .sp
-Use NULL and lenght of zero to disable welcome message\&.
+Use NULL and length of zero to disable welcome message\&.
 .TS
 tab(:);
 lt lt
@@ -2785,6 +3118,47 @@ Applicable socket types
 T}:T{
 .sp
 ZMQ_XPUB
+T}
+.TE
+.sp 1
+.SS "ZMQ_ONLY_FIRST_SUBSCRIBE: Process only first subscribe/unsubscribe in a multipart message"
+.sp
+If set, only the first part of the multipart message is processed as a subscribe/unsubscribe message\&. The rest are forwarded as user data regardless of message contents\&.
+.sp
+It not set (default), subscribe/unsubscribe messages in a multipart message are processed as such regardless of their number and order\&.
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+boolean
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+0 (false)
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+ZMQ_XSUB, ZMQ_XPUB
 T}
 .TE
 .sp 1
@@ -2882,7 +3256,7 @@ Assign an arbitrary number of filters that will be applied for each new TCP tran
 .ps -1
 .br
 .sp
-This option is deprecated, please use authentication via the ZAP API and IP address whitelisting / blacklisting\&.
+This option is deprecated, please use authentication via the ZAP API and IP address allowing / blocking\&.
 .sp .5v
 .RE
 .TS
@@ -2953,7 +3327,7 @@ GID filters are only available on platforms supporting SO_PEERCRED or LOCAL_PEER
 .ps -1
 .br
 .sp
-This option is deprecated, please use authentication via the ZAP API and IPC whitelisting / blacklisting\&.
+This option is deprecated, please use authentication via the ZAP API and IPC allowing / blocking\&.
 .sp .5v
 .RE
 .TS
@@ -3024,7 +3398,7 @@ PID filters are only available on platforms supporting the SO_PEERCRED socket op
 .ps -1
 .br
 .sp
-This option is deprecated, please use authentication via the ZAP API and IPC whitelisting / blacklisting\&.
+This option is deprecated, please use authentication via the ZAP API and IPC allowing / blocking\&.
 .sp .5v
 .RE
 .TS
@@ -3095,7 +3469,7 @@ UID filters are only available on platforms supporting SO_PEERCRED or LOCAL_PEER
 .ps -1
 .br
 .sp
-This option is deprecated, please use authentication via the ZAP API and IPC whitelisting / blacklisting\&.
+This option is deprecated, please use authentication via the ZAP API and IPC allowing / blocking\&.
 .sp .5v
 .RE
 .TS
@@ -3326,6 +3700,214 @@ Applicable socket types
 T}:T{
 .sp
 all, when using VMCI transport
+T}
+.TE
+.sp 1
+.SS "ZMQ_MULTICAST_LOOP: Control multicast local loopback"
+.sp
+For multicast UDP sender sockets this option sets whether the data sent should be looped back on local listening sockets\&.
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+0, 1
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+1
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+ZMQ_RADIO, when using UDP multicast transport
+T}
+.TE
+.sp 1
+.SS "ZMQ_ROUTER_NOTIFY: Send connect and disconnect notifications"
+.sp
+Enable connect and disconnect notifications on a ROUTER socket\&. When enabled, the socket delivers a zero\-length message (with routing\-id as first frame) when a peer connects or disconnects\&. It\(cqs possible to notify both events for a peer by OR\-ing the flag values\&. This option only applies to stream oriented (tcp, ipc) transports\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+in DRAFT state, not yet available in stable releases\&.
+.sp .5v
+.RE
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+0, ZMQ_NOTIFY_CONNECT, ZMQ_NOTIFY_DISCONNECT, ZMQ_NOTIFY_CONNECT | ZMQ_NOTIFY_DISCONNECT
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+0
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+ZMQ_ROUTER
+T}
+.TE
+.sp 1
+.SS "ZMQ_IN_BATCH_SIZE: Maximal receive batch size"
+.sp
+Sets the maximal amount of messages that can be received in a single \fIrecv\fR system call\&. WARNING: this option should almost never be changed\&. The default has been chosen to offer the best compromise between latency and throughtput\&. In the vast majority of cases, changing this option will result in worst result if not outright breakages\&.
+.sp
+Cannot be zero\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+in DRAFT state, not yet available in stable releases\&.
+.sp .5v
+.RE
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+messages
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+8192
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+All, when using TCP, IPC, PGM or NORM transport\&.
+T}
+.TE
+.sp 1
+.SS "ZMQ_OUT_BATCH_SIZE: Maximal send batch size"
+.sp
+Sets the maximal amount of messages that can be sent in a single \fIsend\fR system call\&. WARNING: this option should almost never be changed\&. The default has been chosen to offer the best compromise between latency and throughtput\&. In the vast majority of cases, changing this option will result in worst result if not outright breakages\&.
+.sp
+Cannot be zero\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.sp
+in DRAFT state, not yet available in stable releases\&.
+.sp .5v
+.RE
+.TS
+tab(:);
+lt lt
+lt lt
+lt lt
+lt lt.
+T{
+.sp
+Option value type
+T}:T{
+.sp
+int
+T}
+T{
+.sp
+Option value unit
+T}:T{
+.sp
+messages
+T}
+T{
+.sp
+Default value
+T}:T{
+.sp
+8192
+T}
+T{
+.sp
+Applicable socket types
+T}:T{
+.sp
+All, when using TCP, IPC, PGM or NORM transport\&.
 T}
 .TE
 .sp 1
