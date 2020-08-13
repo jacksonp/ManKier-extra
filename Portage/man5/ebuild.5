@@ -1,4 +1,4 @@
-.TH "EBUILD" "5" "Nov 2014" "Portage VERSION" "Portage"
+.TH "EBUILD" "5" "Jul 2019" "Portage VERSION" "Portage"
 
 .SH "NAME"
 ebuild \- the internal format, variables, and functions in an ebuild script
@@ -17,9 +17,10 @@ calculating relationships between packages.  Please note that if the atom has
 not already been emerged, then the latest version available is matched.
 .TP
 .B Atom Bases
-The base atom is just a full category/packagename.
+The base atom is just a full category/packagename. Another name for a full
+category/packagename is a \fI"catpkg"\fR. You will find this shorthand\-name
+used frequently in Gentoo. Here are some base atoms, a.k.a \fI"catpkgs"\fR:
 
-Examples:
 .nf
 .I 	sys\-apps/sed
 .I 	sys\-libs/zlib
@@ -31,7 +32,7 @@ It is nice to be more specific and say that only certain versions of atoms are
 acceptable.  Note that versions must be combined with a prefix (see below).
 Hence you may add a version number as a postfix to the base.
 
-Examples:
+\fBExamples\fR:
 .nf
 	sys\-apps/sed\fI\-4.0.5\fR
 	sys\-libs/zlib\fI\-1.1.4\-r1\fR
@@ -51,7 +52,7 @@ Sometimes you want to be able to depend on general versions rather than
 specifying exact versions all the time.  Hence we provide standard boolean
 operators:
 
-Examples:
+\fBExamples\fR:
 .nf
 	\fI>\fRmedia\-libs/libgd\-1.6
 	\fI>=\fRmedia\-libs/libgd\-1.6
@@ -71,7 +72,7 @@ means match any revision of the base version specified.  So in the
 example below, we would match versions '1.0.2a', '1.0.2a\-r1', '1.0.2a\-r2',
 etc...
 
-Example:
+\fBExample\fR:
 .nf
 	\fI~\fRnet\-libs/libnet\-1.0.2a
 .fi
@@ -79,7 +80,7 @@ Example:
 .I !
 means block packages from being installed at the same time.
 
-Example:
+\fBExample\fR:
 .nf
 	\fI!\fRapp\-text/dos2unix
 .fi
@@ -90,7 +91,7 @@ and explicitly disallow them from being temporarily installed
 simultaneously during a series of upgrades. This syntax is supported
 beginning with \fBEAPI 2\fR.
 
-Example:
+\fBExample\fR:
 .nf
 	\fI!!\fR<sys\-apps/portage\-2.1.4_rc1
 .fi
@@ -103,7 +104,7 @@ that comes before the '*' must be a valid version in the absence of the '*'.
 For example, '2' is a valid version and '2.' is not. Therefore, '2*' is
 allowed and '2.*' is not.
 
-Examples:
+\fBExamples\fR:
 .nf
 	=dev\-libs/glib\-2\fI*\fR
 	\fI!\fR=net\-fs/samba\-2\fI*\fR
@@ -115,7 +116,7 @@ Beginning with \fBEAPI 1\fR, any atom can be constrained to match a specific
 \fBSLOT\fR. This is accomplished by appending a colon followed by a
 \fBSLOT\fR:
 
-Examples:
+\fBExamples\fR:
 .nf
 	x11\-libs/qt:3
 	\fI~\fRx11\-libs/qt-3.3.8:3
@@ -128,7 +129,7 @@ Beginning with \fBEAPI 5\fR, a slot dependency may contain an
 optional sub\-slot part that follows the regular slot and is
 delimited by a \fI/\fR character.
 
-Examples:
+\fBExamples\fR:
 .nf
 	dev\-libs/icu:0/0
 	dev\-libs/icu:0/49
@@ -147,7 +148,7 @@ for runtime dependencies, indicates that the package will not
 break if the matched package is uninstalled and replaced by
 a different matching package in a different slot.
 
-Examples:
+\fBExamples\fR:
 .nf
 	dev\-libs/icu:*
 	dev\-lang/perl:*
@@ -161,7 +162,7 @@ break unless a matching package with slot and sub\-slot equal
 to the slot and sub\-slot of the best installed version at the
 time the package was installed is available.
 
-Examples:
+\fBExamples\fR:
 .nf
 	dev\-libs/icu:=
 	dev\-lang/perl:=
@@ -172,7 +173,7 @@ Examples:
 Indicates that only a specific slot value is acceptable, and
 otherwise behaves identically to the plain equals slot operator.
 
-Examples:
+\fBExamples\fR:
 .nf
 	dev\-libs/icu:0=
 	dev\-lang/perl:0=
@@ -190,7 +191,7 @@ dependencies. The sub\-slot part must not be omitted here
 is considered to have an implicit sub\-slot which is equal to
 the regular slot).
 
-Examples:
+\fBExamples\fR:
 .nf
 	dev\-libs/icu:0/0=
 	dev\-libs/icu:0/49=
@@ -238,7 +239,7 @@ immediately following a flag with either \fI(+)\fR or \fI(\-)\fR. Use
 \fI(+)\fR to behave as if a missing flag is present and enabled, or
 \fI(\-)\fR to behave as if it is present and disabled:
 
-Examples:
+\fBExamples\fR:
 .nf
 	media\-video/ffmpeg[threads(+)]
 	media\-video/ffmpeg[-threads(\-)]
@@ -280,7 +281,7 @@ That way the default is the superior GTK2 library.
 When a package can work with a few different packages but a virtual is not
 appropriate, this syntax can easily be used.
 
-Example:
+\fBExample\fR:
 .nf
 || (
 	app\-games/unreal\-tournament
@@ -295,7 +296,7 @@ use either.  Adding a virtual is inappropriate due to the small scope of it.
 Another good example is when a package can be built with multiple video
 interfaces, but it can only ever have just one.
 
-Example:
+\fBExample\fR:
 .nf
 || (
 	sdl? ( media\-libs/libsdl )
@@ -314,95 +315,85 @@ the user does not specify any of the previous choices.
 Note that if any of the packages listed are already merged, the package manager
 will use that to consider the dependency satisfied.
 
-.SS "Cross-compilation"
-Portage supports cross-compilation into a subdirectory specified by \fBROOT\fR.
-.TP
-.B Host
-\fIHost\fR in this context means the platform hosting the build process, i.e.
-what autotools calls CBUILD.
-Its packages are contained in the root of the filesystem ("\fI/\fR").
-
-If \fBROOT\fR is "\fI/\fR", all dependency types will be installed there.
-Otherwise, for EAPIs that support \fBHDEPEND\fR (experimental
-\fBEAPI 5-hdepend\fR), only \fBHDEPEND\fR is installed into "\fI/\fR".
-For EAPIs that do not support \fBHDEPEND\fR, the behaviour is controlled by the
-\fI\-\-root-deps\fR flag to \fBemerge\fR(1), defaulting to install only
-\fBDEPEND\fR into the \fIhost\fR.
-.TP
-.B Target
-\fITarget\fR refers to the platform that the package will later run on, i.e.
-what autotools calls CHOST.
-The directory housing this system is specified by \fBROOT\fR.
-If it is different from "\fI/\fR", i.e. \fIhost\fR and \fItarget\fR are not the
-same, this variable contains the path to the directory housing the \fItarget\fR
-system.
-
-For EAPIs that support \fBHDEPEND\fR (experimental \fBEAPI 5-hdepend\fR),
-\fBDEPEND\fR, \fBRDEPEND\fR, and \fBPDEPEND\fR
-list the \fItarget\fR dependencies, i.e. those to be installed into \fBROOT\fR.
-For EAPIs that do not support \fBHDEPEND\fR, the \fBemerge\fR(1) flag
-\fI\-\-root-deps\fR controls what the package manager installs there.
-Without it, \fBemerge\fR defaults to install only runtime dependencies (i.e.
-\fBRDEPEND\fR and \fBPDEPEND\fR) into \fBROOT\fR.
-.PP
-See section \fBVARIABLES\fR for more information about the \fBDEPEND\fR,
-\fBRDEPEND\fR and \fBHDEPEND\fR variables.
-.TP
-.B The targetroot USE flag
-For EAPIs that support the "\fItargetroot\fR" USE flag, that flag is
-automatically enabled by the package manager if \fIhost\fR and \fItarget\fR
-system are not the same, i.e. if the \fBROOT\fR is not "\fI/\fR".
-This is necessary where the package to be built needs an executable copy of
-itself during the build process.
-A known example is dev-lang/python, which needs to run a Python interpreter
-during compilation.
-
-.SH "VARIABLES"
-.TP
-.B Usage Notes
-\- Variables defined in \fBmake.conf\fR(5) are available for use in
+.SS Variable Usage Notes
+.RS
+.IP \(bu 2
+Variables defined in \fBmake.conf\fR(5) are available for use in
 ebuilds (except Portage\-specific variables, which might be not supported by
 other package managers).
-.br
-\- When assigning values to variables in ebuilds, you \fIcannot have a
+.IP \(bu
+When assigning values to variables in ebuilds, you \fIcannot have a
 space\fR between the variable name and the equal sign.
-.br
-\- Variable values should only contain characters that are members of the
+.IP \(bu
+Variable values should only contain characters that are members of the
 \fBascii\fR(7) character set. This requirement is mandated by \fBGLEP 31\fR.
+.RE
+
+.SS "Variables Used In Ebuilds"
+.TP
+.B ARCH
+This variable contains the official Gentoo\-specific acronym for the current
+architecture of the running system. For an authoritative list please
+review /var/db/repos/gentoo/profiles/arch.list.
 .TP
 .B P
 This variable contains the package name without the ebuild revision.
 This variable must NEVER be modified.
 
-xfree\-4.2.1\-r2.ebuild \-\-> $P=='xfree\-4.2.1'
+\fBExample\fR:
+.nf
+	x11\-base/xorg\-server\-1.20.5\-r2 \-\-> '\fIxorg\-server\-1.20.5\fR'
+.fi
 .TP
 .B PN
 Contains the name of the script without the version number.
 
-xfree\-4.2.1\-r2.ebuild \-\-> $PN=='xfree'
+\fBExample\fR:
+.nf
+	x11\-base/xorg\-server\-1.20.5\-r2 \-\-> '\fIxorg\-server\fR'
+.fi
 .TP
 .B PV
 Contains the version number without the revision.
 
-xfree\-4.2.1\-r2.ebuild \-\-> $PV=='4.2.1'
+\fBExample\fR:
+.nf
+	x11\-base/xorg\-server\-1.20.5\-r2 \-\-> '\fI1.20.5\fR'
+.fi
 .TP
 .B PR
 Contains the revision number or 'r0' if no revision number exists.
 
-xfree\-4.2.1\-r2.ebuild \-\-> $PR=='r2'
+\fBExample\fR:
+.nf
+	x11\-base/xorg\-server\-1.20.5\-r2 \-\-> '\fIr2\fR'
+.fi
 .TP
 .B PVR
-Contains the version number with the revision.
+Contains the version number with the revision (if non-zero).
 
-xfree\-4.2.1\-r2.ebuild \-\-> $PVR=='4.2.1\-r2'
+\fBExample\fR:
+.nf
+	x11\-base/xorg\-server\-1.20.5 \-\-> '\fI1.20.5\fR'
+	x11\-base/xorg\-server\-1.20.5\-r2 \-\-> '\fI1.20.5\-r2\fR'
+.fi
 .TP
 .B PF
 Contains the full package name \fBPN\fR\-\fBPVR\fR
 
-xfree\-4.2.1\-r2.ebuild \-\-> $PF=='xfree\-4.2.1\-r2'
+\fBExamples\fR:
+.nf
+	x11\-base/xorg\-server\-1.20.5 \-\-> '\fIxorg\-server\-1.20.5\fR'
+	x11\-base/xorg\-server\-1.20.5\-r2 \-\-> '\fIxorg\-server\-1.20.5\-r2\fR'
+.fi
 .TP
 .B CATEGORY
 Contains the package category name.
+
+\fBExample\fR:
+.nf
+	x11\-base/xorg\-server\-1.20.5\-r2 \-\-> '\fIx11\-base\fR'
+.fi
 .TP
 .B A
 Contains all source files required for the package.  This variable must
@@ -411,9 +402,9 @@ not be defined. It is autogenerated from the \fBSRC_URI\fR variable.
 .B WORKDIR\fR = \fI"${PORTAGE_TMPDIR}/portage/${CATEGORY}/${PF}/work"
 Contains the path to the package build root.  Do not modify this variable.
 .TP
-.B FILESDIR\fR = \fI"${repository_location}/${CATEGORY}/${PN}/files"
-Contains the path to the 'files' subdirectory in the package specific
-location in given repository.  Do not modify this variable.
+.B FILESDIR\fR = \fI"${PORTAGE_TMPDIR}/${CATEGORY}/${PF}/files"
+Contains the path to the directory in which package-specific auxiliary
+files are located.  Do not modify this variable.
 .TP
 .B EBUILD_PHASE
 Contains the abreviated name of the phase function that is
@@ -450,6 +441,9 @@ should be prefixed with ${D}.
 Beginning with \fBEAPI 3\fR, the offset prefix often needs
 to be taken into account here, for which the variable
 ${ED} is provided (see below).
+Note that with \fBEAPI 7\fR, any trailing slash
+contained in this path will be automatically removed for ease of concatenating
+paths within ebuilds.
 Do not modify this variable.
 .TP
 .B ED\fR = \fI"${PORTAGE_TMPDIR}/portage/${CATEGORY}/${PF}/image/${EPREFIX}/"
@@ -457,7 +451,9 @@ Beginning with \fBEAPI 3\fR, contains the path
 "${D%/}${EPREFIX}/" for convenience purposes.
 For EAPI values prior to \fBEAPI 3\fR which do
 not support ED, helpers use \fBD\fR where
-they would otherwise use ED.
+they would otherwise use ED. Note that with \fBEAPI 7\fR, any trailing slash
+contained in this path will be automatically removed for ease of concatenating
+paths within ebuilds.
 Do not modify this variable.
 .TP
 .B MERGE_TYPE
@@ -484,7 +480,7 @@ excluded during genertion of \fBPROVIDES\fR metadata (see
 possible to create patterns containing quoted whitespace.
 .TP
 .B PORTAGE_LOG_FILE
-Contains the path of the build log. If \fBPORT_LOGDIR\fR variable is unset then
+Contains the path of the build log. If \fBPORTAGE_LOGDIR\fR variable is unset then
 PORTAGE_LOG_FILE=\fI"${T}/build.log"\fR.
 .TP
 .B PORTAGE_SOCKS5_PROXY
@@ -516,6 +512,18 @@ excluded during generation of \fBREQUIRES\fR metadata (see
 possible to create patterns containing quoted whitespace.
 .TP
 .B ROOT\fR = \fI"/"
+Please note an important recent change regarding the ROOT variable -- in \fBEAPI 7\fR ebuilds,
+this variable will default to "" rather than the traditional "/" within ebuilds
+when pointing to the root filesystem, and when set to a non-root path
+this variable will never contain a trailing slash. This has the added
+convenience of eliminating the need to
+specify "${ROOT%/}" when concatenating paths, making the use of ROOT
+more elegant. This applies to the variables EROOT, D and ED as well. Please
+make note that this will
+mean that ebuilds must use different logic in conditionals to determine if
+they are installing to the root filesystem -- use [[ "$ROOT" == "" ]] instead of
+[[ "$ROOT" == "/" ]].
+
 Contains the path that portage should use as the root of the live filesystem.
 When packages wish to make changes to the live filesystem, they should do so in
 the tree prefixed by ${ROOT}.  Often the offset prefix needs to be taken
@@ -525,7 +533,16 @@ below).  Do not modify this variable.
 .B EROOT\fR = \fI"${ROOT%/}${EPREFIX}/"
 Beginning with \fBEAPI 3\fR, contains
 "${ROOT%/}${EPREFIX}/" for convenience
-purposes. Do not modify this variable.
+purposes. Do not modify this variable. Also see the important note regarding
+ROOT with \fBEAPI 7\fR, above. As with ROOT, EROOT will be defined as ""
+when set to the root filesystem and never have a trailing slash within an
+ebuild.
+.TP
+.B BROOT\fR = \fI"${EPREFIX}"
+Beginning with \fBEAPI 7\fR, the absolute path to the root directory
+containing build dependencies satisfied by BDEPEND, typically
+executable build tools. This includes any applicable offset prefix. Do
+not modify this variable.
 .TP
 .B DESCRIPTION\fR = \fI"A happy little package"
 Should contain a short description of the package.
@@ -554,16 +571,61 @@ file name, should be separated by whitespace.
 Should contain a list of URIs for the sources main sites and other further
 package dependent information.
 .TP
-.B KEYWORDS\fR = \fI[\-~][x86,ppc,sparc,mips,alpha,arm,hppa]
-Should contain appropriate list of arches that the ebuild is know to
-work/not work.  By default if you do not know if an ebuild runs under
-a particular arch simply omit that KEYWORD.  If the ebuild will not
-work on that arch include it as \-ppc for example.  If the ebuild is
-being submitted for inclusion, it must have ~arch set for architectures
-where it has been PROVEN TO WORK.  (Packages KEYWORDed this way may be
-unmasked for testing by setting ACCEPT_KEYWORDS="~arch" on the command
-line, or in \fBmake.conf\fR(5)) For an authoritative list please review
-/usr/portage/profiles/arch.list.  Please keep this list in alphabetical order.
+.B KEYWORDS\fR = \fI[\-~][x86,ppc,sparc,mips,alpha,arm,hppa,...]
+.P
+
+KEYWORDS works in conjunction with ACCEPT_KEYWORDS (see \fBmake.conf\fR(5))
+to implement a system of creating sets of different types of packages
+which can then be masked or unmasked en masse. In the Gentoo Linux
+project, they are used by the Gentoo arch teams to define what ebuilds
+are included in a particular CPU architecture's set of stable and unstable
+unmasked packages.
+
+Here's how they work. For purposes of explanation, let's assume you have
+a stable x86\-64bit system, typically referred to as "amd64".
+ARCH would be defined as "amd64". If you were using the stable build of
+Gentoo Linux, then ACCEPT_KEYWORDS would be set to "amd64" via profiles.
+Any ebuild that then has
+"amd64" in KEYWORDS will be unmasked by default.
+
+On an "unstable"
+amd64 system, ACCEPT_KEYWORDS will be set to "amd64 ~amd64", with the
+tilde denoting "unstable." Then, if an ebuild has \fIeither\fR
+"amd64" or "~amd64" in KEYWORDS, it will be keyword unmasked by default on
+that system. Similarly, if an ebuild is known to not be compatible
+with a particular architecture, the "\-" prefix ( i.e. "\-amd64") setting
+can be specified to mask it only on that arch.
+.P
+If you are developing ebuilds for Gentoo Linux, there are certain
+policies regarding KEYWORDS that you are expected to follow in order
+to align with Gentoo's arch team workflow. The most important
+policies are listed below:
+.RS
+.IP \(bu 2
+If you do not know if an ebuild runs under a particular arch, then do not
+specify it in KEYWORDS.
+It will then be masked by default on that architecture.
+.IP \(bu
+If the ebuild is known not to work on an arch, disable that arch in KEYWORDS.
+This would be done by specifying "\-ppc", for example. This will ensure that
+it is explicitly keyword\-masked for that architecture.
+.IP \(bu
+When submitting an ebuild to Gentoo Linux, it is the project policy to only
+have "~arch" set in KEYWORDS
+for the architecture for which it has been successfully tested, and no more.
+As the ebuild receives more testing, Gentoo arch teams will gradually expand
+the KEYWORDS settings to "bump" the package to unstable, and possibly stable.
+
+It is possible to customize the behavior of ACCEPT_KEYWORDS and KEYWORDS on
+a per\-package basis using package.accept_keywords and package.keywords files
+in profiles. See \fBportage\fR(5) for more information on using these files.
+.RE
+.P
+Note that while other Gentoo\-based projects
+have KEYWORDS and ACCEPT_KEYWORDS, they likely will not have exactly
+the same policies regarding their use. Therefore, it is necessary that you
+research their specific policies and how they differ from Gentoo.
+.RE
 .TP
 .B SLOT
 This sets the SLOT for packages that may need to have multiple versions
@@ -586,8 +648,8 @@ usage.
 .B LICENSE
 This should be a space delimited list of licenses that the package falls
 under.  This \fB_must_\fR be set to a matching license in
-/usr/portage/licenses/. If the license does not exist in portage yet, you
-must add it first.
+/var/db/repos/gentoo/licenses/. If the license does not exist in the repository
+yet, you must add it first.
 .TP
 .B IUSE
 This should be a list of any and all USE flags that are leveraged within
@@ -606,10 +668,9 @@ This should contain a list of all packages that are required for the program
 to compile (aka \fIbuildtime\fR dependencies).  These are usually libraries and
 headers.
 
-Starting from experimental \fBEAPI 5-hdepend\fR, tools should go into the
-\fBHDEPEND\fR variable instead, as \fBDEPEND\fR will only be installed into the
-\fItarget\fR system and hence cannot be executed in a cross\-compile setting.
-(See section \fBCross\-compilation\fR for more information.)
+Starting from \fBEAPI 7\fR, tools should go into the \fBBDEPEND\fR
+variable instead, as \fBDEPEND\fR will only be installed into the
+system being built and hence cannot be executed when cross-compiling.
 
 You may use the syntax described above in the \fBDependencies\fR section.
 .TP
@@ -623,14 +684,16 @@ implicitly set.
 
 You may use the syntax described above in the \fBDependencies\fR section.
 .TP
-.B HDEPEND
-This should contain a list of all packages that are required to be executable
-during compilation of this program (aka \fIhost\fR buildtime dependencies).
-These are usually tools, like interpreters or (cross\-)compilers.
+.B BDEPEND
+This should contain a list of all packages that are required to be
+executable during compilation of this program (aka \fInative build\fR
+dependencies).  These are usually tools, like interpreters or
+(cross\-)compilers.  They will be installed into the system performing
+the build.
 
-This variable is new in experimental \fBEAPI 5-hdepend\fR and will be installed
-into the \fIhost\fR system.
-(See section \fBCross-compilation\fR for more information.)
+This variable was formally introduced in \fBEAPI 7\fR but was
+previously known as \fBHDEPEND\fR in the experimental
+\fBEAPI 5-hdepend\fR.
 
 You may use the syntax described above in the \fBDependencies\fR section.
 .TP
@@ -689,6 +752,10 @@ binaries that are not compatible with debugedit.
 .I mirror
 files in \fBSRC_URI\fR will not be downloaded from the \fBGENTOO_MIRRORS\fR.
 .TP
+.I network\-sandbox
+Disables the network namespace for specific packages.
+Should not be used in the main Gentoo tree.
+.TP
 .I preserve\-libs
 Disables preserve\-libs for specific packages. Note than when a package is
 merged, RESTRICT=preserve\-libs applies if either the new instance or the
@@ -713,25 +780,19 @@ Disables userpriv for specific packages.
 .RE
 .PD 1
 .TP
-.B PROPERTIES\fR = \fI[interactive]
+.B PROPERTIES\fR = \fI[interactive,live]
 A space delimited list of properties, with conditional syntax support.
 .PD 0
 .RS
 .TP
 .I interactive
 One or more ebuild phases will produce a prompt that requires user interaction.
+.TP
+.I live
+The package uses live source code that may vary each time that the package
+is installed.
 .RE
 .PD 1
-.TP
-.B PROVIDE\fR = \fI"virtual/TARGET"
-This variable should only be used when a package provides a virtual target.
-For example, blackdown\-jdk and sun\-jdk provide \fIvirtual/jdk\fR.  This
-allows for packages to depend on \fIvirtual/jdk\fR rather than on blackdown
-or sun specifically.
-
-The \fBPROVIDE\fR variable has been deprecated. See
-\fIhttps://wiki.gentoo.org/wiki/GLEP:37\fR for details.
-
 .TP
 .B DOCS
 Beginning with \fBEAPI 4\fR, an array or space\-delimited list of documentation
@@ -1082,20 +1143,28 @@ has a default value of ' ', or a space.  It is a \fBbash\fR(1) setting.
 .B hasv\fR \fI<item>\fR \fI<item list>
 Like \fBhas\fR, but also echoes \fIitem\fR when \fBhas\fR returns true.
 .TP
-.B has_version\fR \fI[\-\-host\-root]\fR \fI<category/package\-version>
-Check to see if \fIcategory/package\-version\fR is installed on the system.
-The parameter accepts all values that are acceptable in the \fBDEPEND\fR
-variable.  The function returns 0 if \fIcategory/package\-version\fR is
-installed, 1 otherwise. Beginning with \fBEAPI 5\fR, the
-\-\-host\-root option may be used in order to cause the query
-to apply to the host root instead of ${ROOT}.
+.B has_version\fR \fI[\-b]\fR \fI[\-d]\fR \fI[\-r]\fR \fI[\-\-host\-root]\fR \fI<category/package\-version>
+Check to see if \fIcategory/package\-version\fR is installed.  The
+parameter accepts all values that are acceptable in the \fBDEPEND\fR
+variable.  The function returns 0 if \fIcategory/package\-version\fR
+is installed, 1 otherwise. The package is searched for in \fBROOT\fR
+by default.
+
+In \fBEAPI 5\fR and \fBEAPI 6\fR, the package is searched for in the
+build host if the \fI\-\-host\-root\fR option is given.
+
+In \fBEAPI 7\fR and later, the confusing \fI\-\-host\-root\fR option
+has been replaced with \fI\-b\fR, which corresponds to a dependency
+satisfied by \fBBDEPEND\fR in the build host.  Similarly, the
+\fI\-d\fR option corresponds to \fBDEPEND\fR in \fBSYSROOT\fR and the
+\fI\-r\fR option corresponds to \fBRDEPEND\fR in \fBROOT\fR.
 .TP
-.B best_version\fR \fI[\-\-host\-root]\fR \fI<package name>
-This function will look up \fIpackage name\fR in the database of currently
-installed programs and echo the "best version" of the package that is
-currently installed. Beginning with \fBEAPI 5\fR, the
-\-\-host\-root option may be used in order to cause the query
-to apply to the host root instead of ${ROOT}.
+.B best_version\fR \fI[\-b]\fR \fI[\-d]\fR \fI[\-r]\fR \fI[\-\-host\-root]\fR \fI<package name>
+This function will look up \fIpackage name\fR in the database of
+currently installed packages and echo the "best version" of the
+package that is found or nothing if no version is installed.  The
+package is searched for in \fBROOT\fR by default.  It accepts the same
+options as \fBhas_version\fR.
 
 Example:
 .nf
@@ -1103,16 +1172,6 @@ Example:
 	(VERINS now has the value "net\-ftp/glftpd\-1.27" if glftpd\-1.27 is \
 	installed)
 .fi
-
-.SS "Hooks:"
-.TP
-.B register_die_hook\fR \fI[list of function names]
-Register one or more functions to call when the ebuild fails for any reason,
-including file collisions with other packages.
-.TP
-.B register_success_hook\fR \fI[list of function names]
-Register one or more functions to call when the ebuild builds and/or installs
-successfully.
 
 .SS "Output:"
 .TP
@@ -1225,70 +1284,6 @@ Please do \fBnot\fR use this in place of 'emake install DESTDIR=${D}'.
 That is the preferred way of installing make\-based packages.  Also, do
 not utilize the \fIEXTRA_EINSTALL\fR variable since it is for users.
 
-.PD 0
-.TP
-.B prepall
-.TP
-.B prepalldocs
-.TP
-.B prepallinfo
-.TP
-.B prepallman
-.TP
-.B prepallstrip
-.PD 1
-Useful for when a package installs into \fB${D}\fR via scripts
-(i.e. makefiles).  If you want to be sure that libraries are executable,
-aclocal files are installed into the right place, doc/info/man files are
-all compressed, and that executables are all stripped of debugging symbols,
-then use these suite of functions.
-.RS
-.PD 0
-.TP
-.B prepall:
-Runs \fBprepallman\fR, \fBprepallinfo\fR, \fBprepallstrip\fR, sets
-libraries +x, and then checks aclocal directories.  Please note this
-does \fI*not*\fR run \fBprepalldocs\fR.
-.TP
-.B prepalldocs:
-Compresses all doc files in ${ED}/usr/share/doc.
-.TP
-.B prepallinfo:
-Compresses all info files in ${ED}/usr/share/info.
-.TP
-.B prepallman:
-Compresses all man files in ${ED}/usr/share/man.
-.TP
-.B prepallstrip:
-Strips all executable files of debugging symboles.  This includes libraries.
-.RE
-
-.TP
-.B prepinfo\fR \fI[dir]
-.TP
-.B prepman\fR \fI[dir]
-.TP
-.B prepstrip\fR \fI[dir]
-.PD 1
-Similar to the \fBprepall\fR functions, these are subtle in their differences.
-.RS
-.PD 0
-.TP
-.B prepinfo:
-If a \fIdir\fR is not specified, then \fBprepinfo\fR will assume the dir
-\fIusr\fR. \fBprepinfo\fR will then compress all the files in
-${ED}/\fIdir\fR/info.
-.TP
-.B prepman:
-If a \fIdir\fR is not specified, then \fBprepman\fR will assume the dir
-\fIusr\fR. \fBprepman\fR will then compress all the files in
-${ED}/\fIdir\fR/man/*/.
-.TP
-.B prepstrip:
-All the files found in ${ED}/\fIdir\fR will be stripped.  You may specify
-multiple directories.
-.RE
-.PD 1
 .TP
 .B docompress\fR \fI[\-x] <path> [list of more paths]
 .RS
@@ -1345,7 +1340,8 @@ Creates directories inside of ${ED}.
 .br
 .BR 'dodir\ /usr/lib/apache'
 creates ${ED}/usr/lib/apache.  Note that the do* functions will run
-\fBdodir\fR for you.
+\fBdodir\fR for you. If this directory will be empty when it is merged,
+then please use \fBkeepdir\fR instead.
 .TP
 .B diropts\fR \fI[options for install(1)]
 Can be used to define options for the install function used in
@@ -1358,8 +1354,9 @@ Sets the root (\fIDESTTREE\fR) for other functions like \fBdobin\fR,
 The default root is /usr.
 .TP
 .B keepdir\fR \fI<path> [more paths]
-Tells portage to leave directories behind even if they're empty.  Functions
-the same as \fBdodir\fR.
+Similar to \fBdodir\fR, but used to create directories that would otherwise
+be empty. The treatment of completely\-empty directories is undefined by
+PMS, and using \fBkeepdir\fR ensures that they are tracked.
 .TP
 .B dobin\fR \fI<binary> [list of more binaries]
 Installs a \fIbinary\fR or a list of binaries into \fIDESTTREE\fR/bin.
