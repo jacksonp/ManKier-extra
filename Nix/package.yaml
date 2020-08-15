@@ -1,0 +1,9 @@
+Name: Nix
+Version: 2.2.2
+URL: https://nixos.org/
+Summary: Package manager that makes package management reliable and reproducible
+Description: Nix is a purely functional package manager. This means that it
+  treats packages like values in purely functional programming languages such as
+  Haskell — they are built by functions that don’t have side-effects, and they
+  never change after they have been built. Nix stores packages in the Nix store,
+  usually the directory /nix/store.

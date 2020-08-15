@@ -1,0 +1,7 @@
+Name: kmscon
+Version: 8
+URL: http://www.freedesktop.org/wiki/Software/kmscon
+Summary: Terminal emulator based on linux kernel mode setting.
+Description: Kmscon is a simple terminal emulator based on linux kernel mode
+  setting (KMS). It is an attempt to replace the in-kernel VT implementation
+  with a userspace console.

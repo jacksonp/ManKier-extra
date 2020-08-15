@@ -1,0 +1,8 @@
+Name: NixOS
+Version: 16.03
+URL: https://nixos.org/
+Summary: Linux distro with a unique approach to package management
+Description: NixOS is a Linux distribution with a unique approach to package and
+  configuration management. Built on top of the Nix package manager, it is
+  completely declarative, makes upgrading systems reliable, and has many other
+  advantages.

@@ -1,0 +1,14 @@
+Name: Portage
+Version: 3.0.2
+URL: https://wiki.gentoo.org/wiki/Project:Portage
+Summary: Package management system based on ports collections.
+Description: Portage is a GPLv2 package management system based on ports
+  collections. The Package Manager Specification Project (PMS) standardizes and
+  documents the behavior of Portage so that the Gentoo packages can be managed
+  by other package managers. Some alternative package managers for Gentoo
+  include Paludis and pkgcore.
+
+  The goal of the Portage project is to provide a seamless integration of
+  developer and user tools to aid the growth and maintenance of Gentoo packages.
+  This means we work not only on Portage itself, but also on associated tools,
+  and on ensuring that our APIs are useful to other tools.

@@ -1,0 +1,10 @@
+Name: yum
+Version: 3.4.3
+URL: http://yum.baseurl.org/
+Summary: Yellowdog Updater Modified
+Description: Yum is an automatic updater and package installer/remover for rpm
+  systems. It automatically computes dependencies and figures out what things
+  should occur to install packages. It makes it easier to maintain groups of
+  machines without having to manually update each one using rpm. Yum has a
+  plugin interface for adding simple features. Yum can also be used from other
+  python programs via its module inteface.

@@ -1,0 +1,7 @@
+Name: nitrocli
+Version: 0.3.3
+URL: https://github.com/d-e-s-o/nitrocli
+Summary: CLI for interaction with Nitrokey Pro and Nitrokey Storage devices
+Description: nitrocli provides access to Nitrokey devices. It supports the
+  Nitrokey Pro and the Nitrokey Storage. It can be used to access the encrypted
+  volume, the one-time password generator, and the password safe.
