@@ -1,0 +1,459 @@
+'\" t
+.\"     Title: tabjson
+.\"    Author: Vinícius dos Santos Oliveira
+.\" Generator: Asciidoctor 2.0.15
+.\"      Date: 2021-06-09
+.\"    Manual: GNU Awk Extension Modules
+.\"    Source: tabjson 0.1.0
+.\"  Language: English
+.\"
+.TH "TABJSON" "3am" "2021-06-09" "tabjson 0.1.0" "GNU Awk Extension Modules"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+tabjson \- direct processing of JSON streams with GAWK
+.SH "SYNOPSIS"
+.sp
+\fB@load "tabjson"\fP
+.sp
+BEGIN { \fBJPAT\fP[1] = "\fI/path/1\fP"; \fBJPAT\fP[2] = "\fI/path/2\fP"; ...;
+\fBJPAT\fP[\fIn\fP] = "\fI/path/n\fP" }
+.br
+BEGIN { \fBJUNWIND\fP = \fIn2\fP }
+.br
+# rules with \fBJ\fP[1], \fBJ\fP[2], ..., \fBJ\fP[\fIn\fP]
+.br
+# rules with \fBJ\fP[\fIn2\fP], \fBJUINDEX\fP, and \fBJULENGTH\fP
+.sp
+\fBtabjson::sprint()\fP
+.SH "DESCRIPTION"
+.sp
+Tabjson works by providing a tabular view to a stream of line\-delimited JSON
+objects. The "columns" of the virtual table are declared by filling the \fBJPAT\fP
+array variable. Each element in this array is an expression similar to JSON
+pointer expressions as specified in RFC6901. The sole difference between JSON
+pointer expressions and tabjson expressions is that the latter uses 1\-indexed
+array access to respect AWK conventions.
+.sp
+Given the following input:
+.sp
+.if n .RS 4
+.nf
+.fam C
+{ "name": "Beth", "pay_rate": 4.00, "hours_worked": 0 }
+{ "name": "Dan", "pay_rate": 3.75, "hours_worked": 0 }
+{ "name": "Kathy", "pay_rate": 4.00, "hours_worked": 10 }
+{ "name": "Mark", "pay_rate": 5.00, "hours_worked": 20 }
+{ "name": "Mary", "pay_rate": 5.50, "hours_worked": 22 }
+{ "name": "Susie", "pay_rate": 4.25, "hours_worked": 18 }
+.fam
+.fi
+.if n .RE
+.sp
+And the following AWK code:
+.sp
+.if n .RS 4
+.nf
+.fam C
+BEGIN {
+    JPAT[1] = "/name"
+    JPAT[2] = "/pay_rate"
+    JPAT[3] = "/hours_worked"
+}
+J[3] > 0 { print J[1], J[2] * J[3] }
+.fam
+.fi
+.if n .RE
+.sp
+The output will be:
+.sp
+.if n .RS 4
+.nf
+.fam C
+Kathy 40
+Mark 100
+Mary 121
+Susie 76.5
+.fam
+.fi
+.if n .RE
+.sp
+\fBJPAT\fP is similar to \fBFPAT\fP. What happened here is that we taught tabjson how to
+find the field contents. Behind the scenes, a decision tree is built when \fBJPAT\fP
+changes before a call to \fBgetline\fP. This decision tree will instruct tabjson
+which element in the \fBJ\fP array must be updated as it encounters values in the
+JSON token stream.
+.sp
+In other words, the algorithm is one\-pass, but also robust. The algorithm is not
+sensitive to the order of fields in the input JSON. Given the following input:
+.sp
+.if n .RS 4
+.nf
+.fam C
+{ "foo": 1, "bar": 2 }
+{ "bar": 3, "foo": 4 }
+{ "foo": 5 }
+{ "bar": 6 }
+.fam
+.fi
+.if n .RE
+.sp
+And the following AWK code:
+.sp
+.if n .RS 4
+.nf
+.fam C
+BEGIN {
+    JPAT[1] = "/foo"
+    JPAT[2] = "/bar"
+}
+{ print "foo=" J[1], "bar=" J[2] }
+.fam
+.fi
+.if n .RE
+.sp
+The output will be:
+.sp
+.if n .RS 4
+.nf
+.fam C
+foo=1 bar=2
+foo=4 bar=3
+foo=5 bar=
+foo= bar=6
+.fam
+.fi
+.if n .RE
+.sp
+Besides arbitrary ordering (as it should be given JSON mandates no ordering),
+tabjson also supports arbitrary nesting for extracted fields (cf. RFC6901 for
+full path specification).
+.SS "Updating JSON documents"
+.sp
+You can update the JSON document in the current record just by changing the
+values in the \fBJ\fP array variable. When you\(cqre ready to serialize a new JSON
+document, just call \fBtabjson::sprint()\fP. This function returns the new
+serialized JSON document.
+.sp
+Given the following input:
+.sp
+.if n .RS 4
+.nf
+.fam C
+{ "name": "Beth", "pay_rate": 4.00, "hours_worked": 0 }
+{ "name": "Dan", "pay_rate": 3.75, "hours_worked": 0 }
+{ "name": "Kathy", "pay_rate": 4.00, "hours_worked": 10 }
+{ "name": "Mark", "pay_rate": 5.00, "hours_worked": 20 }
+{ "name": "Mary", "pay_rate": 5.50, "hours_worked": 22 }
+{ "name": "Susie", "pay_rate": 4.25, "hours_worked": 18 }
+.fam
+.fi
+.if n .RE
+.sp
+And the following AWK code:
+.sp
+.if n .RS 4
+.nf
+.fam C
+BEGIN {
+    JPAT[1] = "/hours_worked"
+    JPAT[2] = "/pay_rate"
+}
+J[1] > 15 { J[2] += 0.5 }
+{ print tabjson::sprint() }
+.fam
+.fi
+.if n .RE
+.sp
+The output will be:
+.sp
+.if n .RS 4
+.nf
+.fam C
+{ "name": "Beth", "pay_rate": 4.00000000000000, "hours_worked": 0.00000000000000 }
+{ "name": "Dan", "pay_rate": 3.75000000000000, "hours_worked": 0.00000000000000 }
+{ "name": "Kathy", "pay_rate": 4.00000000000000, "hours_worked": 10.0000000000000 }
+{ "name": "Mark", "pay_rate": 5.50000000000000, "hours_worked": 20.0000000000000 }
+{ "name": "Mary", "pay_rate": 6.00000000000000, "hours_worked": 22.0000000000000 }
+{ "name": "Susie", "pay_rate": 4.75000000000000, "hours_worked": 18.0000000000000 }
+.fam
+.fi
+.if n .RE
+.sp
+This process is cheap as it only performs string concatenation from the offsets
+stored during the parsing phase. In other words, only the changed parts of the
+JSON document need to be re\-serialized. This strategy allows you to perform a
+small number of modifications in big JSON documents pretty efficiently. Also
+unreferenced fields suffer no loss of representation (e.g. numerical values not
+mentioned in \fBJPAT\fP are fully preserved bit\-by\-bit).
+.sp
+Tabjson will also preserve boolean types. If a value was originally boolean and
+you set \fBJ\fP[\fIn\fP] to \f(CR1\fP or \f(CR0\fP, the field will stay a boolean. However any
+numeric value other than \f(CR1\fP or \f(CR0\fP will coerce the type to a number.
+.sp
+Values deleted from \fBJ\fP are converted to the \fBnull\fP JSON token.
+.SS "Unwinding arrays"
+.sp
+Another feature from tabjson is the ability to emit multiple AWK records for a
+single JSON document that contains an array field. This feature was inspired by
+the MongoDB aggregation framework\(cqs \f(CR$unwind\fP operator. Just specify the array
+field to flatten by filling the \fBJUNWIND\fP variable. For instance, given the
+following data set:
+.sp
+.if n .RS 4
+.nf
+.fam C
+{ "_id" : "jane", "joined" : "2011\-03\-02", "likes" : ["golf", "racquetball"] }
+{ "_id" : "joe", "joined" : "2012\-07\-02", "likes" : ["tennis", "golf", "swimming"] }
+.fam
+.fi
+.if n .RE
+.sp
+And the following AWK program:
+.sp
+.if n .RS 4
+.nf
+.fam C
+BEGIN {
+    JPAT[1] = "/likes"
+    JUNWIND = 1 #< index in JPAT array
+}
+{ print NR, tabjson::sprint() }
+.fam
+.fi
+.if n .RE
+.sp
+The output will be:
+.sp
+.if n .RS 4
+.nf
+.fam C
+1 { "_id" : "jane", "joined" : "2011\-03\-02", "likes" : "golf" }
+2 { "_id" : "jane", "joined" : "2011\-03\-02", "likes" : "racquetball" }
+3 { "_id" : "joe", "joined" : "2012\-07\-02", "likes" : "tennis" }
+4 { "_id" : "joe", "joined" : "2012\-07\-02", "likes" : "golf" }
+5 { "_id" : "joe", "joined" : "2012\-07\-02", "likes" : "swimming" }
+.fam
+.fi
+.if n .RE
+.sp
+And this other AWK program:
+.sp
+.if n .RS 4
+.nf
+.fam C
+BEGIN {
+    JPAT[1] = "/likes"
+    JUNWIND = 1
+}
+{ likes[J[1]] += 1 }
+END {
+    PROCINFO["sorted_in"] = "@val_num_desc"
+    for (like in likes) {
+        print like, likes[like]
+    }
+}
+.fam
+.fi
+.if n .RE
+.sp
+Will output:
+.sp
+.if n .RS 4
+.nf
+.fam C
+golf 2
+tennis 1
+swimming 1
+racquetball 1
+.fam
+.fi
+.if n .RE
+.sp
+As each document is synthesized for that array element, the variable \fBJUINDEX\fP
+will hold the index from that element in the array. If that field wasn\(cqt an
+array and the document is just being passed through, \fBJUINDEX\fP has the value
+\f(CR0\fP. If \fBJUINDEX\fP\(aqs value is different than \f(CR0\fP, \fBJULENGTH\fP is also set with the
+array length. These two variables let you delimit array elements that have
+origin in the same document.
+.sp
+Using \fBJUINDEX\fP and \fBJULENGTH\fP it\(cqs also easy to create rules that compute means
+or only apply to the last element of an array, for instance.
+.SH "EXAMPLES"
+.sp
+.B Skip pong messages in certain journalD logs
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+journalctl SYSLOG_IDENTIFIER=my\-app \-o json \-f | gawk \-l jsontab \-e \(aq
+    BEGIN { JPAT[1] = "/MESSAGE/heartbeat_ts" }
+    1 in J { next }
+    1\(aq
+.fam
+.fi
+.if n .RE
+.sp
+.B Convert FEBE\(cqs cookie backup format to curl\(cqs cookiejar format
+.br
+.sp
+.if n .RS 4
+.nf
+.fam C
+@load "tabjson"
+
+BEGIN {
+    JPAT[EXPIRES            = 1] = "/expires"
+    JPAT[DOMAIN             = 2] = "/host"
+    JPAT[INCLUDE_SUBDOMAINS = 3] = "/isDomain"
+    JPAT[HTTPS_ONLY         = 4] = "/isSecure"
+    JPAT[NAME               = 5] = "/name"
+    JPAT[PATH               = 6] = "/path"
+    JPAT[VALUE              = 7] = "/value"
+
+    OFS="\(rst"
+
+    print "# Netscape HTTP Cookie File"
+    print "# http://softwarebychuck.com/febe/febe.html"
+}
+{
+    print J[DOMAIN],
+        J[INCLUDE_SUBDOMAINS] ? "TRUE" : "FALSE",
+        J[PATH],
+        J[HTTPS_ONLY] ? "TRUE" : "FALSE",
+        J[EXPIRES],
+        J[NAME],
+        J[VALUE]
+}
+.fam
+.fi
+.if n .RE
+.SH "LIMITATIONS"
+.SS "Shared references"
+.sp
+It\(cqs not possible to reference the same field twice as the algorithm employed by
+tabjson works in a decode\-at\-most\-once fashion.
+.sp
+.if n .RS 4
+.nf
+.fam C
+# will raise an error
+JPAT[1] = "/extra"
+JPAT[2] = "/extra/previous_company"
+.fam
+.fi
+.if n .RE
+.SS "Gaps in JPAT"
+.sp
+\fBJPAT\fP must be an array of elements without gaps from 1 to \fIN\fP.
+.sp
+.if n .RS 4
+.nf
+.fam C
+# wrong
+JPAT[1] = "/foo"
+JPAT[3] = "/bar"
+.fam
+.fi
+.if n .RE
+.SS "Features that haven\(cqt been implemented yet"
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Support for non\-line delimited JSON streams.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+MPFR support.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Respect OFMT.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Non\-UTF8 locales.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+New field insertion.
+.RE
+.SH "SEE ALSO"
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+RFC6901: JavaScript Object Notation (JSON) Pointer
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+Message detailing jpat\(cqs initial implementation:
+.URL "https://gitlab.com/\-/snippets/2016550" "" ""
+.RE
+.SH "AUTHOR"
+.sp
+Vinícius dos Santos Oliveira
