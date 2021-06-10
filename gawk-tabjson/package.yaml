@@ -1,0 +1,4 @@
+Name: gawk-tabjson
+Version: 0.1.0
+URL: https://gitlab.com/vinipsmaker/gawk-tabjson
+Summary: Process line-delimited JSON streams with GNU AWK
