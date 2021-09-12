@@ -1,0 +1,242 @@
+'\" t
+.\"     Title: zzz
+.\"    Author: [see the "AUTHOR(S)" section]
+.\" Generator: Asciidoctor 2.0.16
+.\"      Date: 2021-08-30
+.\"    Manual: \ \&
+.\"    Source: \ \&
+.\"  Language: English
+.\"
+.TH "ZZZ" "8" "2021-08-30" "\ \&" "\ \&"
+.ie \n(.g .ds Aq \(aq
+.el       .ds Aq '
+.ss \n[.ss] 0
+.nh
+.ad l
+.de URL
+\fI\\$2\fP <\\$1>\\$3
+..
+.als MTO URL
+.if \n[.g] \{\
+.  mso www.tmac
+.  am URL
+.    ad l
+.  .
+.  am MTO
+.    ad l
+.  .
+.  LINKSTYLE blue R < >
+.\}
+.SH "NAME"
+zzz, ZZZ \- suspend or hibernate your computer
+.SH "SYNOPSIS"
+.sp
+\fBzzz\fP [\-v] [\-n|s|S|z|Z|H|R|V|h]
+.br
+\fBZZZ\fP [\-v] [\-n|s|S|z|Z|H|R|V|h]
+.SH "DESCRIPTION"
+.sp
+\fBzzz\fP is a simple program to suspend or hibernate your computer.
+It supports hooks before and after suspending.
+.SH "OPTIONS"
+.sp
+\fB\-n\fP
+.RS 4
+Dry\-run mode.
+Instead of performing an ACPI action, \fBzzz\fP will just sleep for a few seconds.
+.RE
+.sp
+\fB\-s\fP, \fB\-S\fP
+.RS 4
+Enter low\-power idle mode (ACPI S1, kernel name \(lqfreeze\(rq).
+.RE
+.sp
+\fB\-z\fP
+.RS 4
+Enter suspend to RAM mode (ACPI S3, kernel name \(lqmem\(rq).
+This is the default for \fBzzz\fP.
+.RE
+.sp
+\fB\-Z\fP
+.RS 4
+Enter hibernate to disk mode (ACPI S4, kernel name \(lqdisk\(rq) and power off.
+This is the default for \fBZZZ\fP.
+.RE
+.sp
+\fB\-H\fP
+.RS 4
+Enter hibernate to disk mode and suspend.
+This is also know as suspend\-hybrid.
+.RE
+.sp
+\fB\-R\fP
+.RS 4
+Enter hibernate to disk mode and reboot.
+This can be used to switch operating systems.
+.RE
+.sp
+\fB\-v\fP
+.RS 4
+Be verbose.
+.RE
+.sp
+\fB\-V\fP
+.RS 4
+Print program name & version and exit.
+.RE
+.sp
+\fB\-h\fP
+.RS 4
+Print help message and exit.
+.RE
+.SH "FILES"
+.sp
+/etc/zzz.d/*
+.RS 4
+Hook scripts found in this directory are executed before/after the system is suspended/resumed by \fBzzz\fP.
+.RE
+.sp
+/etc/zzz.d/suspend/*
+.RS 4
+Hook scripts found in this directory are executed before the system is suspended by \fBzzz\fP.
+This directory is supported for compatibility with \f(CRzzz(8)\fP on Void Linux.
+.RE
+.sp
+/etc/zzz.d/suspend/*
+.RS 4
+Hook scripts found in this directory are executed after the system is resumed.
+This directory is supported for compatibility with \f(CRzzz(8)\fP on Void Linux.
+.RE
+.sp
+The hook script is a regular file (or a symlink) owned by root, executable by the owner and not writeable by others.
+Any other files found in the aforesaid directories are ignored.
+.sp
+The hook scripts are executed sequentially in alphabetic order with two arguments:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 1." 4.2
+.\}
+\(lqpre\(rq (before suspend), or \(lqpost\(rq (after resume),
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.  sp -1
+.  IP " 2." 4.2
+.\}
+the same as \fBZZZ_MODE\fP (see below).
+.RE
+.sp
+And the following environment variables:
+.sp
+ZZZ_MODE
+.RS 4
+The selected suspend mode; one of \(lqhibernate\(rq, \(lqnoop\(rq, \(lqstandby\(rq, or \(lqsuspend\(rq.
+.RE
+.sp
+ZZZ_HIBERNATE_MODE
+.RS 4
+The selected hibernate mode: \(lqplatform\(rq, \(lqreboot\(rq, or \(lqsuspend\(rq.
+.RE
+.SH "EXIT CODES"
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fB0\fP \(em Clean exit, no error has encountered.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fB1\fP \(em General error.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fB10\fP \(em Invalid usage.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fB11\fP \(em The requested sleep state or hibernation mode is not supported or you don\(cqt have insufficient privileges.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fB12\fP \(em Unable to obtain lock; another instance of \fBzzz\fP is running.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fB20\fP \(em Failed to put system to sleep.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.  sp -1
+.  IP \(bu 2.3
+.\}
+\fB21\fP \(em Some hook script exited with a non\-zero code. Note that \fBzzz\fP does not stop when a hook script fails.
+.RE
+.SH "LOGGING"
+.sp
+Information and debug messages are printed to STDOUT, error messages are printed to STDERR.
+All messages are also logged to syslog with ident string \(lqzzz\(rq and facility code 1 (user).
+.sp
+Debug messages are not printed and logged unless \fB\-v\fP is specified.
+.SH "HISTORY"
+.sp
+This program is inspired from \fBzzz(8)\fP script in Void Linux written by Leah Neukirchen.
+.SH "AUTHORS"
+.sp
+Jakub Jirutka
+.SH "REPORTING BUGS"
+.sp
+Report bugs to the project\(cqs issue tracker at \c
+.URL "https://github.com/jirutka/zzz/issues" "" "."
