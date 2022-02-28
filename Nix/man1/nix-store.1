@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nix-store
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: Command Reference
-.\"    Source: Nix 2.2.2
+.\"    Source: Nix 2.3.16
 .\"  Language: English
 .\"
-.TH "NIX\-STORE" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.TH "NIX\-STORE" "1" "01/01/1980" "Nix 2\&.3\&.16" "Command Reference"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -195,6 +195,10 @@ to use the number of CPUs in the system\&. The default is specified by the
 max\-jobs
 configuration setting, which itself defaults to
 1\&. A higher value is useful on SMP systems or to exploit I/O latency\&.
+.sp
+Setting it to
+0
+disallows building on the local machine, which is useful when you want builds to happen only on remote builders\&.
 .RE
 .PP
 \fB\-\-cores\fR
@@ -435,6 +439,49 @@ See also the
 \fBbuild\-repeat\fR
 configuration option, which repeats a derivation a number of times and prevents its outputs from being registered as \(lqvalid\(rq in the Nix store unless they are identical\&.
 .RE
+.PP
+Special exit codes:
+.PP
+100
+.RS 4
+Generic build failure, the builder process returned with a non\-zero exit code\&.
+.RE
+.PP
+101
+.RS 4
+Build timeout, the build was aborted because it did not complete within the specified
+timeout\&.
+.RE
+.PP
+102
+.RS 4
+Hash mismatch, the build output was rejected because it does not match the specified
+\fIoutputHash\fR\&.
+.RE
+.PP
+104
+.RS 4
+Not deterministic, the build succeeded in check mode but the resulting output is not binary reproducable\&.
+.RE
+.PP
+With the
+\fB\-\-keep\-going\fR
+flag it\*(Aqs possible for multiple failures to occur, in this case the 1xx status codes are or combined using binary or\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+1100100
+   ^^^^
+   |||`\- timeout
+   ||`\-\- output hash mismatch
+   |`\-\-\- build failure
+   `\-\-\-\- not deterministic
+.fi
+.if n \{\
+.RE
+.\}
 .SS "Examples"
 .PP
 This operation is typically used to build store derivations produced by
@@ -919,6 +966,36 @@ $ nix\-store \-\-add \&./foo\&.c
 .if n \{\
 .RE
 .\}
+.SH "OPERATION \-\-ADD\-FIXED"
+.SS "Synopsis"
+.HP \w'\fBnix\-store\fR\ 'u
+\fBnix\-store\fR [\fB\-\-recursive\fR] \fB\-\-add\-fixed\fR \fIalgorithm\fR \fIpaths\fR...
+.SS "Description"
+.PP
+The operation
+\fB\-\-add\-fixed\fR
+adds the specified paths to the Nix store\&. Unlike
+\fB\-\-add\fR
+paths are registered using the specified hashing algorithm, resulting in the same output path as a fixed output derivation\&. This can be used for sources that are not available from a public url or broke since the download expression was written\&.
+.PP
+This operation has the following options:
+.PP
+\fB\-\-recursive\fR
+.RS 4
+Use recursive instead of flat hashing mode, used when adding directories to the store\&.
+.RE
+.SS "Example"
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ nix\-store \-\-add\-fixed sha256 \&./hello\-2\&.10\&.tar\&.gz
+/nix/store/3x7dwzq014bblazs7kq20p9hyzz0qh8g\-hello\-2\&.10\&.tar\&.gz
+.fi
+.if n \{\
+.RE
+.\}
 .SH "OPERATION \-\-VERIFY"
 .SS "Synopsis"
 .HP \w'\fBnix\-store\fR\ 'u
@@ -1158,13 +1235,20 @@ ktorrent\-2\&.2\&.1/NEWS
 .SH "OPERATION \-\-DUMP\-DB"
 .SS "Synopsis"
 .HP \w'\fBnix\-store\fR\ 'u
-\fBnix\-store\fR \fB\-\-dump\-db\fR
+\fBnix\-store\fR \fB\-\-dump\-db\fR [\fIpaths\fR...]
 .SS "Description"
 .PP
 The operation
 \fB\-\-dump\-db\fR
 writes a dump of the Nix database to standard output\&. It can be loaded into an empty Nix store using
 \fB\-\-load\-db\fR\&. This is useful for making backups and when migrating to different database schemas\&.
+.PP
+By default,
+\fB\-\-dump\-db\fR
+will dump the entire Nix database\&. When one or more store paths is passed, only the subset of the Nix database for those store paths is dumped\&. As with
+\fB\-\-export\fR, the user is responsible for passing all the store paths for a closure\&. See
+\fB\-\-export\fR
+for an example\&.
 .SH "OPERATION \-\-LOAD\-DB"
 .SS "Synopsis"
 .HP \w'\fBnix\-store\fR\ 'u
@@ -1252,7 +1336,10 @@ The file name where the public key is to be stored\&.
 \fBIN_NIX_SHELL\fR
 .RS 4
 Indicator that tells if the current environment was set up by
-\fBnix\-shell\fR\&.
+\fBnix\-shell\fR\&. Since Nix 2\&.0 the values are
+"pure"
+and
+"impure"
 .RE
 .PP
 \fBNIX_PATH\fR
@@ -1376,7 +1463,7 @@ Overrides the location of the Nix static data directory (default
 \fBNIX_LOG_DIR\fR
 .RS 4
 Overrides the location of the Nix log directory (default
-\fIprefix\fR/log/nix)\&.
+\fIprefix\fR/var/log/nix)\&.
 .RE
 .PP
 \fBNIX_STATE_DIR\fR

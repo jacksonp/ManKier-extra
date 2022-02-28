@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nix-env
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: Command Reference
-.\"    Source: Nix 2.2.2
+.\"    Source: Nix 2.3.16
 .\"  Language: English
 .\"
-.TH "NIX\-ENV" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.TH "NIX\-ENV" "1" "01/01/1980" "Nix 2\&.3\&.16" "Command Reference"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -229,6 +229,10 @@ to use the number of CPUs in the system\&. The default is specified by the
 max\-jobs
 configuration setting, which itself defaults to
 1\&. A higher value is useful on SMP systems or to exploit I/O latency\&.
+.sp
+Setting it to
+0
+disallows building on the local machine, which is useful when you want builds to happen only on remote builders\&.
 .RE
 .PP
 \fB\-\-cores\fR
@@ -412,7 +416,7 @@ Fix corrupted or missing store paths by redownloading or rebuilding them\&. Note
 .PP
 ~/\&.nix\-defexpr
 .RS 4
-A directory that contains the default Nix expressions used by the
+The source for the default Nix expressions used by the
 \fB\-\-install\fR,
 \fB\-\-upgrade\fR, and
 \fB\-\-query \-\-available\fR
@@ -420,25 +424,47 @@ operations to obtain derivations\&. The
 \fB\-\-file\fR
 option may be used to override this default\&.
 .sp
-The Nix expressions in this directory are combined into a single set, with each file as an attribute that has the name of the file\&. Thus, if
+If
+~/\&.nix\-defexpr
+is a file, it is loaded as a Nix expression\&. If the expression is a set, it is used as the default Nix expression\&. If the expression is a function, an empty set is passed as argument and the return value is used as the default Nix expression\&.
+.sp
+If
+~/\&.nix\-defexpr
+is a directory containing a
+default\&.nix
+file, that file is loaded as in the above paragraph\&.
+.sp
+If
+~/\&.nix\-defexpr
+is a directory without a
+default\&.nix
+file, then its contents (both files and subdirectories) are loaded as Nix expressions\&. The expressions are combined into a single set, each expression under an attribute with the same name as the original file or subdirectory\&.
+.sp
+For example, if
 ~/\&.nix\-defexpr
 contains two files,
-foo
+foo\&.nix
 and
-bar, then the default Nix expression will essentially be
+bar\&.nix, then the default Nix expression will essentially be
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
 {
-  foo = import ~/\&.nix\-defexpr/foo;
-  bar = import ~/\&.nix\-defexpr/bar;
+  foo = import ~/\&.nix\-defexpr/foo\&.nix;
+  bar = import ~/\&.nix\-defexpr/bar\&.nix;
 }
 .fi
 .if n \{\
 .RE
 .\}
+.sp
+The file
+manifest\&.nix
+is always ignored\&. Subdirectories without a
+default\&.nix
+file are traversed recursively in search of more Nix expressions, but the names of these intermediate directories are not added to the attribute paths of the default Nix expression\&.
 .sp
 The command
 \fBnix\-channel\fR
@@ -836,7 +862,7 @@ by looking at their respective
 name
 attributes\&. The names (e\&.g\&.,
 gcc\-3\&.3\&.1
-are split into two parts: the package name (gcc), and the version (3\&.3\&.1)\&. The version part starts after the first dash not following by a letter\&.
+are split into two parts: the package name (gcc), and the version (3\&.3\&.1)\&. The version part starts after the first dash not followed by a letter\&.
 \fIx\fR
 is considered an upgrade of
 \fIy\fR
@@ -1392,9 +1418,17 @@ This operation deletes the specified generations of the current profile\&. The g
 old
 to delete all non\-current generations, a value such as
 30d
-to delete all generations older than the specified number of days (except for the generation that was active at that point in time), or a value such as\&.
+to delete all generations older than the specified number of days (except for the generation that was active at that point in time), or a value such as
 +5
-to only keep the specified items older than the current generation\&. Periodically deleting old generations is important to make garbage collection effective\&.
+to keep the last
+5
+generations ignoring any newer than current, e\&.g\&., if
+30
+is the current generation
++5
+will delete generation
+25
+and all older generations\&. Periodically deleting old generations is important to make garbage collection effective\&.
 .SS "Examples"
 .sp
 .if n \{\
@@ -1478,7 +1512,10 @@ otherwise\&.
 \fBIN_NIX_SHELL\fR
 .RS 4
 Indicator that tells if the current environment was set up by
-\fBnix\-shell\fR\&.
+\fBnix\-shell\fR\&. Since Nix 2\&.0 the values are
+"pure"
+and
+"impure"
 .RE
 .PP
 \fBNIX_PATH\fR
@@ -1602,7 +1639,7 @@ Overrides the location of the Nix static data directory (default
 \fBNIX_LOG_DIR\fR
 .RS 4
 Overrides the location of the Nix log directory (default
-\fIprefix\fR/log/nix)\&.
+\fIprefix\fR/var/log/nix)\&.
 .RE
 .PP
 \fBNIX_STATE_DIR\fR

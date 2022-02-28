@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nix.conf
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: Command Reference
-.\"    Source: Nix 2.2.2
+.\"    Source: Nix 2.3.16
 .\"  Language: English
 .\"
-.TH "NIX\&.CONF" "5" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.TH "NIX\&.CONF" "5" "01/01/1980" "Nix 2\&.3\&.16" "Command Reference"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -213,6 +213,79 @@ command line switch and defaults to
 1\&. The value
 0
 means that the builder should use all available CPU cores in the system\&.
+.sp
+See also
+Chapter\ \&17, Tuning Cores and Jobs\&.
+.RE
+.PP
+diff\-hook
+.RS 4
+Absolute path to an executable capable of diffing build results\&. The hook executes if
+run\-diff\-hook
+is true, and the output of a build is known to not be the same\&. This program is not executed to determine if two results are the same\&.
+.sp
+The diff hook is executed by the same user and group who ran the build\&. However, the diff hook does not have write access to the store path just built\&.
+.sp
+The diff hook program receives three parameters:
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 1.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  1." 4.2
+.\}
+A path to the previous build\*(Aqs results
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 2.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  2." 4.2
+.\}
+A path to the current build\*(Aqs results
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 3.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  3." 4.2
+.\}
+The path to the build\*(Aqs derivation
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 4.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  4." 4.2
+.\}
+The path to the build\*(Aqs scratch directory\&. This directory will exist only if the build was run with
+\fB\-\-keep\-failed\fR\&.
+.RE
+.sp
+The stderr and stdout output from the diff hook will not be displayed to the user\&. Instead, it will print to the nix\-daemon\*(Aqs log\&.
+.sp
+When using the Nix daemon,
+diff\-hook
+must be set in the
+nix\&.conf
+configuration file, and cannot be passed at the command line\&.
+.RE
+.PP
+enforce\-determinism
+.RS 4
+See
+repeat\&.
 .RE
 .PP
 extra\-sandbox\-paths
@@ -310,7 +383,7 @@ keep\-env\-derivations
 .RS 4
 If
 false
-(default), derivations are not stored in Nix user environments\&. That is, the derivation any build\-time\-only dependencies may be garbage\-collected\&.
+(default), derivations are not stored in Nix user environments\&. That is, the derivations of any build\-time\-only dependencies may be garbage\-collected\&.
 .sp
 If
 true, when you add a Nix derivation to a user environment, the path of the derivation is stored in the user environment\&. Thus, the derivation will not be garbage\-collected until the user environment generation is deleted (\fBnix\-env \-\-delete\-generations\fR)\&. To prevent build\-time\-only dependencies from being collected, you should also turn on
@@ -343,9 +416,11 @@ This option defines the maximum number of bytes that a builder can write to its 
 .PP
 max\-free
 .RS 4
-This option defines after how many free bytes to stop collecting garbage once the
+When a garbage collection is triggered by the
 min\-free
-condition gets triggered\&.
+option, it stops as soon as
+max\-free
+bytes are available\&. The default is infinity (i\&.e\&. delete all garbage)\&.
 .RE
 .PP
 max\-jobs
@@ -360,6 +435,9 @@ preferLocalBuild
 derivation attribute which executes locally regardless)\&. It can be overridden using the
 \fB\-\-max\-jobs\fR
 (\fB\-j\fR) command line switch\&.
+.sp
+See also
+Chapter\ \&17, Tuning Cores and Jobs\&.
 .RE
 .PP
 max\-silent\-time
@@ -375,13 +453,15 @@ means that there is no timeout\&. This is also the default\&.
 .PP
 min\-free
 .RS 4
-When the disk reaches
+When free disk space in
+/nix/store
+drops below
 min\-free
-bytes of free disk space during a build, nix will start to garbage\-collection until
+during a build, Nix performs a garbage\-collection until
 max\-free
-bytes are available on the disk\&. A value of
+bytes are available or there is no more garbage\&. A value of
 0
-(the default) means that this feature is disabled\&.
+(the default) disables this feature\&.
 .RE
 .PP
 narinfo\-cache\-negative\-ttl
@@ -465,9 +545,99 @@ sandbox\-paths\&.
 .RE
 .RE
 .PP
+post\-build\-hook
+.RS 4
+Optional\&. The path to a program to execute after each build\&.
+.sp
+This option is only settable in the global
+nix\&.conf, or on the command line by trusted users\&.
+.sp
+When using the nix\-daemon, the daemon executes the hook as
+root\&. If the nix\-daemon is not involved, the hook runs as the user executing the nix\-build\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The hook executes after an evaluation\-time build\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The hook does not execute on substituted paths\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The hook\*(Aqs output always goes to the user\*(Aqs terminal\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If the hook fails, the build succeeds but no further builds execute\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The hook executes synchronously, and blocks other builds from progressing while it runs\&.
+.RE
+.sp
+The program executes with no arguments\&. The program\*(Aqs environment contains the following environment variables:
+.PP
+\fBDRV_PATH\fR
+.RS 4
+The derivation for the built paths\&.
+.sp
+Example:
+/nix/store/5nihn1a7pa8b25l9zafqaqibznlvvp3f\-bash\-4\&.4\-p23\&.drv
+.RE
+.PP
+\fBOUT_PATHS\fR
+.RS 4
+Output paths of the built derivation, separated by a space character\&.
+.sp
+Example:
+/nix/store/zf5lbh336mnzf1nlswdn11g4n2m8zh3g\-bash\-4\&.4\-p23\-dev /nix/store/rjxwxwv1fpn9wa2x5ssk5phzwlcv4mna\-bash\-4\&.4\-p23\-doc /nix/store/6bqvbzjkcp9695dq0dpl5y43nvy37pq1\-bash\-4\&.4\-p23\-info /nix/store/r7fng3kk3vlpdlh2idnrbn37vh4imlj2\-bash\-4\&.4\-p23\-man /nix/store/xfghy8ixrhz3kyy6p724iv3cxji088dx\-bash\-4\&.4\-p23\&.
+.RE
+.sp
+See
+Chapter\ \&19, Using the post\-build\-hook
+for an example implementation\&.
+.RE
+.PP
 repeat
 .RS 4
-How many times to repeat builds to check whether they are deterministic\&. The default value is 0\&. If the value is non\-zero, every build is repeated the specified number of times\&. If the contents of any of the runs differs from the previous ones, the build is rejected and the resulting store paths are not registered as \(lqvalid\(rq in Nix\(cqs database\&.
+How many times to repeat builds to check whether they are deterministic\&. The default value is 0\&. If the value is non\-zero, every build is repeated the specified number of times\&. If the contents of any of the runs differs from the previous ones and
+enforce\-determinism
+is true, the build is rejected and the resulting store paths are not registered as \(lqvalid\(rq in Nix\(cqs database\&.
 .RE
 .PP
 require\-sigs
@@ -492,6 +662,18 @@ environment variable or the
 option), or to URIs outside of
 \fBallowed\-uri\fR\&. The default is
 false\&.
+.RE
+.PP
+run\-diff\-hook
+.RS 4
+If true, enable the execution of
+diff\-hook\&.
+.sp
+When using the Nix daemon,
+run\-diff\-hook
+must be set in the
+nix\&.conf
+configuration file, and cannot be passed at the command line\&.
 .RE
 .PP
 sandbox
@@ -520,7 +702,10 @@ true
 do not run in sandboxes\&.
 .sp
 The default is
-false\&.
+true
+on Linux and
+false
+on all other platforms\&.
 .RE
 .PP
 sandbox\-dev\-shm\-size
@@ -586,6 +771,11 @@ true
 (default), Nix will use binary substitutes if available\&. This option can be disabled to force building from source\&.
 .RE
 .PP
+stalled\-download\-timeout
+.RS 4
+The timeout (in seconds) for receiving data from servers during download\&. Nix cancels idle downloads after this timeout\*(Aqs duration\&.
+.RE
+.PP
 substituters
 .RS 4
 A list of URLs of substituters, separated by whitespace\&. The default is
@@ -641,6 +831,30 @@ big\-parallel
 that are used in Nixpkgs to route builds to specific machines\&.
 .RE
 .PP
+tarball\-ttl
+.RS 4
+Default:
+3600
+seconds\&.
+.sp
+The number of seconds a downloaded tarball is considered fresh\&. If the cached tarball is stale, Nix will check whether it is still up to date using the ETag header\&. Nix will download a new version if the ETag header is unsupported, or the cached ETag doesn\*(Aqt match\&.
+.sp
+Setting the TTL to
+0
+forces Nix to always check if the tarball is up to date\&.
+.sp
+Nix caches tarballs in
+$XDG_CACHE_HOME/nix/tarballs\&.
+.sp
+Files fetched via
+\fBNIX_PATH\fR,
+\fBfetchGit\fR,
+\fBfetchMercurial\fR,
+\fBfetchTarball\fR, and
+\fBfetchurl\fR
+respect this TTL\&.
+.RE
+.PP
 timeout
 .RS 4
 This option defines the maximum number of seconds that a builder can run\&. This is useful (for instance in an automated build system) to catch builds that are stuck in an infinite loop but keep writing to their standard output or standard error\&. It can be overridden using the
@@ -650,6 +864,36 @@ command line switch\&.
 The value
 0
 means that there is no timeout\&. This is also the default\&.
+.RE
+.PP
+trace\-function\-calls
+.RS 4
+Default:
+false\&.
+.sp
+If set to
+true, the Nix evaluator will trace every function call\&. Nix will print a log message at the "vomit" level for every function entrance and function exit\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+function\-trace entered undefined position at 1565795816999559622
+function\-trace exited undefined position at 1565795816999581277
+function\-trace entered /nix/store/\&.\&.\&./example\&.nix:226:41 at 1565795253249935150
+function\-trace exited /nix/store/\&.\&.\&./example\&.nix:226:41 at 1565795253249941684
+.fi
+.if n \{\
+.RE
+.\}
+The
+undefined position
+means the function call is a builtin\&.
+.sp
+Use the
+contrib/stack\-collapse\&.py
+script distributed with the Nix source code to convert the trace logs in to a format suitable for
+\fBflamegraph\&.pl\fR\&.
 .RE
 .PP
 trusted\-public\-keys

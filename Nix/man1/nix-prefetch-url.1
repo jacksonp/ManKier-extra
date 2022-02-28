@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nix-prefetch-url
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: Command Reference
-.\"    Source: Nix 2.2.2
+.\"    Source: Nix 2.3.16
 .\"  Language: English
 .\"
-.TH "NIX\-PREFETCH\-URL" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.TH "NIX\-PREFETCH\-URL" "1" "01/01/1980" "Nix 2\&.3\&.16" "Command Reference"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -56,7 +56,7 @@ uses the same name for the downloaded file as
 .PP
 If
 \fIhash\fR
-is specified, then a download is not performed if the Nix store already contains a file with the same hash and base name\&. Otherwise, the file is downloaded, and an error if signaled if the actual hash of the file does not match the specified hash\&.
+is specified, then a download is not performed if the Nix store already contains a file with the same hash and base name\&. Otherwise, the file is downloaded, and an error is signaled if the actual hash of the file does not match the specified hash\&.
 .PP
 This command prints the hash on standard output\&. Additionally, if the option
 \fB\-\-print\-path\fR

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nix-channel
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: Command Reference
-.\"    Source: Nix 2.2.2
+.\"    Source: Nix 2.3.16
 .\"  Language: English
 .\"
-.TH "NIX\-CHANNEL" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.TH "NIX\-CHANNEL" "1" "01/01/1980" "Nix 2\&.3\&.16" "Command Reference"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,7 @@ nix-channel \- manage Nix channels
 \fBnix\-channel\fR {\fB\-\-add\fR\ \fIurl\fR\ [\fIname\fR]  | \fB\-\-remove\fR\ \fIname\fR | \fB\-\-list\fR | \fB\-\-update\fR\ [\fInames\fR...]  | \fB\-\-rollback\fR\ [\fIgeneration\fR] }
 .SH "DESCRIPTION"
 .PP
-A Nix channel is a mechanism that allows you to automatically stay up\-to\-date with a set of pre\-built Nix expressions\&. A Nix channel is just a URL that points to a place containing both a set of Nix expressions and a pointer to a binary cache\&.
+A Nix channel is a mechanism that allows you to automatically stay up\-to\-date with a set of pre\-built Nix expressions\&. A Nix channel is just a URL that points to a place containing a set of Nix expressions\&.
 .PP
 This command has the following operations:
 .PP
@@ -153,12 +153,6 @@ nixexprs\&.tar\&.xz
 A tarball containing Nix expressions and files referenced by them (such as build scripts and patches)\&. At the top level, the tarball should contain a single directory\&. That directory must contain a file
 default\&.nix
 that serves as the channel\(cqs \(lqentry point\(rq\&.
-.RE
-.PP
-binary\-cache\-url
-.RS 4
-A file containing the URL to a binary cache (such as
-https://cache\&.nixos\&.org)\&. Nix will automatically check this cache for pre\-built binaries, if the user has sufficient rights to add binary caches\&. For instance, in a multi\-user Nix setup, the binary caches provided by the channels of the root user are used automatically, but caches corresponding to the channels of non\-root users are ignored\&.
 .RE
 .SH "AUTHOR"
 .PP

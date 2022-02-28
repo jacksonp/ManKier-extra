@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nix-instantiate
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: Command Reference
-.\"    Source: Nix 2.2.2
+.\"    Source: Nix 2.3.16
 .\"  Language: English
 .\"
-.TH "NIX\-INSTANTIATE" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.TH "NIX\-INSTANTIATE" "1" "01/01/1980" "Nix 2\&.3\&.16" "Command Reference"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -195,6 +195,10 @@ to use the number of CPUs in the system\&. The default is specified by the
 max\-jobs
 configuration setting, which itself defaults to
 1\&. A higher value is useful on SMP systems or to exploit I/O latency\&.
+.sp
+Setting it to
+0
+disallows building on the local machine, which is useful when you want builds to happen only on remote builders\&.
 .RE
 .PP
 \fB\-\-cores\fR
@@ -492,7 +496,10 @@ $ nix\-instantiate \-\-eval \-\-xml \-\-strict \-E \*(Aqrec { x = "foo"; y = x; 
 \fBIN_NIX_SHELL\fR
 .RS 4
 Indicator that tells if the current environment was set up by
-\fBnix\-shell\fR\&.
+\fBnix\-shell\fR\&. Since Nix 2\&.0 the values are
+"pure"
+and
+"impure"
 .RE
 .PP
 \fBNIX_PATH\fR
@@ -616,7 +623,7 @@ Overrides the location of the Nix static data directory (default
 \fBNIX_LOG_DIR\fR
 .RS 4
 Overrides the location of the Nix log directory (default
-\fIprefix\fR/log/nix)\&.
+\fIprefix\fR/var/log/nix)\&.
 .RE
 .PP
 \fBNIX_STATE_DIR\fR

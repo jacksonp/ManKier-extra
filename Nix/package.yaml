@@ -1,5 +1,5 @@
 Name: Nix
-Version: 2.2.2
+Version: 2.3.16
 URL: https://nixos.org/
 Summary: Package manager that makes package management reliable and reproducible
 Description: Nix is a purely functional package manager. This means that it
