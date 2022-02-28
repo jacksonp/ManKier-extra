@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: nix-build
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: Command Reference
-.\"    Source: Nix 2.2.2
+.\"    Source: Nix 2.3.16
 .\"  Language: English
 .\"
-.TH "NIX\-BUILD" "1" "01/01/1970" "Nix 2\&.2\&.2" "Command Reference"
+.TH "NIX\-BUILD" "1" "01/01/1980" "Nix 2\&.3\&.16" "Command Reference"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,7 +33,7 @@ nix-build \- build a Nix expression
 .HP \w'\fBnix\-build\fR\ 'u
 \fBnix\-build\fR [\fB\-\-help\fR] [\fB\-\-version\fR] [{\fB\-\-verbose\fR\ |\ \fB\-v\fR}...] [\fB\-\-quiet\fR] [\fB\-\-no\-build\-output\fR\ |\ \fB\-Q\fR] [{\fB\-\-max\-jobs\fR\ |\ \fB\-j\fR}\ \fInumber\fR] [\fB\-\-cores\fR\ \fInumber\fR] [\fB\-\-max\-silent\-time\fR\ \fInumber\fR] [\fB\-\-timeout\fR\ \fInumber\fR] [\fB\-\-keep\-going\fR\ |\ \fB\-k\fR] [\fB\-\-keep\-failed\fR\ |\ \fB\-K\fR] [\fB\-\-fallback\fR] [\fB\-\-readonly\-mode\fR] [\fB\-I\fR\ \fIpath\fR] [\fB\-\-option\fR\ \fIname\fR\ \fIvalue\fR]
 .br
-[\fB\-\-arg\fR\ \fIname\fR\ \fIvalue\fR] [\fB\-\-argstr\fR\ \fIname\fR\ \fIvalue\fR] [{\fB\-\-attr\fR\ |\ \fB\-A\fR}\ \fIattrPath\fR] [\fB\-\-no\-out\-link\fR] [{\fB\-\-out\-link\fR\ |\ \fB\-o\fR}\ \fIoutlink\fR] \fIpaths\fR...
+[\fB\-\-arg\fR\ \fIname\fR\ \fIvalue\fR] [\fB\-\-argstr\fR\ \fIname\fR\ \fIvalue\fR] [{\fB\-\-attr\fR\ |\ \fB\-A\fR}\ \fIattrPath\fR] [\fB\-\-no\-out\-link\fR] [\fB\-\-dry\-run\fR] [{\fB\-\-out\-link\fR\ |\ \fB\-o\fR}\ \fIoutlink\fR] \fIpaths\fR...
 .SH "DESCRIPTION"
 .PP
 The
@@ -99,6 +99,11 @@ which are passed to
 .RS 4
 Do not create a symlink to the output path\&. Note that as a result the output does not become a root of the garbage collector, and so might be deleted by
 \fBnix\-store \-\-gc\fR\&.
+.RE
+.PP
+\fB\-\-dry\-run\fR
+.RS 4
+Show what store paths would be built or downloaded
 .RE
 .PP
 \fB\-\-out\-link\fR / \fB\-o\fR \fIoutlink\fR
@@ -184,6 +189,10 @@ to use the number of CPUs in the system\&. The default is specified by the
 max\-jobs
 configuration setting, which itself defaults to
 1\&. A higher value is useful on SMP systems or to exploit I/O latency\&.
+.sp
+Setting it to
+0
+disallows building on the local machine, which is useful when you want builds to happen only on remote builders\&.
 .RE
 .PP
 \fB\-\-cores\fR
@@ -457,7 +466,10 @@ $ nix\-build https://github\&.com/NixOS/nixpkgs/archive/master\&.tar\&.gz \-A he
 \fBIN_NIX_SHELL\fR
 .RS 4
 Indicator that tells if the current environment was set up by
-\fBnix\-shell\fR\&.
+\fBnix\-shell\fR\&. Since Nix 2\&.0 the values are
+"pure"
+and
+"impure"
 .RE
 .PP
 \fBNIX_PATH\fR
@@ -581,7 +593,7 @@ Overrides the location of the Nix static data directory (default
 \fBNIX_LOG_DIR\fR
 .RS 4
 Overrides the location of the Nix log directory (default
-\fIprefix\fR/log/nix)\&.
+\fIprefix\fR/var/log/nix)\&.
 .RE
 .PP
 \fBNIX_STATE_DIR\fR

@@ -2,13 +2,13 @@
 .\"     Title: \fBnixos-build-vms\fR
   
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: NixOS Reference Pages
 .\"    Source: NixOS
 .\"  Language: English
 .\"
-.TH "\FBNIXOS\-BUILD\-VMS" "8" "01/01/1970" "NixOS" "NixOS Reference Pages"
+.TH "\FBNIXOS\-BUILD\-VMS" "8" "01/01/1980" "NixOS" "NixOS Reference Pages"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,11 +31,10 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-nixos-build-vms
-__ \- build a network of virtual machines from a network of NixOS configurations
+nixos-build-vms \- build a network of virtual machines from a network of NixOS configurations
 .SH "SYNOPSIS"
 .HP \w'\fBnixos\-build\-vms\fR\ 'u
-\fBnixos\-build\-vms\fR [\fB\-\-show\-trace\fR] [\fB\-\-no\-out\-link\fR] [\fB\-\-help\fR] \fInetwork\&.nix\fR
+\fBnixos\-build\-vms\fR [\fB\-\-show\-trace\fR] [\fB\-\-no\-out\-link\fR] [\fB\-\-help\fR] [\fB\-\-option\fR\ \fIname\fR\ \fIvalue\fR] \fInetwork\&.nix\fR
 .SH "DESCRIPTION"
 .PP
 This command builds a network of QEMU\-KVM virtual machines of a Nix expression specifying a network of NixOS machines\&. The virtual network can be started by executing the
@@ -106,6 +105,15 @@ Do not create a \*(Aqresult\*(Aq symlink\&.
 .RS 4
 Shows the usage of this command to the user\&.
 .RE
+.PP
+\fB\-\-option\fR \fIname\fR \fIvalue\fR
+.RS 4
+Set the Nix configuration option
+\fIname\fR
+to
+\fIvalue\fR\&. This overrides settings in the Nix configuration file (see
+\fBnix.conf\fR(5))\&.
+.RE
 .SH "AUTHOR"
 .PP
 \fBEelco Dolstra\fR
@@ -114,5 +122,5 @@ Author
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2007-2018 Eelco Dolstra
+Copyright \(co 2007-2020 Eelco Dolstra
 .br

@@ -2,13 +2,13 @@
 .\"     Title: \fBnixos-version\fR
   
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: NixOS Reference Pages
 .\"    Source: NixOS
 .\"  Language: English
 .\"
-.TH "\FBNIXOS\-VERSION\FR" "8" "01/01/1970" "NixOS" "NixOS Reference Pages"
+.TH "\FBNIXOS\-VERSION\FR" "8" "01/01/1980" "NixOS" "NixOS Reference Pages"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,11 +31,10 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-nixos-version
-__ \- show the NixOS version
+nixos-version \- show the NixOS version
 .SH "SYNOPSIS"
 .HP \w'\fBnixos\-version\fR\ 'u
-\fBnixos\-version\fR [\fB\-\-hash\fR] [\fB\-\-revision\fR]
+\fBnixos\-version\fR [\fB\-\-hash\fR] [\fB\-\-revision\fR] [\fB\-\-json\fR]
 .SH "DESCRIPTION"
 .PP
 This command shows the version of the currently active NixOS configuration\&. For example:
@@ -94,6 +93,11 @@ $ nixos\-version \-\-hash
 .\}
 .sp
 .RE
+.PP
+\fB\-\-json\fR
+.RS 4
+Print a JSON representation of the versions of NixOS and the top\-level configuration flake\&.
+.RE
 .SH "AUTHOR"
 .PP
 \fBEelco Dolstra\fR
@@ -102,5 +106,5 @@ Author
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2007-2018 Eelco Dolstra
+Copyright \(co 2007-2020 Eelco Dolstra
 .br
