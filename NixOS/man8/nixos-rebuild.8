@@ -2,13 +2,13 @@
 .\"     Title: \fBnixos-rebuild\fR
   
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: NixOS Reference Pages
 .\"    Source: NixOS
 .\"  Language: English
 .\"
-.TH "\FBNIXOS\-REBUILD\FR" "8" "01/01/1970" "NixOS" "NixOS Reference Pages"
+.TH "\FBNIXOS\-REBUILD\FR" "8" "01/01/1980" "NixOS" "NixOS Reference Pages"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,26 +31,29 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-nixos-rebuild
-__ \- reconfigure a NixOS machine
+nixos-rebuild \- reconfigure a NixOS machine
 .SH "SYNOPSIS"
 .HP \w'\fBnixos\-rebuild\fR\ 'u
 \fBnixos\-rebuild\fR {\fBswitch\fR | \fBboot\fR | \fBtest\fR | \fBbuild\fR | \fBdry\-build\fR | \fBdry\-activate\fR | \fBedit\fR | \fBbuild\-vm\fR | \fBbuild\-vm\-with\-bootloader\fR}
 .br
-[\fB\-\-upgrade\fR] [\fB\-\-install\-bootloader\fR] [\fB\-\-no\-build\-nix\fR] [\fB\-\-fast\fR] [\fB\-\-rollback\fR] [\fB\-\-builders\fR\ \fIbuilder\-spec\fR]
+[{\ \fB\-\-upgrade\fR\ |\ \fB\-\-upgrade\-all\fR\ }] [\fB\-\-install\-bootloader\fR] [\fB\-\-no\-build\-nix\fR] [\fB\-\-fast\fR] [\fB\-\-rollback\fR] [\fB\-\-builders\fR\ \fIbuilder\-spec\fR]
+.br
+[\fB\-\-flake\fR\ \fIflake\-uri\fR] [\fB\-\-override\-input\fR\ \fIinput\-name\fR\ \fIflake\-uri\fR]
 .br
 [{\ \fB\-\-profile\-name\fR\ |\ \fB\-p\fR\ }\ \fIname\fR]
 .br
-[\fB\-\-show\-trace\fR]
+[\fB\-\-build\-host\fR\ \fIhost\fR] [\fB\-\-target\-host\fR\ \fIhost\fR] [\fB\-\-use\-remote\-sudo\fR]
+.br
+[\fB\-\-show\-trace\fR] [\fB\-I\fR\ \fIpath\fR] [{\fB\-\-verbose\fR\ |\ \fB\-v\fR}] [{\fB\-\-impure\fR}] [{\fB\-\-max\-jobs\fR\ |\ \fB\-j\fR}\ \fInumber\fR] [{\fB\-\-keep\-failed\fR\ |\ \fB\-K\fR}] [{\fB\-\-keep\-going\fR\ |\ \fB\-k\fR}]
 .SH "DESCRIPTION"
 .PP
 This command updates the system so that it corresponds to the configuration specified in
-/etc/nixos/configuration\&.nix\&. Thus, every time you modify
 /etc/nixos/configuration\&.nix
-or any NixOS module, you must run
+or
+/etc/nixos/flake\&.nix\&. Thus, every time you modify the configuration or any other NixOS module, you must run
 \fBnixos\-rebuild\fR
 to make the changes take effect\&. It builds the new system in
-/nix/store, runs its activation script, and stop and (re)starts any system services if needed\&.
+/nix/store, runs its activation script, and stop and (re)starts any system services if needed\&. Please note that user services need to be started manually as they aren\*(Aqt detected by the activation script at the moment\&.
 .PP
 This command has one required argument, which specifies the desired operation\&. It must be one of the following:
 .PP
@@ -158,15 +161,27 @@ Like
 \fBbuild\-vm\fR, but boots using the regular boot loader of your configuration (e\&.g\&., GRUB 1 or 2), rather than booting directly into the kernel and initial ramdisk of the system\&. This allows you to test whether the boot loader works correctly\&. However, it does not guarantee that your NixOS configuration will boot successfully on the host hardware (i\&.e\&., after running
 \fBnixos\-rebuild switch\fR), because the hardware and boot loader configuration in the VM are different\&. The boot loader is installed on an automatically generated virtual disk containing a
 /boot
-partition, which is mounted read\-only in the VM\&.
+partition\&.
 .RE
 .SH "OPTIONS"
 .PP
 This command accepts the following options:
 .PP
-\fB\-\-upgrade\fR
+\fB\-\-upgrade\fR, \fB\-\-upgrade\-all\fR
 .RS 4
-Fetch the latest version of NixOS from the NixOS channel\&.
+Update the root user\*(Aqs channel named
+nixos
+before rebuilding the system\&.
+.sp
+In addition to the
+nixos
+channel, the root user\*(Aqs channels which have a file named
+\&.update\-on\-nixos\-rebuild
+in their base directory will also be updated\&.
+.sp
+Passing
+\fB\-\-upgrade\-all\fR
+updates all of the root user\*(Aqs channels\&.
 .RE
 .PP
 \fB\-\-install\-bootloader\fR
@@ -186,8 +201,7 @@ attribute in Nixpkgs, and uses the resulting instance of the Nix package manager
 \fB\-\-fast\fR
 .RS 4
 Equivalent to
-\fB\-\-no\-build\-nix\fR
-\fB\-\-show\-trace\fR\&. This option is useful if you call
+\fB\-\-no\-build\-nix\fR\&. This option is useful if you call
 \fBnixos\-rebuild\fR
 frequently (e\&.g\&. if you\(cqre hacking on a NixOS module)\&.
 .RE
@@ -266,16 +280,41 @@ you need root access\&.
 .sp
 If
 \fB\-\-build\-host\fR
-is not explicitly specified,
-\fB\-\-build\-host\fR
-will implicitly be set to the same value as
-\fB\-\-target\-host\fR\&. So, if you only specify
-\fB\-\-target\-host\fR
-both building and activation will take place remotely (and no build artifacts will be copied to the local machine)\&.
+is not explicitly specified, building will take place locally\&.
 .sp
 You can include a remote user name in the host name (\fIuser@host\fR)\&. You can also set ssh options by defining the
 \fBNIX_SSHOPTS\fR
 environment variable\&.
+.RE
+.PP
+\fB\-\-use\-substitutes\fR
+.RS 4
+When set, nixos\-rebuild will add
+\fB\-\-use\-substitutes\fR
+to each invocation of nix\-copy\-closure\&. This will only affect the behavior of nixos\-rebuild if
+\fB\-\-target\-host\fR
+or
+\fB\-\-build\-host\fR
+is also set\&. This is useful when the target\-host connection to cache\&.nixos\&.org is faster than the connection between hosts\&.
+.RE
+.PP
+\fB\-\-use\-remote\-sudo\fR
+.RS 4
+When set, nixos\-rebuild prefixes remote commands that run on the
+\fB\-\-build\-host\fR
+and
+\fB\-\-target\-host\fR
+systems with
+\fBsudo\fR\&. Setting this option allows deploying as a non\-root user\&.
+.RE
+.PP
+\fB\-\-flake\fR \fIflake\-uri\fR[#\fIname\fR]
+.RS 4
+Build the NixOS system from the specified flake\&. It defaults to the directory containing the target of the symlink
+/etc/nixos/flake\&.nix, if it exists\&. The flake must contain an output named
+nixosConfigurations\&.\fIname\fR\&. If
+\fIname\fR
+is omitted, it default to the current host name\&.
 .RE
 .PP
 In addition,
@@ -286,8 +325,8 @@ accepts various Nix\-related flags, including
 \fB\-j\fR,
 \fB\-\-show\-trace\fR,
 \fB\-\-keep\-failed\fR,
-\fB\-\-keep\-going\fR
-and
+\fB\-\-keep\-going\fR,
+\fB\-\-impure\fR, and
 \fB\-\-verbose\fR
 /
 \fB\-v\fR\&. See the Nix manual for details\&.
@@ -306,6 +345,19 @@ Additional options to be passed to
 on the command line\&.
 .RE
 .SH "FILES"
+.PP
+/etc/nixos/flake\&.nix
+.RS 4
+If this file exists, then
+\fBnixos\-rebuild\fR
+will use it as if the
+\fB\-\-flake\fR
+option was given\&. This file may be a symlink to a
+flake\&.nix
+in an actual flake; thus
+/etc/nixos
+need not be a flake\&.
+.RE
 .PP
 /run/current\-system
 .RS 4
@@ -327,5 +379,5 @@ Author
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2007-2018 Eelco Dolstra
+Copyright \(co 2007-2020 Eelco Dolstra
 .br

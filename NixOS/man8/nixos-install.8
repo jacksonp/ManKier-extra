@@ -2,13 +2,13 @@
 .\"     Title: \fBnixos-install\fR
   
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: NixOS Reference Pages
 .\"    Source: NixOS
 .\"  Language: English
 .\"
-.TH "\FBNIXOS\-INSTALL\FR" "8" "01/01/1970" "NixOS" "NixOS Reference Pages"
+.TH "\FBNIXOS\-INSTALL\FR" "8" "01/01/1980" "NixOS" "NixOS Reference Pages"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,11 +31,10 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-nixos-install
-__ \- install bootloader and NixOS
+nixos-install \- install bootloader and NixOS
 .SH "SYNOPSIS"
 .HP \w'\fBnixos\-install\fR\ 'u
-\fBnixos\-install\fR [\fB\-I\fR\ \fIpath\fR] [\fB\-\-root\fR\ \fIroot\fR] [\fB\-\-system\fR\ \fIpath\fR] [\fB\-\-no\-channel\-copy\fR] [\fB\-\-no\-root\-passwd\fR] [\fB\-\-no\-bootloader\fR] [{\ \fB\-\-max\-jobs\fR\ |\ \fB\-j\fR\ }\ \fInumber\fR] [\fB\-\-cores\fR\ \fInumber\fR] [\fB\-\-option\fR\ \fIname\fR\ \fIvalue\fR] [\fB\-\-show\-trace\fR] [\fB\-\-help\fR]
+\fBnixos\-install\fR [{\ \fB\-\-verbose\fR\ |\ \fB\-v\fR\ }] [\fB\-I\fR\ \fIpath\fR] [\fB\-\-root\fR\ \fIroot\fR] [\fB\-\-system\fR\ \fIpath\fR] [\fB\-\-flake\fR\ \fIflake\-uri\fR] [{\fB\-\-impure\fR}] [\fB\-\-channel\fR\ \fIchannel\fR] [\fB\-\-no\-channel\-copy\fR] [{\ \fB\-\-no\-root\-password\fR\ |\ \fB\-\-no\-root\-passwd\fR\ }] [\fB\-\-no\-bootloader\fR] [{\ \fB\-\-max\-jobs\fR\ |\ \fB\-j\fR\ }\ \fInumber\fR] [\fB\-\-cores\fR\ \fInumber\fR] [\fB\-\-option\fR\ \fIname\fR\ \fIvalue\fR] [\fB\-\-show\-trace\fR] [\fB\-\-keep\-going\fR] [\fB\-\-help\fR]
 .SH "DESCRIPTION"
 .PP
 This command installs NixOS in the file system mounted on
@@ -76,6 +75,21 @@ to build the NixOS configuration specified in
 .sp -1
 .IP \(bu 2.3
 .\}
+It installs the current channel
+\(lqnixos\(rq
+in the target channel profile (unless
+\fB\-\-no\-channel\-copy\fR
+is specified)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
 It installs the GRUB boot loader on the device specified in the option
 \fBboot\&.loader\&.grub\&.device\fR
 (unless
@@ -92,7 +106,7 @@ is specified), and generates a GRUB configuration file that boots into the NixOS
 .IP \(bu 2.3
 .\}
 It prompts you for a password for the root account (unless
-\fB\-\-no\-root\-passwd\fR
+\fB\-\-no\-root\-password\fR
 is specified)\&.
 .RE
 .PP
@@ -100,6 +114,13 @@ This command is idempotent: if it is interrupted or fails due to a temporary pro
 .SH "OPTIONS"
 .PP
 This command accepts the following options:
+.PP
+\fB\-\-verbose\fR / \fB\-v\fR
+.RS 4
+Increases the level of verbosity of diagnostic messages printed on standard error\&. For each Nix operation, the information printed on standard output is well\-defined; any diagnostic information is printed on standard error, never on standard output\&.
+.sp
+Please note that this option may be specified repeatedly\&.
+.RE
 .PP
 \fB\-\-root\fR
 .RS 4
@@ -117,7 +138,20 @@ will install the specified closure rather than attempt to build one from
 /mnt/etc/nixos/configuration\&.nix\&.
 .sp
 The closure must be an appropriately configured NixOS system, with boot loader and partition configuration that fits the target host\&. Such a closure is typically obtained with a command such as
-\fBnix\-build \-I nixos\-config=\&./configuration\&.nix \*(Aq<nixos>\*(Aq \-A system \-\-no\-out\-link\fR
+\fBnix\-build \-I nixos\-config=\&./configuration\&.nix \*(Aq<nixpkgs/nixos>\*(Aq \-A system \-\-no\-out\-link\fR
+.RE
+.PP
+\fB\-\-flake\fR \fIflake\-uri\fR#\fIname\fR
+.RS 4
+Build the NixOS system from the specified flake\&. The flake must contain an output named
+nixosConfigurations\&.\fIname\fR\&.
+.RE
+.PP
+\fB\-\-channel\fR
+.RS 4
+If this option is provided, do not copy the current
+\(lqnixos\(rq
+channel to the target host\&. Instead, use the specified derivation\&.
 .RE
 .PP
 \fB\-I\fR
@@ -160,6 +194,11 @@ to
 Causes Nix to print out a stack trace in case of Nix expression evaluation errors\&.
 .RE
 .PP
+\fB\-\-keep\-going\fR
+.RS 4
+Causes Nix to continue building derivations as far as possible in the face of failed builds\&.
+.RE
+.PP
 \fB\-\-help\fR
 .RS 4
 Synonym for
@@ -198,5 +237,5 @@ Author
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2007-2018 Eelco Dolstra
+Copyright \(co 2007-2020 Eelco Dolstra
 .br

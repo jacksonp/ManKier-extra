@@ -2,13 +2,13 @@
 .\"     Title: \fBnixos-enter\fR
   
 .\"    Author: Eelco Dolstra
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 01/01/1970
+.\" Generator: DocBook XSL Stylesheets v1.79.2 <http://docbook.sf.net/>
+.\"      Date: 01/01/1980
 .\"    Manual: NixOS Reference Pages
 .\"    Source: NixOS
 .\"  Language: English
 .\"
-.TH "\FBNIXOS\-ENTER\FR" "8" "01/01/1970" "NixOS" "NixOS Reference Pages"
+.TH "\FBNIXOS\-ENTER\FR" "8" "01/01/1980" "NixOS" "NixOS Reference Pages"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,11 +31,10 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-nixos-enter
-__ \- run a command in a NixOS chroot environment
+nixos-enter \- run a command in a NixOS chroot environment
 .SH "SYNOPSIS"
 .HP \w'\fBnixos\-enter\fR\ 'u
-\fBnixos\-enter\fR [\fB\-\-root\fR\ \fIroot\fR] [\fB\-\-system\fR\ \fIsystem\fR] [\fB\-c\fR\ \fIshell\-command\fR] [\fB\-\-help\fR] [\fB\-\-\fR\ \fIarguments\fR]
+\fBnixos\-enter\fR [\fB\-\-root\fR\ \fIroot\fR] [\fB\-\-system\fR\ \fIsystem\fR] [\fB\-c\fR\ \fIshell\-command\fR] [\fB\-\-silent\fR] [\fB\-\-help\fR] [\fB\-\-\fR\ \fIarguments\fR]
 .SH "DESCRIPTION"
 .PP
 This command runs a command in a NixOS chroot environment, that is, in a filesystem hierarchy previously prepared using
@@ -62,6 +61,11 @@ The NixOS system configuration to use\&. It defaults to
 The bash command to execute\&.
 .RE
 .PP
+\fB\-\-silent\fR
+.RS 4
+Suppresses all output from the activation script of the target system\&.
+.RE
+.PP
 \fB\-\-\fR
 .RS 4
 Interpret the remaining arguments as the program name and arguments to be invoked\&. The program is not executed in a shell\&.
@@ -75,7 +79,7 @@ Start an interactive shell in the NixOS installation in
 .RS 4
 .\}
 .nf
-# nixos\-enter /mnt
+# nixos\-enter \-\-root /mnt
 .fi
 .if n \{\
 .RE
@@ -112,5 +116,5 @@ Author
 .RE
 .SH "COPYRIGHT"
 .br
-Copyright \(co 2007-2018 Eelco Dolstra
+Copyright \(co 2007-2020 Eelco Dolstra
 .br
